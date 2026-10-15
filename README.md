@@ -12,6 +12,7 @@ detect problems early (water stress, diseases, pests) and gives simple advice.
 | -------------- | ----------------------------------------------------------------- |
 | `mobile_app/`  | Flutter app for **farmers** and **experts** (Android, iOS, web)   |
 | `dashboard/`   | Web dashboard for **admins** (coming later)                       |
+| `_archive/`    | Old code kept for reference (not part of the apps)                |
 
 ## Run the mobile app
 

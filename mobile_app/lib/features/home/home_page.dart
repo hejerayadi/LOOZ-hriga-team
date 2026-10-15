@@ -6,6 +6,7 @@ import '../../core/strings/app_strings.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/looz_page.dart';
 import '../../shared/widgets/status_dot.dart';
+import '../orchard_3d/orchard_3d_page.dart';
 import 'home_data.dart';
 
 class HomePage extends StatelessWidget {
@@ -17,6 +18,7 @@ class HomePage extends StatelessWidget {
       title: AppStrings.tabHome,
       children: [
         const _SummaryCard(treeCount: fakeTreeCount, health: fakeOrchardHealth),
+        const _Orchard3dCard(),
         const _WeatherCard(weather: fakeWeather),
         const SizedBox(height: 12),
         Text(AppStrings.myTrees, style: Theme.of(context).textTheme.titleLarge),
@@ -64,6 +66,46 @@ class _SummaryCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Big olive card that opens the 3D orchard.
+class _Orchard3dCard extends StatelessWidget {
+  const _Orchard3dCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: AppColors.olive,
+      clipBehavior: Clip.antiAlias, // so the tap ripple follows the round corners
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const Orchard3dPage()),
+          );
+        },
+        child: const Padding(
+          padding: EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Icon(Icons.view_in_ar, size: 56, color: Colors.white),
+              SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  AppStrings.orchard3d,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 40, color: Colors.white),
+            ],
+          ),
         ),
       ),
     );

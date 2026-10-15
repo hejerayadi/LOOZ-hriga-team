@@ -32,6 +32,10 @@ class AppStrings {
   static const humidity = 'Humidité';
   static const myTrees = 'Mes arbres';
 
+  // 3D orchard
+  static const orchard3d = 'Verger 3D';
+  static const orchard3dMobileOnly = '3D disponible sur mobile';
+
   // Community
   static const farmer = 'Agriculteur';
   static const expert = 'Expert';
