@@ -4,6 +4,7 @@
 // with Flutter's official translation system (flutter_localizations + .arb files)
 // and keep the same names (tabHome, camera, ...).
 import '../enums.dart';
+import '../plans.dart';
 
 class AppStrings {
   // General
@@ -41,9 +42,24 @@ class AppStrings {
   static const expert = 'Expert';
 
   // Profile
-  static const free = 'Gratuit';
-  static const premium = 'Premium';
   static const logout = 'Se déconnecter';
+  static const seePlans = 'Voir les offres';
+  static const devPlan = 'Mode test : changer d\'offre';
+
+  // Subscription plans
+  static const plans = 'Les offres';
+  static const yourPlan = 'Votre offre';
+  static const everythingIn = 'Tout de l\'offre';
+  static const contactUs = 'Contactez-nous';
+  static const contactUsText =
+      'Pour changer d\'offre, contactez-nous. Pas de paiement dans l\'application pour l\'instant.';
+  static const ok = 'OK';
+  static const lockedIn = 'Offre';
+  static const assistantLimitReached = 'Plus de questions aujourd\'hui';
+  static String assistantQuestionsLeft(int left) => left == 1
+      ? 'Reste 1 question aujourd\'hui'
+      : 'Reste $left questions aujourd\'hui';
+  static const perDay = 'questions / jour';
 
   // Login / sign up
   static const login = 'Se connecter';
@@ -74,6 +90,51 @@ class AppStrings {
         return 'Moyenne';
       case StatusLevel.danger:
         return 'Mauvaise';
+    }
+  }
+
+  /// Name of a plan.
+  static String plan(Plan plan) {
+    switch (plan) {
+      case Plan.free:
+        return 'Gratuit';
+      case Plan.essential:
+        return 'Essentiel';
+      case Plan.connected:
+        return 'Connecté';
+    }
+  }
+
+  /// Text of the big "upgrade" button.
+  static String upgradeTo(Plan target) => 'Passer à ${plan(target)}';
+
+  /// Short name of a feature.
+  static String feature(Feature feature) {
+    switch (feature) {
+      case Feature.community:
+        return 'Communauté';
+      case Feature.assistant:
+        return 'Assistant IA';
+      case Feature.regionalAlerts:
+        return 'Alertes de la région';
+      case Feature.landSetup:
+        return 'Mon terrain et mon sol';
+      case Feature.orchardDrawing:
+        return 'Dessin : parcelle, arbres, zones';
+      case Feature.orchard3d:
+        return orchard3d;
+      case Feature.aiLayout:
+        return 'Plantation par l\'IA';
+      case Feature.photoDiagnosis:
+        return 'Diagnostic photo';
+      case Feature.treeAlerts:
+        return 'Alertes des arbres';
+      case Feature.liveZoneData:
+        return 'Capteurs : données en direct';
+      case Feature.zoneAlerts:
+        return 'Alertes des zones';
+      case Feature.aiPredictions:
+        return 'Prévisions IA : arrosage, récolte';
     }
   }
 

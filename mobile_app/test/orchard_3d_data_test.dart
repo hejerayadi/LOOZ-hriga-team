@@ -10,7 +10,10 @@ void main() {
   test('4 zones with one node each', () {
     final nodes = fakeNodes();
     expect(fakeZones.length, 4);
-    expect(nodes.map((n) => n.zoneId).toSet(), fakeZones.map((z) => z.id).toSet());
+    expect(
+      nodes.map((n) => n.zoneId).toSet(),
+      fakeZones.map((z) => z.id).toSet(),
+    );
   });
 
   test('every tree belongs to a zone', () {

@@ -259,13 +259,15 @@ List<OrchardTree> fakeTrees() {
     for (var col = 0; col < 8; col++) {
       final x = -21.0 + col * 6;
       final z = -15.0 + row * 6;
-      trees.add(OrchardTree(
-        number: number,
-        x: x,
-        z: z,
-        zoneId: _zoneAt(x, z)?.id,
-        variety: (row + 1) % 4 == 0 ? 'pollinizer' : 'main',
-      ));
+      trees.add(
+        OrchardTree(
+          number: number,
+          x: x,
+          z: z,
+          zoneId: _zoneAt(x, z)?.id,
+          variety: (row + 1) % 4 == 0 ? 'pollinizer' : 'main',
+        ),
+      );
       number++;
     }
   }
@@ -302,9 +304,12 @@ String _hex(int argb) =>
     '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 
 /// Everything the 3D page needs, as JSON text.
-String orchard3dJson() {
+/// liveData = false (plan without "Connecté"): no nodes are sent, like the
+/// database does, and the page shows a lock instead of the live zone data.
+String orchard3dJson({bool liveData = true}) {
   final photos = latestPhotos();
   return jsonEncode({
+    'live': liveData,
     // Same green / orange / red as the rest of the app.
     'colors': {
       'good': _hex(AppColors.good.toARGB32()),
@@ -325,18 +330,19 @@ String orchard3dJson() {
         },
     ],
     'nodes': [
-      for (final node in fakeNodes())
-        {
-          'id': node.id,
-          'zone_id': node.zoneId,
-          'position_x': node.x,
-          'position_z': node.z,
-          'battery': node.battery,
-          'status': node.online ? 'online' : 'offline',
-          'last_seen': node.lastSeen.toUtc().toIso8601String(),
-          'soil_moisture': node.soilMoisture,
-          'temperature': node.temperature,
-        },
+      if (liveData)
+        for (final node in fakeNodes())
+          {
+            'id': node.id,
+            'zone_id': node.zoneId,
+            'position_x': node.x,
+            'position_z': node.z,
+            'battery': node.battery,
+            'status': node.online ? 'online' : 'offline',
+            'last_seen': node.lastSeen.toUtc().toIso8601String(),
+            'soil_moisture': node.soilMoisture,
+            'temperature': node.temperature,
+          },
     ],
     'trees': [
       for (final tree in fakeTrees())

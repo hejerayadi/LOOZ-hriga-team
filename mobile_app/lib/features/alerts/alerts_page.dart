@@ -1,8 +1,10 @@
 // Tab 3 — "Alertes": list of alerts, colored by urgency.
 import 'package:flutter/material.dart';
 
+import '../../core/plans.dart';
 import '../../core/strings/app_strings.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/locked_feature.dart';
 import '../../shared/widgets/looz_page.dart';
 import 'alerts_data.dart';
 
@@ -11,9 +13,24 @@ class AlertsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LoozPage(
-      title: AppStrings.tabAlerts,
-      children: fakeAlerts.map((alert) => _AlertCard(alert: alert)).toList(),
+    // Rebuilds as soon as the plan changes.
+    return ValueListenableBuilder<Plan>(
+      valueListenable: currentPlan,
+      builder: (context, plan, _) {
+        // Alerts the plan allows, then one 🔒 card per locked kind of alert.
+        final visible = fakeAlerts.where((a) => canUse(a.kind.feature));
+        final locked = {
+          for (final a in fakeAlerts)
+            if (!canUse(a.kind.feature)) a.kind.feature,
+        };
+        return LoozPage(
+          title: AppStrings.tabAlerts,
+          children: [
+            ...visible.map((alert) => _AlertCard(alert: alert)),
+            ...locked.map((feature) => LockedFeatureCard(feature: feature)),
+          ],
+        );
+      },
     );
   }
 }

@@ -2,8 +2,10 @@
 import 'package:flutter/material.dart';
 
 import '../../core/enums.dart';
+import '../../core/plans.dart';
 import '../../core/strings/app_strings.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/locked_feature.dart';
 import '../../shared/widgets/looz_page.dart';
 import '../../shared/widgets/status_dot.dart';
 import '../orchard_3d/orchard_3d_page.dart';
@@ -14,27 +16,45 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LoozPage(
-      title: AppStrings.tabHome,
-      children: [
-        _SummaryCard(treeCount: orchardTreeCount(), health: orchardHealth()),
-        const _Orchard3dCard(),
-        const _WeatherCard(weather: fakeWeather),
-        const SizedBox(height: 12),
-        Text(AppStrings.myTrees, style: Theme.of(context).textTheme.titleLarge),
-        // One card per tree with a photo (the "..." spreads the list here).
-        ...treesWithPhotos().map((tree) => _TreeTile(tree: tree)),
-      ],
+    // Rebuilds as soon as the plan changes (locked parts show a 🔒 card).
+    return ValueListenableBuilder<Plan>(
+      valueListenable: currentPlan,
+      builder: (context, plan, _) => LoozPage(
+        title: AppStrings.tabHome,
+        children: [
+          if (canUse(Feature.orchard3d)) ...[
+            _SummaryCard(
+              treeCount: orchardTreeCount(),
+              // Zone health comes from the sensors: "Connecté" plan.
+              health: canUse(Feature.liveZoneData) ? orchardHealth() : null,
+            ),
+            const _Orchard3dCard(),
+          ] else
+            const LockedFeatureCard(feature: Feature.orchard3d),
+          const _WeatherCard(weather: fakeWeather),
+          const SizedBox(height: 12),
+          Text(
+            AppStrings.myTrees,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          // One card per tree with a photo (the "..." spreads the list here).
+          if (canUse(Feature.photoDiagnosis))
+            ...treesWithPhotos().map((tree) => _TreeTile(tree: tree))
+          else
+            const LockedFeatureCard(feature: Feature.photoDiagnosis),
+        ],
+      ),
     );
   }
 }
 
 /// Big card: number of trees + overall health (weakest zone).
+/// health == null: not in the plan, a lock is shown instead.
 class _SummaryCard extends StatelessWidget {
   const _SummaryCard({required this.treeCount, required this.health});
 
   final int treeCount;
-  final StatusLevel health;
+  final StatusLevel? health;
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +78,18 @@ class _SummaryCard extends StatelessWidget {
             Expanded(
               child: Column(
                 children: [
-                  StatusDot(level: health, size: 48),
-                  const SizedBox(height: 8),
-                  Text(AppStrings.level(health), style: textTheme.titleMedium),
+                  if (health case final level?) ...[
+                    StatusDot(level: level, size: 48),
+                    const SizedBox(height: 8),
+                    Text(AppStrings.level(level), style: textTheme.titleMedium),
+                  ] else ...[
+                    const Icon(Icons.lock, size: 48, color: Colors.grey),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppStrings.plan(Feature.liveZoneData.minPlan),
+                      style: textTheme.titleMedium,
+                    ),
+                  ],
                   Text(AppStrings.health, style: textTheme.bodyLarge),
                 ],
               ),
@@ -80,12 +109,12 @@ class _Orchard3dCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: AppColors.olive,
-      clipBehavior: Clip.antiAlias, // so the tap ripple follows the round corners
+      clipBehavior:
+          Clip.antiAlias, // so the tap ripple follows the round corners
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const Orchard3dPage()),
-          );
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const Orchard3dPage()));
         },
         child: const Padding(
           padding: EdgeInsets.all(20),
@@ -172,7 +201,11 @@ class _TreeTile extends StatelessWidget {
         leading: StatusDot(level: tree.photo.status, size: 32),
         title: Text(tree.name, style: Theme.of(context).textTheme.titleMedium),
         subtitle: Text('${tree.zoneName} · ${tree.photo.aiResult}'),
-        trailing: const Icon(Icons.photo_camera, size: 28, color: AppColors.olive),
+        trailing: const Icon(
+          Icons.photo_camera,
+          size: 28,
+          color: AppColors.olive,
+        ),
       ),
     );
   }

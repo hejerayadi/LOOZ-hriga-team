@@ -167,6 +167,14 @@
     .tile b { font-size: 20px; color: var(--ink); white-space: nowrap; }
     .tile b.low { color: var(--danger); }
     .tile span { font-size: 12px; color: var(--muted); font-weight: 600; }
+    /* Live zone data not in the plan: lock + "Passer à Connecté" */
+    .lockbox { background: var(--mint); border-radius: 18px; padding: 14px; margin-bottom: 8px; }
+    .lockbox .zc-line { margin: 0 0 12px; color: var(--ink); }
+    .lockbox button {
+      width: 100%; min-height: 56px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: #D4A62A; color: #fff; font-size: 18px; font-weight: 700;
+    }
     .zc-line { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--muted); margin-top: 6px; }
     .zc-line svg { width: 22px; height: 22px; }
     #zcFlag { color: var(--danger); }
@@ -286,13 +294,17 @@
       </div>
       <button id="zcClose" class="round"><svg data-icon="close"></svg></button>
     </div>
-    <div class="tiles">
-      <div class="tile"><svg data-icon="drop"></svg><b id="zcMoist"></b><span data-t="moisture"></span></div>
-      <div class="tile"><svg data-icon="thermo"></svg><b id="zcTemp"></b><span data-t="temp"></span></div>
-      <div class="tile"><svg data-icon="battery"></svg><b id="zcBat"></b><span data-t="battery"></span></div>
+    <div id="zcTiles" class="tiles">
+      <div class="tile live"><svg data-icon="drop"></svg><b id="zcMoist"></b><span data-t="moisture"></span></div>
+      <div class="tile live"><svg data-icon="thermo"></svg><b id="zcTemp"></b><span data-t="temp"></span></div>
+      <div class="tile live"><svg data-icon="battery"></svg><b id="zcBat"></b><span data-t="battery"></span></div>
       <div class="tile"><svg data-icon="tree"></svg><b id="zcTrees"></b><span data-t="trees"></span></div>
     </div>
-    <div class="zc-line"><svg data-icon="node"></svg><span id="zcNodeDot" class="dot"></span><span id="zcNode"></span></div>
+    <div class="zc-line live"><svg data-icon="node"></svg><span id="zcNodeDot" class="dot"></span><span id="zcNode"></span></div>
+    <div id="zcLocked" class="lockbox">
+      <div class="zc-line"><svg data-icon="lock"></svg><span data-t="lockedLive"></span></div>
+      <button id="zcUpgrade"><svg data-icon="unlock"></svg><span data-t="upgradeConnected"></span></button>
+    </div>
     <div id="zcFlag" class="zc-line"><svg data-icon="camera"></svg><span id="zcFlagText"></span></div>
   </div>
 
@@ -325,7 +337,8 @@
       health: { good: 'Bonne', warning: 'Moyenne', danger: 'Mauvaise' },
       moisture: 'Humidité', temp: 'Temp.', battery: 'Batterie',
       online: 'En ligne', offline: 'Hors ligne', ago: 'il y a ', min: ' min', hours: ' h', days: ' j',
-      check: 'À vérifier : '
+      check: 'À vérifier : ',
+      lockedLive: 'Capteurs : données en direct', upgradeConnected: 'Passer à Connecté'
     };
 
     var ICONS = {
@@ -348,6 +361,8 @@
       thermo: '<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 15V9"/>',
       battery: '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M6 10v4M9.5 10v4"/>',
       node: '<path d="M12 21v-9"/><circle cx="12" cy="10" r="2"/><path d="M8.5 6.5a5 5 0 0 0 0 7M15.5 6.5a5 5 0 0 1 0 7M5.5 3.5a9 9 0 0 0 0 13M18.5 3.5a9 9 0 0 1 0 13"/>',
+      lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+      unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
       camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
       up: '<path d="M6 15l6-6 6 6"/>',
       down: '<path d="M6 9l6 6 6-6"/>',
@@ -384,6 +399,8 @@
       nextId: 1
     };
     var DATA = null;         // the orchard sent by the app (zones, nodes, trees)
+    var LIVE = true;         // live zone data (sensors) in the user's plan ("Connecté")
+    var NEUTRAL = '#1E4D35'; // zone color when the health (from sensors) is not in the plan
     var HEALTH = { good: '#4C9A2A', warning: '#E8912D', danger: '#C8442F' };
     var orbit = { theta: Math.PI / 4, phi: Math.PI / 3.4, radius: 62, target: new THREE.Vector3(0, 1, 0) };
     var walker = { x: 0, z: -24, yaw: 0 };
@@ -570,11 +587,14 @@
     var tint = new THREE.Color();
     function canopyColor(t, out) {
       out.set(VARIETY[t.variety].canopy);
-      if (S.view !== 'zones') return out;
+      if (S.view !== 'zones' || !LIVE) return out;
       var zone = zoneById(t.zoneId);
       if (zone) out.lerp(tint.set(HEALTH[zone.health]), 0.6);
       return out;
     }
+
+    // Color of a zone: its health, or neutral green if the plan has no live data.
+    function zoneColor(zone) { return LIVE ? HEALTH[zone.health] : NEUTRAL; }
 
     // Does the latest photo diagnosis of this tree show a problem?
     function photoProblem(t) { return t.photo === 'warning' || t.photo === 'danger'; }
@@ -768,7 +788,7 @@
         var geo = new THREE.ShapeGeometry(shape);
         geo.rotateX(-Math.PI / 2);
         zone.fill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
-          color: HEALTH[zone.health], transparent: true, opacity: 0.32, depthWrite: false,
+          color: zoneColor(zone), transparent: true, opacity: 0.32, depthWrite: false,
           polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
         }));
         zone.fill.position.y = 0.03;
@@ -789,7 +809,7 @@
           ctx.roundRect(4, 4, 248, 88, 44);
           ctx.fill();
           ctx.lineWidth = 8;
-          ctx.strokeStyle = HEALTH[zone.health];
+          ctx.strokeStyle = zoneColor(zone);
           ctx.stroke();
           ctx.fillStyle = '#1f2a24';
           ctx.font = 'bold 44px sans-serif';
@@ -813,7 +833,7 @@
         q.setFromAxisAngle(UP, Math.atan2(-dz, dx));
         m.compose(new THREE.Vector3((e.a.x + e.b.x) / 2, 0.06, (e.a.z + e.b.z) / 2), q, new THREE.Vector3(len, 1, 1));
         strips.setMatrixAt(i, m);
-        c.set(HEALTH[e.zone.health]).multiplyScalar(0.75);   // a bit darker than the fill
+        c.set(zoneColor(e.zone)).multiplyScalar(0.75);   // a bit darker than the fill
         strips.setColorAt(i, c);
         corners.setMatrixAt(i, m.makeTranslation(e.a.x, 0.06, e.a.z));
         corners.setColorAt(i, c);
@@ -876,6 +896,7 @@
     // ---------------------------------------------------------------
     function setOrchard(data) {
       DATA = data;
+      LIVE = data.live !== false;
       if (data.colors) {
         HEALTH = data.colors;
         Object.keys(HEALTH).forEach(function (k) { document.documentElement.style.setProperty('--' + k, HEALTH[k]); });
@@ -1158,10 +1179,14 @@
       var zone = zoneById(id);
       if (zone) {
         var n = zone.node;
-        $('zcDot').style.background = HEALTH[zone.health];
+        $('zcDot').style.background = zoneColor(zone);
         $('zcName').textContent = zone.name;
-        $('zcHealth').textContent = TXT.health[zone.health];
+        $('zcHealth').textContent = LIVE ? TXT.health[zone.health] : '';
         $('zcHealth').style.color = HEALTH[zone.health];
+        // Live zone data not in the plan: a lock + "Passer à Connecté" instead.
+        document.querySelectorAll('#zoneCard .live').forEach(function (el) { el.classList.toggle('hidden', !LIVE); });
+        show('zcLocked', !LIVE);
+        $('zcTiles').style.gridTemplateColumns = LIVE ? '' : '1fr';
         $('zcMoist').textContent = n ? Math.round(n.soil_moisture) + ' %' : '—';
         $('zcTemp').textContent = n ? n.temperature.toFixed(1) + '°' : '—';
         $('zcBat').textContent = n ? n.battery + ' %' : '—';
@@ -1253,6 +1278,7 @@
     $('btnSettings').onclick = function () { setPanel(!S.panelOpen); };
     $('btnClose').onclick = function () { setPanel(false); };
     $('zcClose').onclick = function () { openZone(null); };
+    $('zcUpgrade').onclick = function () { tellFlutter('looz:upgrade'); };   // the app opens the plans screen
     $('btnWalk').onclick = function () { setCam(S.cam === 'walk' ? 'orbit' : 'walk'); };
     $('btnLabels').onclick = function () { S.labels = !S.labels; rebuildLabels(); rebuildMarkers(); refreshUI(); requestRender(); };
     $('btnReset').onclick = resetView;
