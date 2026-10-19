@@ -1,18 +1,27 @@
 <!DOCTYPE html>
 <!--
-  Looz — 3D orchard planner.
+  Looz — 3D orchard: zones, sensor nodes and the layout planner.
   Shown in a WebView on Android / iOS, and in an <iframe> on Flutter web.
 
-  - Rebuilt from the React prototype _reference/orchard-planner.jsx, with plain
-    three.js (three.min.js next to this file, works offline).
-  - Same scene: plot + field with speckled soil, almond trees (trunk, 3 branches,
-    leaf clumps, blossoms), AI layout, manual planting, orbit and walk views, tree IDs.
+  - Planner rebuilt from the React prototype _reference/orchard-planner.jsx, with
+    plain three.js (three.min.js next to this file, works offline): plot + field
+    with speckled soil, almond trees, AI layout, manual planting, orbit and walk
+    views, tree IDs.
+  - Zone layer (default view): each zone is a colored area (color = zone health),
+    with its sensor node (post + box + antenna, grey when offline). Trees are
+    tinted with their zone's color; a tree with its own status shows a marker.
+    Tap a zone (or a tree / node in it) to see its panel.
+  - Data comes from Flutter (lib/features/orchard_3d/orchard_3d_data.dart):
+      1. this page sends "looz:ready",
+      2. Flutter answers with window.loozSetOrchard({...}) (WebView)
+         or a postMessage of the same JSON (Flutter web iframe).
+    Opened alone in a browser, the page only shows the planner (no zones).
   - Lighter than the prototype, for mid-range phones:
       * all trees share 5 "instanced" meshes (5 draw calls instead of ~13 per tree),
       * the picture is only redrawn when something changes.
   - All visible texts are in TXT below (French).
-  - Messages sent to Flutter (to hide the 2 big buttons while the bottom panel
-    covers them): "looz:buttons:hide" / "looz:buttons:show".
+  - Messages sent to Flutter: "looz:ready", and "looz:buttons:hide" /
+    "looz:buttons:show" (hide the 2 big buttons while a bottom panel covers them).
 -->
 <html lang="fr">
 <head>
@@ -28,6 +37,9 @@
       --main: #8fa06b;       /* main variety (canopy color) */
       --poll: #c99089;       /* pollinizer (canopy color) */
       --plot: #ab8f66;
+      --good: #4C9A2A;       /* replaced by the app colors when data arrives */
+      --warning: #E8912D;
+      --danger: #C8442F;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -74,6 +86,9 @@
     }
     .tool.on { background: var(--green); color: #fff; }
     .tool .hash { font-size: 24px; line-height: 26px; font-weight: 800; }
+    /* "Zones | Arbres" switch: 2 buttons stuck together */
+    .seg { display: flex; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
+    .seg .tool { border-radius: 0; box-shadow: none; }
     #info {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 14px; border-radius: 999px;
@@ -93,8 +108,8 @@
     .dot.poll { background: var(--poll); }
     .dot.plot { background: var(--plot); border-radius: 3px; }
 
-    /* ---------- Settings panel: slides up from the bottom (small screens) ---------- */
-    #panel {
+    /* ---------- Bottom sheets (small screens): settings + zone ---------- */
+    .sheet {
       position: absolute; left: 0; right: 0; bottom: 0;
       max-height: 78%; overflow-y: auto;
       padding: 6px 16px 22px;
@@ -104,12 +119,12 @@
       transform: translateY(105%);
       transition: transform .25s ease;
     }
-    body.panel-open #panel { transform: none; }
+    body.panel-open #panel, body.zone-open #zoneCard { transform: none; }
     .grab { width: 44px; height: 5px; border-radius: 3px; background: #c9d8cf; margin: 4px auto 6px; }
-    .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
     .panel-head b { font-size: 20px; color: var(--green); }
     .round {
-      width: 48px; height: 48px; border-radius: 50%;
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       background: var(--mint); color: var(--green);
     }
@@ -136,7 +151,26 @@
     .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
     .legend span { display: flex; align-items: center; gap: 6px; }
 
-    /* Big screens (tablet, computer): the panel is a sidebar on the left. */
+    /* Zone panel */
+    .zc-title { display: flex; align-items: center; gap: 12px; }
+    .zc-title .dot { width: 26px; height: 26px; }
+    .zc-title b { display: block; font-size: 22px; color: var(--ink); }
+    #zcHealth { font-size: 16px; font-weight: 700; }
+    .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 12px; }
+    .tile {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 10px 4px; border-radius: 16px; background: var(--mint); color: var(--green);
+    }
+    .tile svg { width: 30px; height: 30px; }
+    .tile b { font-size: 20px; color: var(--ink); white-space: nowrap; }
+    .tile b.low { color: var(--danger); }
+    .tile span { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .zc-line { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+    .zc-line svg { width: 22px; height: 22px; }
+    #zcFlag { color: var(--danger); }
+
+    /* Big screens (tablet, computer): settings = sidebar on the left,
+       zone panel = card at the bottom. */
     @media (min-width: 720px) {
       #panel {
         top: 0; right: auto; width: 310px; max-height: none;
@@ -144,8 +178,15 @@
         box-shadow: 2px 0 12px rgba(0, 0, 0, .15);
         transform: translateX(-105%);
       }
-      .grab { display: none; }
+      #panel .grab { display: none; }
       body.panel-open #topbar { left: 320px; }
+      #zoneCard {
+        left: 16px; right: auto; bottom: 16px; width: 400px;
+        border-radius: 24px; padding-top: 14px;
+        transform: translateY(130%);
+      }
+      #zoneCard .grab { display: none; }
+      body.panel-open #zoneCard { left: 326px; }
     }
 
     /* ---------- Walk mode: big arrow pad (touch screens) ---------- */
@@ -176,6 +217,10 @@
     <button id="btnWalk" class="tool"><svg data-icon="walk"></svg><span data-t="walk"></span></button>
     <button id="btnLabels" class="tool"><span class="hash">#</span><span data-t="ids"></span></button>
     <button id="btnReset" class="tool"><svg data-icon="reset"></svg><span data-t="reset"></span></button>
+    <div id="viewSwitch" class="seg hidden">
+      <button id="btnZones" class="tool"><svg data-icon="zones"></svg><span data-t="zones"></span></button>
+      <button id="btnTrees" class="tool"><svg data-icon="tree"></svg><span data-t="trees"></span></button>
+    </div>
     <div id="info">
       <span id="modeText"></span>
       <span class="sep"></span>
@@ -185,7 +230,8 @@
     <div id="hint"></div>
   </div>
 
-  <div id="panel">
+  <!-- Settings (planner) -->
+  <div id="panel" class="sheet">
     <div class="grab"></div>
     <div class="panel-head">
       <b data-t="settings"></b>
@@ -193,6 +239,7 @@
     </div>
 
     <div class="row2">
+      <button id="btnReal" class="big hidden"><svg data-icon="farm"></svg><span data-t="real"></span></button>
       <button id="btnAI" class="big"><svg data-icon="sparkle"></svg><span data-t="ai"></span></button>
       <button id="btnManual" class="big"><svg data-icon="sprout"></svg><span data-t="manual"></span></button>
     </div>
@@ -227,6 +274,26 @@
     </div>
   </div>
 
+  <!-- Zone details (tap a zone) -->
+  <div id="zoneCard" class="sheet">
+    <div class="grab"></div>
+    <div class="panel-head">
+      <div class="zc-title">
+        <span id="zcDot" class="dot"></span>
+        <div><b id="zcName"></b><span id="zcHealth"></span></div>
+      </div>
+      <button id="zcClose" class="round"><svg data-icon="close"></svg></button>
+    </div>
+    <div class="tiles">
+      <div class="tile"><svg data-icon="drop"></svg><b id="zcMoist"></b><span data-t="moisture"></span></div>
+      <div class="tile"><svg data-icon="thermo"></svg><b id="zcTemp"></b><span data-t="temp"></span></div>
+      <div class="tile"><svg data-icon="battery"></svg><b id="zcBat"></b><span data-t="battery"></span></div>
+      <div class="tile"><svg data-icon="tree"></svg><b id="zcTrees"></b><span data-t="trees"></span></div>
+    </div>
+    <div class="zc-line"><svg data-icon="node"></svg><span id="zcNodeDot" class="dot"></span><span id="zcNode"></span></div>
+    <div id="zcFlag" class="zc-line"><svg data-icon="warn"></svg><span id="zcFlagText"></span></div>
+  </div>
+
   <div id="pad" class="hidden">
     <button data-dir="up"><svg data-icon="up"></svg></button>
     <button data-dir="left"><svg data-icon="left"></svg></button>
@@ -244,13 +311,19 @@
     // ---------------------------------------------------------------
     var TXT = {
       settings: 'Réglages', walk: 'Marcher', view: 'Vue 3D', ids: 'N°', reset: 'Recentrer',
-      ai: 'IA', manual: 'Manuel', main: 'Principale', poll: 'Pollinisateur', plot: 'Parcelle',
+      zones: 'Zones', trees: 'Arbres',
+      real: 'Verger', ai: 'IA', manual: 'Manuel', main: 'Principale', poll: 'Pollinisateur', plot: 'Parcelle',
       clear: 'Tout effacer', width: 'Largeur', length: 'Longueur',
       treeGap: 'Entre arbres', rowGap: 'Entre rangs', pollEvery: 'Rang pollinisateur', every: '1 sur ',
-      modeAI: 'Plan IA', modeManual: 'Manuel', modeWalk: 'Promenade',
+      modeReal: 'Mon verger', modeAI: 'Plan IA', modeManual: 'Manuel', modeWalk: 'Promenade',
       hintOrbit: 'Glisser : tourner · Pincer / molette : zoom',
+      hintZones: 'Toucher une zone : détails',
       hintManual: 'Toucher le sol : planter · Toucher un arbre : enlever',
-      hintWalk: 'Flèches ou ZQSD / WASD'
+      hintWalk: 'Flèches ou ZQSD / WASD',
+      health: { good: 'Bonne', warning: 'Moyenne', danger: 'Mauvaise' },
+      moisture: 'Humidité', temp: 'Temp.', battery: 'Batterie',
+      online: 'En ligne', offline: 'Hors ligne', ago: 'il y a ', min: ' min', hours: ' h', days: ' j',
+      check: 'À vérifier : '
     };
 
     var ICONS = {
@@ -259,6 +332,9 @@
       cube: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 21v-9M20 7.5L12 12 4 7.5"/>',
       reset: '<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
       close: '<path d="M6 6l12 12M18 6L6 18"/>',
+      zones: '<path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/>',
+      tree: '<circle cx="12" cy="9" r="6"/><path d="M12 15v6M9 21h6"/>',
+      farm: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
       sparkle: '<path d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
       sprout: '<path d="M12 21v-9"/><path d="M12 12C12 8 9 6 4 6c0 4 3 6 8 6z"/><path d="M12 14c0-4 3-6 8-6 0 4-3 6-8 6z"/>',
       trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
@@ -266,6 +342,11 @@
       length: '<path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/>',
       treeGap: '<circle cx="6" cy="8" r="3"/><circle cx="18" cy="8" r="3"/><path d="M6 11v4M18 11v4M9 19h6"/>',
       rowGap: '<path d="M4 6h16M4 18h16M12 9v6"/>',
+      drop: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+      thermo: '<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 15V9"/>',
+      battery: '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M6 10v4M9.5 10v4"/>',
+      node: '<path d="M12 21v-9"/><circle cx="12" cy="10" r="2"/><path d="M8.5 6.5a5 5 0 0 0 0 7M15.5 6.5a5 5 0 0 1 0 7M5.5 3.5a9 9 0 0 0 0 13M18.5 3.5a9 9 0 0 1 0 13"/>',
+      warn: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
       up: '<path d="M6 15l6-6 6 6"/>',
       down: '<path d="M6 9l6 6 6-6"/>',
       left: '<path d="M15 6l-6 6 6 6"/>',
@@ -284,20 +365,24 @@
     function isWide() { return window.matchMedia('(min-width: 720px)').matches; }
 
     // ---------------------------------------------------------------
-    // 1. State (same settings and default values as the prototype)
+    // 1. State (planner settings and default values as in the prototype)
     // ---------------------------------------------------------------
     var S = {
-      mode: 'ai',            // 'ai' | 'manual'
+      mode: 'ai',            // 'real' (orchard from the app) | 'ai' | 'manual'
+      view: 'trees',         // 'zones' | 'trees' (zones only once the app sent them)
       cam: 'orbit',          // 'orbit' | 'walk'
       variety: 'main',       // variety planted by hand: 'main' | 'pollinizer'
       plotW: 36, plotL: 36,  // plot size (m)
       treeGap: 6, rowGap: 6, // spacing (m)
       pollEvery: 4,          // one pollinizer row every N rows
       labels: false,
-      panelOpen: isWide(),   // sidebar open on big screens, closed on phones
-      trees: [],             // [{ id, x, z, variety }]
+      panelOpen: isWide(),   // settings: sidebar open on big screens, closed on phones
+      zoneId: null,          // zone shown in the zone panel (null = closed)
+      trees: [],             // [{ id, x, z, variety, zoneId, status }]
       nextId: 1
     };
+    var DATA = null;         // the orchard sent by the app (zones, nodes, trees)
+    var HEALTH = { good: '#4C9A2A', warning: '#E8912D', danger: '#C8442F' };
     var orbit = { theta: Math.PI / 4, phi: Math.PI / 3.4, radius: 62, target: new THREE.Vector3(0, 1, 0) };
     var walker = { x: 0, z: -24, yaw: 0 };
     var keys = {};
@@ -465,7 +550,8 @@
 
     var treesGroup = new THREE.Group();
     var labelsGroup = new THREE.Group();
-    scene.add(treesGroup, labelsGroup);
+    var markersGroup = new THREE.Group();
+    scene.add(treesGroup, labelsGroup, markersGroup);
     var treeParts = [];     // the InstancedMeshes now in the scene
 
     function instanced(geo, mat, perTree, shadow) {
@@ -475,6 +561,17 @@
       treesGroup.add(mesh);
       treeParts.push(mesh);
       return mesh;
+    }
+
+    // Canopy color of a tree. Zone view: tinted with the zone health,
+    // or with the tree's own status if it has one. Tree view: variety color.
+    var tint = new THREE.Color();
+    function canopyColor(t, out) {
+      out.set(VARIETY[t.variety].canopy);
+      if (S.view !== 'zones') return out;
+      var level = t.status || (zoneById(t.zoneId) || {}).health;
+      if (level) out.lerp(tint.set(HEALTH[level]), t.status ? 0.85 : 0.6);
+      return out;
     }
 
     function rebuildTrees() {
@@ -496,6 +593,8 @@
         var c = new THREE.Color();
 
         S.trees.forEach(function (t, i) {
+          // Trees from the planner get the zone they stand in.
+          if (t.zoneId === undefined) t.zoneId = zoneAt(t.x, t.z);
           var rand = seeded(t.id);
           var v = VARIETY[t.variety];
           foot.makeTranslation(t.x, 0, t.z);
@@ -503,7 +602,7 @@
           basins.setMatrixAt(i, foot);
 
           // 3 branches + a leaf clump at the end of each, then the center clump.
-          c.set(v.canopy);
+          canopyColor(t, c);
           for (var b = 0; b < 3; b++) {
             branches.setMatrixAt(i * 3 + b, m.multiplyMatrices(foot, branchLocal[b]));
             p.set(t.x + lobeCenter[b].x, lobeCenter[b].y, t.z + lobeCenter[b].z);
@@ -527,33 +626,41 @@
         treeParts.forEach(function (mesh) { mesh.computeBoundingSphere(); });
       }
       rebuildLabels();
+      rebuildMarkers();
       refreshUI();
       requestRender();
     }
 
     // ---------------------------------------------------------------
-    // 5. Tree ID labels ("#12"), border colored by variety
+    // 5. Labels: tree IDs ("#12"), zone names, warning markers
     // ---------------------------------------------------------------
+    function canvasSprite(w, h, draw) {
+      var c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      draw(c.getContext('2d'));
+      var tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;   // true colors (not washed out)
+      return new THREE.SpriteMaterial({ map: tex });
+    }
+
     var labelCache = {};   // "id|variety" -> SpriteMaterial (reused between rebuilds)
 
     function labelMaterial(t) {
       var key = t.id + '|' + t.variety;
       if (!labelCache[key]) {
-        var c = document.createElement('canvas');
-        c.width = 128;
-        c.height = 64;
-        var ctx = c.getContext('2d');
-        ctx.fillStyle = 'rgba(255,255,255,0.96)';
-        ctx.fillRect(0, 0, 128, 64);
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = VARIETY[t.variety].label;
-        ctx.strokeRect(3, 3, 122, 58);
-        ctx.fillStyle = '#292524';
-        ctx.font = 'bold 32px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('#' + t.id, 64, 34);
-        labelCache[key] = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c) });
+        labelCache[key] = canvasSprite(128, 64, function (ctx) {
+          ctx.fillStyle = 'rgba(255,255,255,0.96)';
+          ctx.fillRect(0, 0, 128, 64);
+          ctx.lineWidth = 5;
+          ctx.strokeStyle = VARIETY[t.variety].label;
+          ctx.strokeRect(3, 3, 122, 58);
+          ctx.fillStyle = '#292524';
+          ctx.font = 'bold 32px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('#' + t.id, 64, 34);
+        });
       }
       return labelCache[key];
     }
@@ -581,8 +688,235 @@
       });
     }
 
+    // Round "!" marker above a tree that has its own status (zone view only).
+    var markerCache = {};
+    function markerMaterial(level) {
+      if (!markerCache[level]) {
+        markerCache[level] = canvasSprite(64, 64, function (ctx) {
+          ctx.fillStyle = HEALTH[level];
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.arc(32, 32, 27, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 40px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('!', 32, 35);
+        });
+      }
+      return markerCache[level];
+    }
+
+    function rebuildMarkers() {
+      markersGroup.clear();
+      if (S.view !== 'zones') return;
+      S.trees.forEach(function (t, i) {
+        if (!t.status) return;
+        var sprite = new THREE.Sprite(markerMaterial(t.status));
+        sprite.scale.set(1.4, 1.4, 1);
+        sprite.position.set(t.x, S.labels ? 3.6 : 3, t.z);   // above the ID label
+        sprite.userData.index = i;
+        markersGroup.add(sprite);
+      });
+    }
+
     // ---------------------------------------------------------------
-    // 6. AI layout: rows across the plot, one pollinizer row every N rows
+    // 6. Zones: colored areas with a border, a name, and a sensor node
+    // ---------------------------------------------------------------
+    var zonesGroup = new THREE.Group();
+    var nodesGroup = new THREE.Group();
+    scene.add(zonesGroup, nodesGroup);
+    var ZONES = [];          // [{ id, name, health, points, node, fill, label }]
+
+    function zoneById(id) {
+      for (var i = 0; i < ZONES.length; i++) if (ZONES[i].id === id) return ZONES[i];
+      return null;
+    }
+
+    // Is (x, z) inside the polygon? (classic "ray crossing" test)
+    function inside(points, x, z) {
+      var result = false;
+      for (var i = 0, j = points.length - 1; i < points.length; j = i++) {
+        var a = points[i], b = points[j];
+        if ((a.z > z) !== (b.z > z) && x < (b.x - a.x) * (z - a.z) / (b.z - a.z) + a.x) result = !result;
+      }
+      return result;
+    }
+    function zoneAt(x, z) {
+      for (var i = 0; i < ZONES.length; i++) if (inside(ZONES[i].points, x, z)) return ZONES[i].id;
+      return null;
+    }
+
+    var edgeGeo = new THREE.BoxGeometry(1, 0.06, 0.35);         // border strip, scaled to each side
+    var cornerGeo = new THREE.CylinderGeometry(0.175, 0.175, 0.06, 12);
+
+    function buildZones() {
+      zonesGroup.clear();
+      var edges = [];
+      ZONES.forEach(function (zone) {
+        var pts = zone.points;
+        // Fill: a flat shape on the ground, slightly transparent.
+        var shape = new THREE.Shape(pts.map(function (p) { return new THREE.Vector2(p.x, -p.z); }));
+        var geo = new THREE.ShapeGeometry(shape);
+        geo.rotateX(-Math.PI / 2);
+        zone.fill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+          color: HEALTH[zone.health], transparent: true, opacity: 0.32, depthWrite: false,
+          polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
+        }));
+        zone.fill.position.y = 0.03;
+        zone.fill.userData.zoneId = zone.id;
+        zonesGroup.add(zone.fill);
+
+        // Border: one strip per side + a round piece at each corner.
+        pts.forEach(function (a, i) {
+          edges.push({ a: a, b: pts[(i + 1) % pts.length], zone: zone });
+        });
+
+        // Name floating above the zone.
+        var cx = 0, cz = 0;
+        pts.forEach(function (p) { cx += p.x; cz += p.z; });
+        zone.label = new THREE.Sprite(canvasSprite(256, 96, function (ctx) {
+          ctx.fillStyle = 'rgba(255,255,255,0.95)';
+          ctx.beginPath();
+          ctx.roundRect(4, 4, 248, 88, 44);
+          ctx.fill();
+          ctx.lineWidth = 8;
+          ctx.strokeStyle = HEALTH[zone.health];
+          ctx.stroke();
+          ctx.fillStyle = '#1f2a24';
+          ctx.font = 'bold 44px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(zone.name, 128, 50);
+        }));
+        zone.label.scale.set(6, 2.25, 1);
+        zone.label.position.set(cx / pts.length, 8, cz / pts.length);   // high enough not to hide tree markers
+        zone.label.userData.zoneId = zone.id;
+        zonesGroup.add(zone.label);
+      });
+
+      // All borders of all zones: 2 instanced meshes.
+      var strips = new THREE.InstancedMesh(edgeGeo, new THREE.MeshBasicMaterial(), edges.length);
+      var corners = new THREE.InstancedMesh(cornerGeo, new THREE.MeshBasicMaterial(), edges.length);
+      var m = new THREE.Matrix4(), q = new THREE.Quaternion(), c = new THREE.Color();
+      edges.forEach(function (e, i) {
+        var dx = e.b.x - e.a.x, dz = e.b.z - e.a.z;
+        var len = Math.hypot(dx, dz);
+        q.setFromAxisAngle(UP, Math.atan2(-dz, dx));
+        m.compose(new THREE.Vector3((e.a.x + e.b.x) / 2, 0.06, (e.a.z + e.b.z) / 2), q, new THREE.Vector3(len, 1, 1));
+        strips.setMatrixAt(i, m);
+        c.set(HEALTH[e.zone.health]).multiplyScalar(0.75);   // a bit darker than the fill
+        strips.setColorAt(i, c);
+        corners.setMatrixAt(i, m.makeTranslation(e.a.x, 0.06, e.a.z));
+        corners.setColorAt(i, c);
+      });
+      zonesGroup.add(strips, corners);
+    }
+
+    // Sensor node: a post, a box with an antenna and a small light on top.
+    var postGeo = new THREE.CylinderGeometry(0.06, 0.08, 1.5, 8);
+    postGeo.translate(0, 0.75, 0);
+    var boxGeo = new THREE.BoxGeometry(0.5, 0.36, 0.3);
+    boxGeo.translate(0, 1.68, 0);
+    var antennaGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.6, 6);
+    antennaGeo.translate(0.16, 2.16, 0);
+    var lightGeo = new THREE.SphereGeometry(0.06, 8, 6);
+    lightGeo.translate(0.16, 2.48, 0);
+    var NODE_MAT = {
+      online: {
+        post: new THREE.MeshStandardMaterial({ color: '#8a8f94', roughness: 0.6 }),
+        box: new THREE.MeshStandardMaterial({ color: '#1E4D35', roughness: 0.5 }),
+        antenna: new THREE.MeshStandardMaterial({ color: '#3d4246' }),
+        light: new THREE.MeshBasicMaterial({ color: '#57d16b' })
+      },
+      offline: {   // greyed out
+        post: new THREE.MeshStandardMaterial({ color: '#a3a6a9', roughness: 0.8 }),
+        box: new THREE.MeshStandardMaterial({ color: '#9aa0a6', roughness: 0.8 }),
+        antenna: new THREE.MeshStandardMaterial({ color: '#8d9195' }),
+        light: new THREE.MeshBasicMaterial({ color: '#6b6f73' })
+      }
+    };
+
+    function buildNodes() {
+      nodesGroup.clear();
+      ZONES.forEach(function (zone) {
+        var n = zone.node;
+        if (!n) return;
+        var mat = NODE_MAT[n.status === 'online' ? 'online' : 'offline'];
+        var group = new THREE.Group();
+        [[postGeo, mat.post], [boxGeo, mat.box], [antennaGeo, mat.antenna], [lightGeo, mat.light]].forEach(function (part) {
+          var mesh = new THREE.Mesh(part[0], part[1]);
+          mesh.castShadow = true;
+          mesh.userData.zoneId = zone.id;
+          group.add(mesh);
+        });
+        group.position.set(n.position_x, 0, n.position_z);
+        group.scale.setScalar(1.6);   // bigger than real, so it is easy to spot and tap
+        nodesGroup.add(group);
+      });
+    }
+
+    function highlightZone() {
+      ZONES.forEach(function (zone) {
+        zone.fill.material.opacity = zone.id === S.zoneId ? 0.55 : 0.32;
+      });
+      requestRender();
+    }
+
+    // ---------------------------------------------------------------
+    // 7. Orchard data from the app
+    // ---------------------------------------------------------------
+    function setOrchard(data) {
+      DATA = data;
+      if (data.colors) {
+        HEALTH = data.colors;
+        Object.keys(HEALTH).forEach(function (k) { document.documentElement.style.setProperty('--' + k, HEALTH[k]); });
+      }
+      if (data.orchard) {
+        S.plotW = data.orchard.width;
+        S.plotL = data.orchard.length;
+        syncSliders();
+        updatePlot();
+      }
+      ZONES = (data.zones || []).map(function (z) {
+        return { id: z.id, name: z.name, health: z.health, points: z.boundary, node: null };
+      });
+      (data.nodes || []).forEach(function (n) {
+        var zone = zoneById(n.zone_id);
+        if (zone) zone.node = n;
+      });
+      buildZones();
+      buildNodes();
+      S.view = ZONES.length ? 'zones' : 'trees';
+      loadRealTrees();
+      resetView();
+    }
+    window.loozSetOrchard = setOrchard;
+
+    // Flutter web: the data arrives as a message from the parent page.
+    window.addEventListener('message', function (e) {
+      if (e.source !== window.parent || typeof e.data !== 'string') return;
+      try {
+        var data = JSON.parse(e.data);
+        if (data && data.zones) setOrchard(data);
+      } catch (err) { /* not our message */ }
+    });
+
+    // Back to the real orchard (the trees sent by the app).
+    function loadRealTrees() {
+      S.mode = 'real';
+      S.trees = (DATA.trees || []).map(function (t) {
+        return { id: t.id, x: t.x, z: t.z, variety: t.variety || 'main', zoneId: t.zone_id, status: t.status || null };
+      });
+      S.nextId = S.trees.reduce(function (max, t) { return Math.max(max, t.id); }, 0) + 1;
+      rebuildTrees();
+    }
+
+    // ---------------------------------------------------------------
+    // 8. AI layout: rows across the plot, one pollinizer row every N rows
     // ---------------------------------------------------------------
     function generateLayout() {
       var halfW = S.plotW / 2;
@@ -607,7 +941,7 @@
     }
 
     // ---------------------------------------------------------------
-    // 7. Cameras: orbit (around the plot) and walk (eye height)
+    // 9. Cameras: orbit (around the plot) and walk (eye height)
     // ---------------------------------------------------------------
     var MIN_RADIUS = 14;
     var maxRadius = 130;
@@ -667,7 +1001,7 @@
     }
 
     // ---------------------------------------------------------------
-    // 8. Render loop: only draws when something changed (saves battery)
+    // 10. Render loop: only draws when something changed (saves battery)
     // ---------------------------------------------------------------
     var dirty = true;
     function requestRender() { dirty = true; }
@@ -693,9 +1027,9 @@
     });
 
     // ---------------------------------------------------------------
-    // 9. Touch / mouse on the 3D view
-    //    1 finger or mouse drag = rotate, 2 fingers = zoom, wheel = zoom,
-    //    tap (manual mode) = plant on the ground / remove a tree.
+    // 11. Touch / mouse on the 3D view
+    //     1 finger or mouse drag = rotate, 2 fingers = zoom, wheel = zoom,
+    //     tap: zone view = zone panel, manual mode = plant / remove a tree.
     // ---------------------------------------------------------------
     var pointers = {};
     var moved = 0;
@@ -760,19 +1094,38 @@
     var raycaster = new THREE.Raycaster();
     var ndc = new THREE.Vector2();
 
+    // Which tree is this hit? (an instance of a tree part, an ID label or a marker)
+    function treeIndexOf(hit) {
+      return hit.object.isSprite
+        ? hit.object.userData.index
+        : Math.floor(hit.instanceId / hit.object.userData.perTree);
+    }
+
     function handleTap(x, y) {
-      if (S.cam !== 'orbit' || S.mode !== 'manual') return;
+      if (S.cam !== 'orbit') return;
       var rect = canvas.getBoundingClientRect();
       ndc.set(((x - rect.left) / rect.width) * 2 - 1, -((y - rect.top) / rect.height) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
 
+      // Zone view: tap a zone, its node or one of its trees -> zone panel.
+      if (S.view === 'zones') {
+        var targets = nodesGroup.children.concat(markersGroup.children, labelsGroup.children, treeParts, zonesGroup.children);
+        var hits = raycaster.intersectObjects(targets, true);
+        var zoneId = null;
+        for (var i = 0; i < hits.length && !zoneId; i++) {
+          var o = hits[i].object;
+          if (o.userData.zoneId) zoneId = o.userData.zoneId;
+          else if (o.userData.perTree || o.isSprite) zoneId = S.trees[treeIndexOf(hits[i])].zoneId;
+        }
+        openZone(zoneId || null);
+        return;
+      }
+
+      if (S.mode !== 'manual') return;
       // Tapped a tree (or its label)? -> remove it.
       var hit = raycaster.intersectObjects(treeParts.concat(labelsGroup.children), false)[0];
       if (hit) {
-        var index = hit.object.isSprite
-          ? hit.object.userData.index
-          : Math.floor(hit.instanceId / hit.object.userData.perTree);
-        S.trees.splice(index, 1);
+        S.trees.splice(treeIndexOf(hit), 1);
         rebuildTrees();
         return;
       }
@@ -785,7 +1138,44 @@
     }
 
     // ---------------------------------------------------------------
-    // 10. Walk controls: keyboard (computer) + arrow pad (touch)
+    // 12. Zone panel
+    // ---------------------------------------------------------------
+    function timeAgo(iso) {
+      var minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+      if (minutes < 60) return TXT.ago + minutes + TXT.min;
+      if (minutes < 48 * 60) return TXT.ago + Math.round(minutes / 60) + TXT.hours;
+      return TXT.ago + Math.round(minutes / 1440) + TXT.days;
+    }
+
+    function openZone(id) {
+      S.zoneId = id;
+      if (id && !isWide()) S.panelOpen = false;   // one bottom sheet at a time
+      var zone = zoneById(id);
+      if (zone) {
+        var n = zone.node;
+        $('zcDot').style.background = HEALTH[zone.health];
+        $('zcName').textContent = zone.name;
+        $('zcHealth').textContent = TXT.health[zone.health];
+        $('zcHealth').style.color = HEALTH[zone.health];
+        $('zcMoist').textContent = n ? Math.round(n.soil_moisture) + ' %' : '—';
+        $('zcTemp').textContent = n ? n.temperature.toFixed(1) + '°' : '—';
+        $('zcBat').textContent = n ? n.battery + ' %' : '—';
+        $('zcBat').classList.toggle('low', !!n && n.battery < 20);
+        var inZone = S.trees.filter(function (t) { return t.zoneId === id; });
+        $('zcTrees').textContent = inZone.length;
+        var online = n && n.status === 'online';
+        $('zcNodeDot').style.background = online ? '#57d16b' : '#9aa0a6';
+        $('zcNode').textContent = n ? (online ? TXT.online : TXT.offline) + ' · ' + timeAgo(n.last_seen) : '—';
+        var flagged = inZone.filter(function (t) { return t.status; });
+        show('zcFlag', flagged.length > 0);
+        $('zcFlagText').textContent = TXT.check + flagged.map(function (t) { return '#' + t.id; }).join(', ');
+      }
+      highlightZone();
+      refreshUI();
+    }
+
+    // ---------------------------------------------------------------
+    // 13. Walk controls: keyboard (computer) + arrow pad (touch)
     // ---------------------------------------------------------------
     var KEY_DIR = {
       arrowup: 'up', w: 'up', z: 'up',            // z / q: French AZERTY keyboards
@@ -824,11 +1214,20 @@
     });
 
     // ---------------------------------------------------------------
-    // 11. Buttons and sliders
+    // 14. Buttons and sliders
     // ---------------------------------------------------------------
     function setPanel(open) {
       S.panelOpen = open;
+      if (open && !isWide()) S.zoneId = null;   // one bottom sheet at a time
+      highlightZone();
       refreshUI();
+    }
+
+    function setView(view) {
+      S.view = view;
+      S.zoneId = null;
+      rebuildTrees();   // tree colors and markers depend on the view
+      highlightZone();
     }
 
     function setCam(cam) {
@@ -837,21 +1236,27 @@
       pointers = {};
       if (cam === 'walk') {
         resetWalker();
+        S.zoneId = null;
         if (!isWide()) S.panelOpen = false;
         // So the arrow keys move the walker, not the focused button.
         if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
       }
+      highlightZone();
       refreshUI();
-      requestRender();
     }
 
     $('btnSettings').onclick = function () { setPanel(!S.panelOpen); };
     $('btnClose').onclick = function () { setPanel(false); };
+    $('zcClose').onclick = function () { openZone(null); };
     $('btnWalk').onclick = function () { setCam(S.cam === 'walk' ? 'orbit' : 'walk'); };
-    $('btnLabels').onclick = function () { S.labels = !S.labels; rebuildLabels(); refreshUI(); requestRender(); };
+    $('btnLabels').onclick = function () { S.labels = !S.labels; rebuildLabels(); rebuildMarkers(); refreshUI(); requestRender(); };
     $('btnReset').onclick = resetView;
+    $('btnZones').onclick = function () { setView('zones'); };
+    $('btnTrees').onclick = function () { setView('trees'); };
+    $('btnReal').onclick = loadRealTrees;
     $('btnAI').onclick = function () { S.mode = 'ai'; generateLayout(); };
-    $('btnManual').onclick = function () { S.mode = 'manual'; refreshUI(); };
+    // Planting by hand happens in the tree view.
+    $('btnManual').onclick = function () { S.mode = 'manual'; if (S.view === 'zones') setView('trees'); else refreshUI(); };
     $('varMain').onclick = function () { S.variety = 'main'; refreshUI(); };
     $('varPoll').onclick = function () { S.variety = 'pollinizer'; refreshUI(); };
     $('btnClear').onclick = function () { S.trees = []; rebuildTrees(); };
@@ -859,9 +1264,12 @@
     function sliderText(key) {
       return key === 'pollEvery' ? TXT.every + S.pollEvery : S[key] + ' m';
     }
+    function syncSliders() {
+      document.querySelectorAll('input[data-key]').forEach(function (input) { input.value = S[input.dataset.key]; });
+      document.querySelectorAll('[data-val]').forEach(function (el) { el.textContent = sliderText(el.dataset.val); });
+    }
     document.querySelectorAll('input[data-key]').forEach(function (input) {
       var key = input.dataset.key;
-      input.value = S[key];
       input.addEventListener('input', function () {
         S[key] = Number(input.value);
         document.querySelector('[data-val=' + key + ']').textContent = sliderText(key);
@@ -870,9 +1278,7 @@
         if (S.mode === 'ai') generateLayout();
       });
     });
-    document.querySelectorAll('[data-val]').forEach(function (el) {
-      el.textContent = sliderText(el.dataset.val);
-    });
+    syncSliders();
 
     function toggle(id, on) { $(id).classList.toggle('on', on); }
     function show(id, visible) { $(id).classList.toggle('hidden', !visible); }
@@ -881,16 +1287,26 @@
 
     function refreshUI() {
       var walking = S.cam === 'walk';
+      var zonesView = S.view === 'zones';
+      var zoneOpen = !!S.zoneId && zonesView && !walking;
       document.body.classList.toggle('panel-open', S.panelOpen && !walking);
+      document.body.classList.toggle('zone-open', zoneOpen);
+      zonesGroup.visible = zonesView;
+      nodesGroup.visible = zonesView;
 
       toggle('btnSettings', S.panelOpen && !walking);
       toggle('btnWalk', walking);
       toggle('btnLabels', S.labels);
+      toggle('btnZones', zonesView);
+      toggle('btnTrees', !zonesView);
+      toggle('btnReal', S.mode === 'real');
       toggle('btnAI', S.mode === 'ai');
       toggle('btnManual', S.mode === 'manual');
       toggle('varMain', S.variety === 'main');
       toggle('varPoll', S.variety === 'pollinizer');
       show('btnSettings', !walking);
+      show('viewSwitch', ZONES.length > 0);
+      show('btnReal', !!DATA);
       show('manualBox', S.mode === 'manual');
       show('aiBox', S.mode === 'ai');
       show('pad', walking);
@@ -904,23 +1320,27 @@
       S.trees.forEach(function (t) { if (t.variety === 'main') main++; });
       $('nMain').textContent = main;
       $('nPoll').textContent = S.trees.length - main;
-      $('modeText').textContent = walking ? TXT.modeWalk : (S.mode === 'ai' ? TXT.modeAI : TXT.modeManual);
-      $('hint').textContent = walking
-        ? (isTouch ? '' : TXT.hintWalk)
-        : (S.mode === 'manual' ? TXT.hintManual : TXT.hintOrbit);
-      canvas.style.cursor = walking ? 'default' : (S.mode === 'manual' ? 'crosshair' : 'grab');
+      $('modeText').textContent = walking ? TXT.modeWalk
+        : { real: TXT.modeReal, ai: TXT.modeAI, manual: TXT.modeManual }[S.mode];
+      $('hint').textContent = walking ? (isTouch ? '' : TXT.hintWalk)
+        : zonesView ? TXT.hintZones
+        : S.mode === 'manual' ? TXT.hintManual : TXT.hintOrbit;
+      canvas.style.cursor = walking ? 'default'
+        : (zonesView ? 'pointer' : (S.mode === 'manual' ? 'crosshair' : 'grab'));
 
-      // On a small screen the bottom panel would sit under Flutter's
-      // camera + assistant buttons: ask Flutter to hide them meanwhile.
-      var hide = S.panelOpen && !walking && !isWide();
+      // When a panel would sit under Flutter's camera + assistant buttons
+      // (bottom right), ask Flutter to hide them meanwhile.
+      var hide = !walking && ((S.panelOpen && !isWide()) || (zoneOpen && window.innerWidth < 1000));
       if (hide !== buttonsHidden) {
         buttonsHidden = hide;
         tellFlutter(hide ? 'looz:buttons:hide' : 'looz:buttons:show');
       }
+      requestRender();
     }
 
     // Android / iOS: JavaScript channel "LoozFlutter" added by the WebView.
     // Flutter web: the page is in an iframe, so we post to the parent window.
+    var embedded = !!window.LoozFlutter || window.parent !== window;
     function tellFlutter(message) {
       try {
         if (window.LoozFlutter) window.LoozFlutter.postMessage(message);
@@ -929,12 +1349,15 @@
     }
 
     // ---------------------------------------------------------------
-    // 12. Start
+    // 15. Start
     // ---------------------------------------------------------------
     updatePlot();
-    generateLayout();
     resetView();
+    refreshUI();
     frame();
+    tellFlutter('looz:ready');
+    // Opened alone (or the app sent nothing): show an AI layout.
+    setTimeout(function () { if (!DATA) generateLayout(); }, embedded ? 1500 : 0);
   })();
   </script>
 </body>

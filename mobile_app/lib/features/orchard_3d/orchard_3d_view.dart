@@ -14,24 +14,36 @@ import 'orchard_3d_web_frame_stub.dart'
 /// The 3D page, inside the app assets.
 const orchard3dAsset = 'assets/orchard_3d/index.html';
 
-class Orchard3dView extends StatelessWidget {
-  const Orchard3dView({super.key, required this.onMessage});
+/// The page says 'looz:ready' when it has loaded: we answer with the data.
+const orchard3dReady = 'looz:ready';
 
-  /// Called with each message the 3D page sends (e.g. 'looz:buttons:hide').
+class Orchard3dView extends StatelessWidget {
+  const Orchard3dView({super.key, required this.data, required this.onMessage});
+
+  /// The orchard as JSON text (see orchard_3d_data.dart).
+  final String data;
+
+  /// Called with each other message the 3D page sends
+  /// (e.g. 'looz:buttons:hide').
   final ValueChanged<String> onMessage;
 
   @override
   Widget build(BuildContext context) {
     // kIsWeb = true when the app runs in a browser (Chrome).
     return kIsWeb
-        ? Orchard3dWebFrame(asset: orchard3dAsset, onMessage: onMessage)
-        : _Orchard3dWebView(onMessage: onMessage);
+        ? Orchard3dWebFrame(
+            asset: orchard3dAsset,
+            data: data,
+            onMessage: onMessage,
+          )
+        : _Orchard3dWebView(data: data, onMessage: onMessage);
   }
 }
 
 class _Orchard3dWebView extends StatefulWidget {
-  const _Orchard3dWebView({required this.onMessage});
+  const _Orchard3dWebView({required this.data, required this.onMessage});
 
+  final String data;
   final ValueChanged<String> onMessage;
 
   @override
@@ -52,7 +64,13 @@ class _Orchard3dWebViewState extends State<_Orchard3dWebView> {
       // The page talks to Flutter with LoozFlutter.postMessage('...').
       ..addJavaScriptChannel(
         'LoozFlutter',
-        onMessageReceived: (message) => widget.onMessage(message.message),
+        onMessageReceived: (message) {
+          if (message.message == orchard3dReady) {
+            _controller.runJavaScript('window.loozSetOrchard(${widget.data});');
+          } else {
+            widget.onMessage(message.message);
+          }
+        },
       )
       ..setNavigationDelegate(
         NavigationDelegate(

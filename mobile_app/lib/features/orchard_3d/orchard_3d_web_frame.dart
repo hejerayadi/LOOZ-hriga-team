@@ -1,21 +1,28 @@
-// Flutter web only: shows the 3D page in an <iframe>, and listens to the
-// messages it sends with window.parent.postMessage('looz:...').
+// Flutter web only: shows the 3D page in an <iframe>, and talks with it:
+//  - the page sends 'looz:...' messages with window.parent.postMessage(...),
+//  - we answer 'looz:ready' by posting the orchard data into the iframe.
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
 import 'package:flutter/widgets.dart';
 
+import 'orchard_3d_view.dart' show orchard3dReady;
+
 class Orchard3dWebFrame extends StatefulWidget {
   const Orchard3dWebFrame({
     super.key,
     required this.asset,
+    required this.data,
     required this.onMessage,
   });
 
   /// Asset path of the page, e.g. 'assets/orchard_3d/index.html'.
   final String asset;
 
-  /// Called with each 'looz:...' message the page sends.
+  /// The orchard as JSON text, sent when the page is ready.
+  final String data;
+
+  /// Called with each other 'looz:...' message the page sends.
   final ValueChanged<String> onMessage;
 
   @override
@@ -25,6 +32,7 @@ class Orchard3dWebFrame extends StatefulWidget {
 class _Orchard3dWebFrameState extends State<Orchard3dWebFrame> {
   // Kept in a variable so the same listener can be removed in dispose().
   late final JSFunction _listener = _onMessage.toJS;
+  _IFrame? _frame;
 
   @override
   void initState() {
@@ -42,8 +50,16 @@ class _Orchard3dWebFrameState extends State<Orchard3dWebFrame> {
     final data = event.data;
     if (!data.isA<JSString>()) return;
     final text = (data as JSString).toDart;
-    // Ignore messages that do not come from the 3D page.
-    if (text.startsWith('looz:')) widget.onMessage(text);
+    if (text == orchard3dReady) {
+      // Only our own page (same address as the app) may read the data.
+      _frame?.contentWindow?.postMessage(
+        widget.data.toJS,
+        _window.location.origin,
+      );
+    } else if (text.startsWith('looz:')) {
+      // Ignore messages that do not come from the 3D page.
+      widget.onMessage(text);
+    }
   }
 
   @override
@@ -52,6 +68,7 @@ class _Orchard3dWebFrameState extends State<Orchard3dWebFrame> {
       tagName: 'iframe',
       onElementCreated: (element) {
         final frame = element as _IFrame;
+        _frame = frame;
         // Flutter web serves the assets under its own URL: ask for it.
         frame.src = ui_web.assetManager.getAssetUrl(widget.asset);
         frame.style
@@ -68,8 +85,14 @@ class _Orchard3dWebFrameState extends State<Orchard3dWebFrame> {
 external _Window get _window;
 
 extension type _Window(JSObject _) implements JSObject {
+  external _Location get location;
   external void addEventListener(String type, JSFunction listener);
   external void removeEventListener(String type, JSFunction listener);
+  external void postMessage(JSAny? message, String targetOrigin);
+}
+
+extension type _Location(JSObject _) implements JSObject {
+  external String get origin;
 }
 
 extension type _MessageEvent(JSObject _) implements JSObject {
@@ -79,6 +102,7 @@ extension type _MessageEvent(JSObject _) implements JSObject {
 extension type _IFrame(JSObject _) implements JSObject {
   external set src(String value);
   external _Style get style;
+  external _Window? get contentWindow;
 }
 
 extension type _Style(JSObject _) implements JSObject {

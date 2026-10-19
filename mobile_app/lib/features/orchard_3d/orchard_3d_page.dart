@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/strings/app_strings.dart';
 import '../../shared/widgets/looz_scaffold.dart';
+import 'orchard_3d_data.dart';
 import 'orchard_3d_view.dart';
 
 class Orchard3dPage extends StatefulWidget {
@@ -16,6 +17,9 @@ class _Orchard3dPageState extends State<Orchard3dPage> {
   // false while the 3D page's settings panel covers the bottom of a
   // small screen, so the 2 big buttons do not hide its sliders.
   bool _showButtons = true;
+
+  // The orchard (zones, nodes, trees) sent to the 3D page. Fake for now.
+  final String _orchardJson = orchard3dJson();
 
   /// Messages sent by the 3D page (assets/orchard_3d/index.html).
   void _onMessage(String message) {
@@ -34,7 +38,7 @@ class _Orchard3dPageState extends State<Orchard3dPage> {
     return LoozScaffold(
       title: AppStrings.orchard3d,
       showButtons: _showButtons,
-      body: Orchard3dView(onMessage: _onMessage),
+      body: Orchard3dView(data: _orchardJson, onMessage: _onMessage),
     );
   }
 }
