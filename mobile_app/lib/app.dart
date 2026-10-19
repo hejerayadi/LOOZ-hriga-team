@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'core/strings/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/alerts/alerts_page.dart';
+import 'features/auth/auth_gate.dart';
 import 'features/community/community_page.dart';
 import 'features/home/home_page.dart';
 import 'features/profile/profile_page.dart';
 
 /// MaterialApp = the app "shell": title, theme and first screen.
+/// The first screen is AuthGate: Login if not logged in, else the 4 tabs.
 class LoozApp extends StatelessWidget {
   const LoozApp({super.key});
 
@@ -18,7 +20,32 @@ class LoozApp extends StatelessWidget {
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const MainShell(),
+      home: const AuthGate(),
+    );
+  }
+}
+
+/// Shown instead of the app when the Supabase keys are missing.
+class MissingKeysApp extends StatelessWidget {
+  const MissingKeysApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      home: const Scaffold(
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              AppStrings.missingKeys,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

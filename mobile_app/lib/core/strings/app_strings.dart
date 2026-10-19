@@ -43,6 +43,27 @@ class AppStrings {
   // Profile
   static const free = 'Gratuit';
   static const premium = 'Premium';
+  static const logout = 'Se déconnecter';
+
+  // Login / sign up
+  static const login = 'Se connecter';
+  static const signup = 'Créer un compte';
+  static const noAccount = 'Pas de compte ? Créer un compte';
+  static const name = 'Nom';
+  static const email = 'E-mail';
+  static const password = 'Mot de passe';
+  static const iAm = 'Je suis :';
+  static const fillAllFields = 'Remplissez tous les champs.';
+  static const passwordTooShort = 'Mot de passe : 6 caractères minimum.';
+  static const checkEmail =
+      'Compte créé ! Ouvrez votre e-mail pour le confirmer, puis connectez-vous.';
+  static const somethingWrong = 'Une erreur est survenue. Réessayez.';
+
+  // Missing Supabase keys (developer message)
+  static const missingKeys =
+      'Clés Supabase manquantes.\n\n'
+      'Remplissez mobile_app/.env puis lancez :\n'
+      'flutter run --dart-define-from-file=.env';
 
   /// Text for a status level (health or urgency).
   static String level(StatusLevel level) {

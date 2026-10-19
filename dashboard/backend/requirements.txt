@@ -1,0 +1,6 @@
+# Python packages for the Looz admin API.
+# Install them with:  pip install -r requirements.txt
+fastapi==0.143.3            # the web framework (routes, validation, docs)
+uvicorn[standard]==0.54.0   # the server that runs FastAPI
+supabase==2.33.0            # talks to Supabase (login check + database)
+pydantic-settings==2.16.0   # reads the .env file into Python settings

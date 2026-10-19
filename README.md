@@ -16,8 +16,15 @@ detect problems early (water stress, diseases, pests) and gives simple advice.
 
 ## Run the mobile app
 
+First, put the Supabase keys in `mobile_app/.env` (see `mobile_app/.env.example`).
+
 ```powershell
 cd mobile_app
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome --dart-define-from-file=.env
 ```
+
+## Database (Supabase)
+
+The SQL files are in `supabase/`. Run them in Supabase > SQL Editor:
+`looz_schema.sql` (tables) then `looz_policies.sql` (security rules).

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/strings/app_strings.dart';
+import '../../core/supabase_config.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/badge_label.dart';
 import '../../shared/widgets/looz_page.dart';
@@ -40,6 +41,16 @@ class ProfilePage extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Logout: AuthGate sees it and goes back to the Login screen.
+        OutlinedButton.icon(
+          onPressed: () => supabase.auth.signOut(),
+          icon: const Icon(Icons.logout),
+          label: const Text(AppStrings.logout, style: TextStyle(fontSize: 18)),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
           ),
         ),
       ],
