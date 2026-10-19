@@ -26,6 +26,18 @@ void main() {
     expect((data['trees'] as List).length, fakeTrees().length);
   });
 
+  test('only the latest photo of a tree counts', () {
+    final data = jsonDecode(orchard3dJson()) as Map<String, dynamic>;
+    final photoStatus = {
+      for (final t in data['trees'] as List) t['id']: t['photo_status'],
+    };
+    expect(photoStatus[4], 'danger'); // older photo was good
+    expect(photoStatus[20], 'good'); // older photo was warning: no marker
+    expect(photoStatus[1], isNull); // no photo
+    // No other health value per tree.
+    expect((data['trees'] as List).first.containsKey('status'), isFalse);
+  });
+
   test('each node stands inside its own zone', () {
     final data = jsonDecode(orchard3dJson()) as Map<String, dynamic>;
     final trees = data['trees'] as List;

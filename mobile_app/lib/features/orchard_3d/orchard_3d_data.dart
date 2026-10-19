@@ -1,9 +1,13 @@
-// FAKE data for the 3D orchard: one orchard, 4 zones, 1 sensor node per
-// zone, and trees assigned to zones.
+// FAKE data for the orchard: one orchard, 4 zones, 1 sensor node per zone,
+// trees assigned to zones, and photo diagnoses of a few trees.
 //
-// Everything the 3D page shows comes from orchard3dJson() below. The classes
-// use the same fields as the Supabase tables (zones, nodes, trees), so later
-// we only replace the fake lists with real data and keep the rest.
+// - Sensor data exists only per zone (its node), never per tree.
+// - A tree's health = its zone's health.
+// - The only tree-level information is a photo diagnosis (camera button).
+//
+// Used by the 3D page (orchard3dJson below) and the "Mon verger" tab.
+// The classes use the same fields as the Supabase tables (zones, nodes,
+// trees, tree_photos), so later we only replace the fake lists with real data.
 import 'dart:convert';
 
 import '../../core/enums.dart';
@@ -61,8 +65,8 @@ class SensorNode {
   final double temperature; // °C
 }
 
-/// Table "trees": one tree, its zone, and an optional own status
-/// (e.g. a camera photo flagged a problem). null = same as its zone.
+/// Table "trees": one tree and its zone. No health of its own:
+/// its health is its zone's health.
 class OrchardTree {
   const OrchardTree({
     required this.number,
@@ -70,7 +74,6 @@ class OrchardTree {
     required this.z,
     required this.zoneId,
     required this.variety,
-    this.status,
   });
 
   final int number; // shown as "#12"
@@ -78,7 +81,23 @@ class OrchardTree {
   final double z; // pos_z
   final String? zoneId;
   final String variety; // 'main' | 'pollinizer'
-  final StatusLevel? status;
+}
+
+/// Table "tree_photos": the result of a photo taken with the camera button.
+class TreePhoto {
+  const TreePhoto({
+    required this.treeNumber,
+    required this.imagePath,
+    required this.aiResult,
+    required this.status,
+    required this.createdAt,
+  });
+
+  final int treeNumber; // tree_id
+  final String imagePath;
+  final String aiResult; // what the AI found (short text here)
+  final StatusLevel status;
+  final DateTime createdAt;
 }
 
 // ------------------------------------------------------------------
@@ -196,11 +215,40 @@ List<SensorNode> fakeNodes() {
   ];
 }
 
-/// Trees with their own status (flagged by a camera photo).
-const Map<int, StatusLevel> flaggedTrees = {
-  4: StatusLevel.danger, // in zone A (good zone): shows a marker
-  46: StatusLevel.warning, // in zone D
-};
+/// Photos taken with the camera button. Only the LATEST photo of a tree counts.
+List<TreePhoto> fakePhotos() {
+  final now = DateTime.now();
+  TreePhoto photo(int tree, StatusLevel status, String result, int daysAgo) =>
+      TreePhoto(
+        treeNumber: tree,
+        imagePath: 'photos/tree-$tree-$daysAgo.jpg',
+        aiResult: result,
+        status: status,
+        createdAt: now.subtract(Duration(days: daysAgo)),
+      );
+  return [
+    photo(4, StatusLevel.good, 'Sain', 20),
+    photo(4, StatusLevel.danger, 'Tavelure', 1), // latest = danger: marker
+    photo(46, StatusLevel.warning, 'Pucerons', 3), // marker
+    photo(20, StatusLevel.warning, 'Feuilles jaunes', 15),
+    photo(20, StatusLevel.good, 'Sain', 2), // latest = good: no marker
+  ];
+}
+
+/// Latest photo of each tree (tree number -> photo).
+Map<int, TreePhoto> latestPhotos() {
+  final latest = <int, TreePhoto>{};
+  for (final photo in fakePhotos()) {
+    final current = latest[photo.treeNumber];
+    if (current == null || photo.createdAt.isAfter(current.createdAt)) {
+      latest[photo.treeNumber] = photo;
+    }
+  }
+  return latest;
+}
+
+/// The zone with this id.
+Zone zoneById(String id) => fakeZones.firstWhere((zone) => zone.id == id);
 
 /// Trees: rows 6 m apart, trees 6 m apart, one pollinizer row out of 4.
 /// Each tree gets the zone it stands in.
@@ -217,7 +265,6 @@ List<OrchardTree> fakeTrees() {
         z: z,
         zoneId: _zoneAt(x, z)?.id,
         variety: (row + 1) % 4 == 0 ? 'pollinizer' : 'main',
-        status: flaggedTrees[number],
       ));
       number++;
     }
@@ -256,6 +303,7 @@ String _hex(int argb) =>
 
 /// Everything the 3D page needs, as JSON text.
 String orchard3dJson() {
+  final photos = latestPhotos();
   return jsonEncode({
     // Same green / orange / red as the rest of the app.
     'colors': {
@@ -298,7 +346,8 @@ String orchard3dJson() {
           'z': tree.z,
           'zone_id': tree.zoneId,
           'variety': tree.variety,
-          'status': tree.status?.name,
+          // Status of the latest photo diagnosis (null = no photo yet).
+          'photo_status': photos[tree.number]?.status.name,
         },
     ],
   });

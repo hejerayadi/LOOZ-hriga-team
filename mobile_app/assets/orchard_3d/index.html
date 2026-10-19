@@ -8,8 +8,10 @@
     with speckled soil, almond trees, AI layout, manual planting, orbit and walk
     views, tree IDs.
   - Zone layer (default view): each zone is a colored area (color = zone health),
-    with its sensor node (post + box + antenna, grey when offline). Trees are
-    tinted with their zone's color; a tree with its own status shows a marker.
+    with its sensor node (post + box + antenna, grey when offline). Sensor data
+    exists only per zone. Trees are tinted with their zone's color (a tree's
+    health = its zone's health). A "!" marker shows above a tree only if its
+    latest photo diagnosis is warning / danger.
     Tap a zone (or a tree / node in it) to see its panel.
   - Data comes from Flutter (lib/features/orchard_3d/orchard_3d_data.dart):
       1. this page sends "looz:ready",
@@ -291,7 +293,7 @@
       <div class="tile"><svg data-icon="tree"></svg><b id="zcTrees"></b><span data-t="trees"></span></div>
     </div>
     <div class="zc-line"><svg data-icon="node"></svg><span id="zcNodeDot" class="dot"></span><span id="zcNode"></span></div>
-    <div id="zcFlag" class="zc-line"><svg data-icon="warn"></svg><span id="zcFlagText"></span></div>
+    <div id="zcFlag" class="zc-line"><svg data-icon="camera"></svg><span id="zcFlagText"></span></div>
   </div>
 
   <div id="pad" class="hidden">
@@ -346,7 +348,7 @@
       thermo: '<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 15V9"/>',
       battery: '<rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M6 10v4M9.5 10v4"/>',
       node: '<path d="M12 21v-9"/><circle cx="12" cy="10" r="2"/><path d="M8.5 6.5a5 5 0 0 0 0 7M15.5 6.5a5 5 0 0 1 0 7M5.5 3.5a9 9 0 0 0 0 13M18.5 3.5a9 9 0 0 1 0 13"/>',
-      warn: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
+      camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
       up: '<path d="M6 15l6-6 6 6"/>',
       down: '<path d="M6 9l6 6 6-6"/>',
       left: '<path d="M15 6l-6 6 6 6"/>',
@@ -378,7 +380,7 @@
       labels: false,
       panelOpen: isWide(),   // settings: sidebar open on big screens, closed on phones
       zoneId: null,          // zone shown in the zone panel (null = closed)
-      trees: [],             // [{ id, x, z, variety, zoneId, status }]
+      trees: [],             // [{ id, x, z, variety, zoneId, photo }]  photo = latest photo status
       nextId: 1
     };
     var DATA = null;         // the orchard sent by the app (zones, nodes, trees)
@@ -563,16 +565,19 @@
       return mesh;
     }
 
-    // Canopy color of a tree. Zone view: tinted with the zone health,
-    // or with the tree's own status if it has one. Tree view: variety color.
+    // Canopy color of a tree. Zone view: tinted with its zone's health
+    // (a tree's health = its zone's health). Tree view: variety color.
     var tint = new THREE.Color();
     function canopyColor(t, out) {
       out.set(VARIETY[t.variety].canopy);
       if (S.view !== 'zones') return out;
-      var level = t.status || (zoneById(t.zoneId) || {}).health;
-      if (level) out.lerp(tint.set(HEALTH[level]), t.status ? 0.85 : 0.6);
+      var zone = zoneById(t.zoneId);
+      if (zone) out.lerp(tint.set(HEALTH[zone.health]), 0.6);
       return out;
     }
+
+    // Does the latest photo diagnosis of this tree show a problem?
+    function photoProblem(t) { return t.photo === 'warning' || t.photo === 'danger'; }
 
     function rebuildTrees() {
       treeParts.forEach(function (mesh) { treesGroup.remove(mesh); mesh.dispose(); });
@@ -688,7 +693,7 @@
       });
     }
 
-    // Round "!" marker above a tree that has its own status (zone view only).
+    // Round "!" marker above a tree whose latest photo shows a problem (zone view only).
     var markerCache = {};
     function markerMaterial(level) {
       if (!markerCache[level]) {
@@ -714,8 +719,8 @@
       markersGroup.clear();
       if (S.view !== 'zones') return;
       S.trees.forEach(function (t, i) {
-        if (!t.status) return;
-        var sprite = new THREE.Sprite(markerMaterial(t.status));
+        if (!photoProblem(t)) return;
+        var sprite = new THREE.Sprite(markerMaterial(t.photo));
         sprite.scale.set(1.4, 1.4, 1);
         sprite.position.set(t.x, S.labels ? 3.6 : 3, t.z);   // above the ID label
         sprite.userData.index = i;
@@ -909,7 +914,7 @@
     function loadRealTrees() {
       S.mode = 'real';
       S.trees = (DATA.trees || []).map(function (t) {
-        return { id: t.id, x: t.x, z: t.z, variety: t.variety || 'main', zoneId: t.zone_id, status: t.status || null };
+        return { id: t.id, x: t.x, z: t.z, variety: t.variety || 'main', zoneId: t.zone_id, photo: t.photo_status || null };
       });
       S.nextId = S.trees.reduce(function (max, t) { return Math.max(max, t.id); }, 0) + 1;
       rebuildTrees();
@@ -1166,7 +1171,7 @@
         var online = n && n.status === 'online';
         $('zcNodeDot').style.background = online ? '#57d16b' : '#9aa0a6';
         $('zcNode').textContent = n ? (online ? TXT.online : TXT.offline) + ' · ' + timeAgo(n.last_seen) : '—';
-        var flagged = inZone.filter(function (t) { return t.status; });
+        var flagged = inZone.filter(photoProblem);
         show('zcFlag', flagged.length > 0);
         $('zcFlagText').textContent = TXT.check + flagged.map(function (t) { return '#' + t.id; }).join(', ');
       }

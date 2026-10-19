@@ -17,19 +17,19 @@ class HomePage extends StatelessWidget {
     return LoozPage(
       title: AppStrings.tabHome,
       children: [
-        const _SummaryCard(treeCount: fakeTreeCount, health: fakeOrchardHealth),
+        _SummaryCard(treeCount: orchardTreeCount(), health: orchardHealth()),
         const _Orchard3dCard(),
         const _WeatherCard(weather: fakeWeather),
         const SizedBox(height: 12),
         Text(AppStrings.myTrees, style: Theme.of(context).textTheme.titleLarge),
-        // One card per tree (the "..." spreads the list here).
-        ...fakeTrees.map((tree) => _TreeTile(tree: tree)),
+        // One card per tree with a photo (the "..." spreads the list here).
+        ...treesWithPhotos().map((tree) => _TreeTile(tree: tree)),
       ],
     );
   }
 }
 
-/// Big card: number of trees + overall health.
+/// Big card: number of trees + overall health (weakest zone).
 class _SummaryCard extends StatelessWidget {
   const _SummaryCard({required this.treeCount, required this.health});
 
@@ -158,21 +158,21 @@ class _WeatherCard extends StatelessWidget {
   }
 }
 
-/// One line in the tree list: health dot + name + variety.
+/// One line in the tree list: latest photo result + name + zone + what the AI saw.
 class _TreeTile extends StatelessWidget {
   const _TreeTile({required this.tree});
 
-  final Tree tree;
+  final TreeWithPhoto tree;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: StatusDot(level: tree.health, size: 32),
+        leading: StatusDot(level: tree.photo.status, size: 32),
         title: Text(tree.name, style: Theme.of(context).textTheme.titleMedium),
-        subtitle: Text(tree.variety),
-        trailing: const Icon(Icons.chevron_right, size: 32),
+        subtitle: Text('${tree.zoneName} · ${tree.photo.aiResult}'),
+        trailing: const Icon(Icons.photo_camera, size: 28, color: AppColors.olive),
       ),
     );
   }

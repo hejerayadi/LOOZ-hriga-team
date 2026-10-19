@@ -1,15 +1,8 @@
 // FAKE data for the "Mon verger" page. Edit freely.
-// Later, this will come from the sensors / backend.
+// The orchard itself (zones, trees, photos) comes from the same fake data as
+// the 3D view (orchard_3d_data.dart), so both screens always agree.
 import '../../core/enums.dart';
-
-/// One almond tree.
-class Tree {
-  const Tree({required this.name, required this.variety, required this.health});
-
-  final String name;
-  final String variety;
-  final StatusLevel health;
-}
+import '../orchard_3d/orchard_3d_data.dart';
 
 /// Today's weather.
 class Weather {
@@ -24,17 +17,42 @@ class Weather {
   final bool sunny;
 }
 
+/// A tree that has a photo diagnosis (the only tree-level information).
+class TreeWithPhoto {
+  const TreeWithPhoto({
+    required this.name,
+    required this.zoneName,
+    required this.photo,
+  });
+
+  final String name;
+  final String zoneName;
+  final TreePhoto photo;
+}
+
 // ----- The fake values -----
-
-const int fakeTreeCount = 120;
-
-const StatusLevel fakeOrchardHealth = StatusLevel.good;
 
 const Weather fakeWeather = Weather(temperature: 27, humidity: 38, sunny: true);
 
-const List<Tree> fakeTrees = [
-  Tree(name: 'Arbre 3', variety: 'Ferragnès', health: StatusLevel.good),
-  Tree(name: 'Arbre 7', variety: 'Achak', health: StatusLevel.warning),
-  Tree(name: 'Arbre 12', variety: 'Ferraduel', health: StatusLevel.danger),
-  Tree(name: 'Arbre 18', variety: 'Ferragnès', health: StatusLevel.good),
-];
+/// Number of trees in the orchard.
+int orchardTreeCount() => fakeTrees().length;
+
+/// Health of the orchard = health of its weakest zone.
+StatusLevel orchardHealth() => fakeZones
+    .map((zone) => zone.health)
+    .reduce((a, b) => a.index >= b.index ? a : b);
+
+/// Trees with a photo diagnosis, newest photo first.
+List<TreeWithPhoto> treesWithPhotos() {
+  final trees = {for (final tree in fakeTrees()) tree.number: tree};
+  final list = [
+    for (final photo in latestPhotos().values)
+      TreeWithPhoto(
+        name: 'Arbre ${photo.treeNumber}',
+        zoneName: zoneById(trees[photo.treeNumber]!.zoneId!).name,
+        photo: photo,
+      ),
+  ];
+  list.sort((a, b) => b.photo.createdAt.compareTo(a.photo.createdAt));
+  return list;
+}
