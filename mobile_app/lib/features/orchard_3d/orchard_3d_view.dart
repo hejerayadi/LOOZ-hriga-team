@@ -1,21 +1,44 @@
-// The WebView that shows assets/orchard_3d/index.html (the 3D scene).
-// Only used on Android / iOS: WebView does not exist on Flutter web.
+// Shows assets/orchard_3d/index.html (the 3D scene):
+//  - Android / iOS: inside a WebView,
+//  - Flutter web (Chrome): inside an iframe (WebView does not exist there).
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../core/theme/app_theme.dart';
-import 'orchard_3d_data.dart';
+// The iframe code only compiles for the web, so phones get an empty stand-in.
+import 'orchard_3d_web_frame_stub.dart'
+    if (dart.library.js_interop) 'orchard_3d_web_frame.dart';
 
-class Orchard3dView extends StatefulWidget {
-  const Orchard3dView({super.key});
+/// The 3D page, inside the app assets.
+const orchard3dAsset = 'assets/orchard_3d/index.html';
+
+class Orchard3dView extends StatelessWidget {
+  const Orchard3dView({super.key, required this.onMessage});
+
+  /// Called with each message the 3D page sends (e.g. 'looz:buttons:hide').
+  final ValueChanged<String> onMessage;
 
   @override
-  State<Orchard3dView> createState() => _Orchard3dViewState();
+  Widget build(BuildContext context) {
+    // kIsWeb = true when the app runs in a browser (Chrome).
+    return kIsWeb
+        ? Orchard3dWebFrame(asset: orchard3dAsset, onMessage: onMessage)
+        : _Orchard3dWebView(onMessage: onMessage);
+  }
 }
 
-class _Orchard3dViewState extends State<Orchard3dView> {
+class _Orchard3dWebView extends StatefulWidget {
+  const _Orchard3dWebView({required this.onMessage});
+
+  final ValueChanged<String> onMessage;
+
+  @override
+  State<_Orchard3dWebView> createState() => _Orchard3dWebViewState();
+}
+
+class _Orchard3dWebViewState extends State<_Orchard3dWebView> {
   late final WebViewController _controller;
   bool _loading = true;
 
@@ -26,18 +49,19 @@ class _Orchard3dViewState extends State<Orchard3dView> {
       // three.js needs JavaScript.
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(AppColors.almond)
+      // The page talks to Flutter with LoozFlutter.postMessage('...').
+      ..addJavaScriptChannel(
+        'LoozFlutter',
+        onMessageReceived: (message) => widget.onMessage(message.message),
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageFinished: (_) async {
-            // The page is ready: send it the trees (positions + health).
-            await _controller.runJavaScript(
-              'window.loozSetTrees(${orchardJson()});',
-            );
+          onPageFinished: (_) {
             if (mounted) setState(() => _loading = false);
           },
         ),
       )
-      ..loadFlutterAsset('assets/orchard_3d/index.html');
+      ..loadFlutterAsset(orchard3dAsset);
   }
 
   @override

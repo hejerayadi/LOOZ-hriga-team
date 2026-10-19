@@ -1,43 +1,40 @@
-// "Verger 3D" screen: the orchard in 3D, with the camera and AI buttons.
-import 'package:flutter/foundation.dart' show kIsWeb;
+// "Verger 3D" screen: the 3D orchard planner, with the camera and AI buttons.
 import 'package:flutter/material.dart';
 
 import '../../core/strings/app_strings.dart';
-import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/looz_scaffold.dart';
 import 'orchard_3d_view.dart';
 
-class Orchard3dPage extends StatelessWidget {
+class Orchard3dPage extends StatefulWidget {
   const Orchard3dPage({super.key});
+
+  @override
+  State<Orchard3dPage> createState() => _Orchard3dPageState();
+}
+
+class _Orchard3dPageState extends State<Orchard3dPage> {
+  // false while the 3D page's settings panel covers the bottom of a
+  // small screen, so the 2 big buttons do not hide its sliders.
+  bool _showButtons = true;
+
+  /// Messages sent by the 3D page (assets/orchard_3d/index.html).
+  void _onMessage(String message) {
+    final show = switch (message) {
+      'looz:buttons:hide' => false,
+      'looz:buttons:show' => true,
+      _ => null,
+    };
+    if (show != null && show != _showButtons) {
+      setState(() => _showButtons = show);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return LoozScaffold(
       title: AppStrings.orchard3d,
-      // kIsWeb = true when the app runs in a browser (Chrome).
-      // WebView does not work there, so we show a simple message instead.
-      body: kIsWeb ? const _WebOnlyMessage() : const Orchard3dView(),
-    );
-  }
-}
-
-class _WebOnlyMessage extends StatelessWidget {
-  const _WebOnlyMessage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.phone_android, size: 100, color: AppColors.olive),
-          const SizedBox(height: 16),
-          Text(
-            AppStrings.orchard3dMobileOnly,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ],
-      ),
+      showButtons: _showButtons,
+      body: Orchard3dView(onMessage: _onMessage),
     );
   }
 }

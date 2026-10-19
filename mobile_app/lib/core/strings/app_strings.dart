@@ -34,7 +34,7 @@ class AppStrings {
 
   // 3D orchard
   static const orchard3d = 'Verger 3D';
-  static const orchard3dMobileOnly = '3D disponible sur mobile';
+  // The texts inside the 3D scene are in assets/orchard_3d/index.html (TXT).
 
   // Community
   static const farmer = 'Agriculteur';

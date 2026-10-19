@@ -7,7 +7,12 @@ import 'assistant_button.dart';
 import 'camera_button.dart';
 
 class LoozScaffold extends StatelessWidget {
-  const LoozScaffold({super.key, required this.title, required this.body});
+  const LoozScaffold({
+    super.key,
+    required this.title,
+    required this.body,
+    this.showButtons = true,
+  });
 
   /// Text shown at the top of the screen.
   final String title;
@@ -15,19 +20,25 @@ class LoozScaffold extends StatelessWidget {
   /// The content of the screen.
   final Widget body;
 
+  /// false = hide the 2 big buttons for a moment (e.g. while a panel
+  /// of the 3D orchard covers the bottom of the screen).
+  final bool showButtons;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: body,
-      floatingActionButton: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AssistantButton(),
-          SizedBox(height: 16),
-          CameraButton(),
-        ],
-      ),
+      floatingActionButton: showButtons
+          ? const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AssistantButton(),
+                SizedBox(height: 16),
+                CameraButton(),
+              ],
+            )
+          : null,
     );
   }
 }

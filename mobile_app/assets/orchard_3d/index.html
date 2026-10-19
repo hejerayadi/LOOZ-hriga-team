@@ -1,55 +1,238 @@
 <!DOCTYPE html>
 <!--
-  Looz — 3D orchard, shown inside the app with a WebView.
+  Looz — 3D orchard planner.
+  Shown in a WebView on Android / iOS, and in an <iframe> on Flutter web.
 
-  - Uses plain three.js (three.min.js next to this file, works offline).
-  - Tree shapes, instancing, jitter and lights are reused from the old web app
-    (_archive/old_3d_web/src/components/Trees.jsx and OrchardScene.jsx).
-  - The Flutter app sends the trees by calling: window.loozSetTrees({...})
-  - Touch: drag with one finger = rotate, pinch with two fingers = zoom,
-    tap a tree = show its name. (Mouse: drag + wheel, for testing on a PC.)
-  - No visible text is written here: tree names come from Flutter, so all
-    texts stay in app_strings.dart / the data files.
+  - Rebuilt from the React prototype _reference/orchard-planner.jsx, with plain
+    three.js (three.min.js next to this file, works offline).
+  - Same scene: plot + field with speckled soil, almond trees (trunk, 3 branches,
+    leaf clumps, blossoms), AI layout, manual planting, orbit and walk views, tree IDs.
+  - Lighter than the prototype, for mid-range phones:
+      * all trees share 5 "instanced" meshes (5 draw calls instead of ~13 per tree),
+      * the picture is only redrawn when something changes.
+  - All visible texts are in TXT below (French).
+  - Messages sent to Flutter (to hide the 2 big buttons while the bottom panel
+    covers them): "looz:buttons:hide" / "looz:buttons:show".
 -->
-<html>
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Looz 3D</title>
+  <title>Verger 3D</title>
   <style>
+    :root {
+      --green: #1E4D35;      /* Looz dark forest green */
+      --mint: #E8F5EE;       /* Looz light mint */
+      --ink: #1f2a24;
+      --muted: #5b6b62;
+      --main: #8fa06b;       /* main variety (canopy color) */
+      --poll: #c99089;       /* pollinizer (canopy color) */
+      --plot: #ab8f66;
+    }
+    * { box-sizing: border-box; }
     html, body {
       margin: 0;
       height: 100%;
       overflow: hidden;
-      background: #cfe3f0;
-      touch-action: none;          /* we handle all touch gestures ourselves */
+      background: #cfe9ef;
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       -webkit-user-select: none;
       user-select: none;
-      font-family: sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
-    canvas { display: block; }
-    /* Bubble shown at the top when a tree is tapped. */
-    #label {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 18px;
-      border-radius: 24px;
-      background: #fffbf2;
-      color: #3b2f25;
-      font-size: 20px;
-      font-weight: bold;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    #scene { position: absolute; inset: 0; touch-action: none; }
+    #scene canvas { display: block; }
+    button {
+      font: inherit;
+      color: inherit;
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
-    #label .dot { width: 22px; height: 22px; border-radius: 50%; }
+    svg {
+      width: 26px; height: 26px; flex-shrink: 0;
+      fill: none; stroke: currentColor; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .hidden { display: none !important; }
+
+    /* ---------- Top bar: big icon buttons ---------- */
+    #topbar {
+      position: absolute; top: 10px; left: 10px; right: 10px;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      pointer-events: none;            /* only the buttons catch touches */
+      transition: left .25s ease;
+    }
+    #topbar > * { pointer-events: auto; }
+    .tool {
+      width: 62px; height: 62px; border-radius: 18px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      background: var(--mint); color: var(--green);
+      font-size: 11px; font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+    }
+    .tool.on { background: var(--green); color: #fff; }
+    .tool .hash { font-size: 24px; line-height: 26px; font-weight: 800; }
+    #info {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px;
+      background: rgba(255, 255, 255, .92); color: var(--green);
+      font-size: 15px; font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .12);
+    }
+    #info .sep { width: 1px; height: 18px; background: #c9d8cf; }
+    #hint {
+      flex-basis: 100%;
+      font-size: 13px; color: var(--green); font-weight: 600;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, .9);
+      pointer-events: none !important;
+    }
+    .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .dot.main { background: var(--main); }
+    .dot.poll { background: var(--poll); }
+    .dot.plot { background: var(--plot); border-radius: 3px; }
+
+    /* ---------- Settings panel: slides up from the bottom (small screens) ---------- */
+    #panel {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      max-height: 78%; overflow-y: auto;
+      padding: 6px 16px 22px;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -4px 18px rgba(0, 0, 0, .2);
+      transform: translateY(105%);
+      transition: transform .25s ease;
+    }
+    body.panel-open #panel { transform: none; }
+    .grab { width: 44px; height: 5px; border-radius: 3px; background: #c9d8cf; margin: 4px auto 6px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .panel-head b { font-size: 20px; color: var(--green); }
+    .round {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--mint); color: var(--green);
+    }
+    .row2 { display: flex; gap: 10px; margin-bottom: 14px; }
+    .big {
+      flex: 1; min-height: 58px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--mint); color: var(--green);
+      font-size: 17px; font-weight: 700;
+    }
+    .big.on { background: var(--green); color: #fff; }
+    .box { background: var(--mint); border-radius: 18px; padding: 12px 14px; margin-bottom: 14px; }
+    .box .note { font-size: 14px; color: var(--muted); margin: 0 0 10px; }
+    .link {
+      display: flex; align-items: center; gap: 6px; margin-top: 10px;
+      background: none; color: #a0473f; font-size: 15px; font-weight: 700; padding: 6px 0;
+    }
+    .link svg { width: 22px; height: 22px; }
+    .slider { display: block; margin-bottom: 14px; }
+    .slider .top { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--muted); }
+    .slider .top svg { width: 22px; height: 22px; color: var(--green); }
+    .slider .val { margin-left: auto; color: var(--green); font-weight: 800; font-size: 17px; }
+    input[type=range] { width: 100%; height: 36px; margin: 2px 0 0; accent-color: var(--green); }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+    .legend span { display: flex; align-items: center; gap: 6px; }
+
+    /* Big screens (tablet, computer): the panel is a sidebar on the left. */
+    @media (min-width: 720px) {
+      #panel {
+        top: 0; right: auto; width: 310px; max-height: none;
+        border-radius: 0; padding-top: 16px;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, .15);
+        transform: translateX(-105%);
+      }
+      .grab { display: none; }
+      body.panel-open #topbar { left: 320px; }
+    }
+
+    /* ---------- Walk mode: big arrow pad (touch screens) ---------- */
+    #pad {
+      position: absolute; left: 14px; bottom: 14px;
+      display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(3, 64px); gap: 6px;
+    }
+    #pad button {
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(232, 245, 238, .94); color: var(--green);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+      touch-action: none;
+    }
+    #pad button.held { background: var(--green); color: #fff; }
+    #pad svg { width: 36px; height: 36px; stroke-width: 3; }
+    #pad [data-dir=up] { grid-column: 2; grid-row: 1; }
+    #pad [data-dir=left] { grid-column: 1; grid-row: 2; }
+    #pad [data-dir=right] { grid-column: 3; grid-row: 2; }
+    #pad [data-dir=down] { grid-column: 2; grid-row: 3; }
   </style>
 </head>
 <body>
-  <div id="label"><span class="dot"></span><span class="name"></span></div>
+  <div id="scene"></div>
+
+  <div id="topbar">
+    <button id="btnSettings" class="tool"><svg data-icon="tune"></svg><span data-t="settings"></span></button>
+    <button id="btnWalk" class="tool"><svg data-icon="walk"></svg><span data-t="walk"></span></button>
+    <button id="btnLabels" class="tool"><span class="hash">#</span><span data-t="ids"></span></button>
+    <button id="btnReset" class="tool"><svg data-icon="reset"></svg><span data-t="reset"></span></button>
+    <div id="info">
+      <span id="modeText"></span>
+      <span class="sep"></span>
+      <span class="dot main"></span><span id="nMain">0</span>
+      <span class="dot poll"></span><span id="nPoll">0</span>
+    </div>
+    <div id="hint"></div>
+  </div>
+
+  <div id="panel">
+    <div class="grab"></div>
+    <div class="panel-head">
+      <b data-t="settings"></b>
+      <button id="btnClose" class="round"><svg data-icon="close"></svg></button>
+    </div>
+
+    <div class="row2">
+      <button id="btnAI" class="big"><svg data-icon="sparkle"></svg><span data-t="ai"></span></button>
+      <button id="btnManual" class="big"><svg data-icon="sprout"></svg><span data-t="manual"></span></button>
+    </div>
+
+    <div id="manualBox" class="box">
+      <p class="note" data-t="hintManual"></p>
+      <div class="row2" style="margin-bottom:0">
+        <button id="varMain" class="big"><span class="dot main"></span><span data-t="main"></span></button>
+        <button id="varPoll" class="big"><span class="dot poll"></span><span data-t="poll"></span></button>
+      </div>
+      <button id="btnClear" class="link"><svg data-icon="trash"></svg><span data-t="clear"></span></button>
+    </div>
+
+    <label class="slider"><div class="top"><svg data-icon="width"></svg><span data-t="width"></span><span class="val" data-val="plotW"></span></div>
+      <input type="range" data-key="plotW" min="12" max="60" step="2"></label>
+    <label class="slider"><div class="top"><svg data-icon="length"></svg><span data-t="length"></span><span class="val" data-val="plotL"></span></div>
+      <input type="range" data-key="plotL" min="12" max="60" step="2"></label>
+
+    <div id="aiBox">
+      <label class="slider"><div class="top"><svg data-icon="treeGap"></svg><span data-t="treeGap"></span><span class="val" data-val="treeGap"></span></div>
+        <input type="range" data-key="treeGap" min="4" max="10" step="0.5"></label>
+      <label class="slider"><div class="top"><svg data-icon="rowGap"></svg><span data-t="rowGap"></span><span class="val" data-val="rowGap"></span></div>
+        <input type="range" data-key="rowGap" min="4" max="10" step="0.5"></label>
+      <label class="slider"><div class="top"><span class="dot poll"></span><span data-t="pollEvery"></span><span class="val" data-val="pollEvery"></span></div>
+        <input type="range" data-key="pollEvery" min="2" max="6" step="1"></label>
+    </div>
+
+    <div class="legend">
+      <span><span class="dot main"></span><span data-t="main"></span></span>
+      <span><span class="dot poll"></span><span data-t="poll"></span></span>
+      <span><span class="dot plot"></span><span data-t="plot"></span></span>
+    </div>
+  </div>
+
+  <div id="pad" class="hidden">
+    <button data-dir="up"><svg data-icon="up"></svg></button>
+    <button data-dir="left"><svg data-icon="left"></svg></button>
+    <button data-dir="right"><svg data-icon="right"></svg></button>
+    <button data-dir="down"><svg data-icon="down"></svg></button>
+  </div>
 
   <script src="three.min.js"></script>
   <script>
@@ -57,198 +240,491 @@
     'use strict';
 
     // ---------------------------------------------------------------
-    // 1. Renderer, scene, camera, lights  (kept light for mid-range phones)
+    // 0. Texts (French) and icons
     // ---------------------------------------------------------------
+    var TXT = {
+      settings: 'Réglages', walk: 'Marcher', view: 'Vue 3D', ids: 'N°', reset: 'Recentrer',
+      ai: 'IA', manual: 'Manuel', main: 'Principale', poll: 'Pollinisateur', plot: 'Parcelle',
+      clear: 'Tout effacer', width: 'Largeur', length: 'Longueur',
+      treeGap: 'Entre arbres', rowGap: 'Entre rangs', pollEvery: 'Rang pollinisateur', every: '1 sur ',
+      modeAI: 'Plan IA', modeManual: 'Manuel', modeWalk: 'Promenade',
+      hintOrbit: 'Glisser : tourner · Pincer / molette : zoom',
+      hintManual: 'Toucher le sol : planter · Toucher un arbre : enlever',
+      hintWalk: 'Flèches ou ZQSD / WASD'
+    };
+
+    var ICONS = {
+      tune: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+      walk: '<circle cx="13" cy="4" r="2"/><path d="M9 21l2.5-6.5L14 17v4M11.5 14.5l1-5.5M8 12l2-3 2.5-.5 2.5 3 2.5 1"/>',
+      cube: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 21v-9M20 7.5L12 12 4 7.5"/>',
+      reset: '<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
+      close: '<path d="M6 6l12 12M18 6L6 18"/>',
+      sparkle: '<path d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
+      sprout: '<path d="M12 21v-9"/><path d="M12 12C12 8 9 6 4 6c0 4 3 6 8 6z"/><path d="M12 14c0-4 3-6 8-6 0 4-3 6-8 6z"/>',
+      trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+      width: '<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>',
+      length: '<path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/>',
+      treeGap: '<circle cx="6" cy="8" r="3"/><circle cx="18" cy="8" r="3"/><path d="M6 11v4M18 11v4M9 19h6"/>',
+      rowGap: '<path d="M4 6h16M4 18h16M12 9v6"/>',
+      up: '<path d="M6 15l6-6 6 6"/>',
+      down: '<path d="M6 9l6 6 6-6"/>',
+      left: '<path d="M15 6l-6 6 6 6"/>',
+      right: '<path d="M9 6l6 6-6 6"/>'
+    };
+
+    function $(id) { return document.getElementById(id); }
+    function setIcon(svg, name) {
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.innerHTML = ICONS[name];
+    }
+    document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = TXT[el.dataset.t]; });
+    document.querySelectorAll('svg[data-icon]').forEach(function (el) { setIcon(el, el.dataset.icon); });
+
+    var isTouch = window.matchMedia('(pointer: coarse)').matches;
+    function isWide() { return window.matchMedia('(min-width: 720px)').matches; }
+
+    // ---------------------------------------------------------------
+    // 1. State (same settings and default values as the prototype)
+    // ---------------------------------------------------------------
+    var S = {
+      mode: 'ai',            // 'ai' | 'manual'
+      cam: 'orbit',          // 'orbit' | 'walk'
+      variety: 'main',       // variety planted by hand: 'main' | 'pollinizer'
+      plotW: 36, plotL: 36,  // plot size (m)
+      treeGap: 6, rowGap: 6, // spacing (m)
+      pollEvery: 4,          // one pollinizer row every N rows
+      labels: false,
+      panelOpen: isWide(),   // sidebar open on big screens, closed on phones
+      trees: [],             // [{ id, x, z, variety }]
+      nextId: 1
+    };
+    var orbit = { theta: Math.PI / 4, phi: Math.PI / 3.4, radius: 62, target: new THREE.Vector3(0, 1, 0) };
+    var walker = { x: 0, z: -24, yaw: 0 };
+    var keys = {};
+
+    // ---------------------------------------------------------------
+    // 2. Renderer, scene, camera, lights
+    // ---------------------------------------------------------------
+    var sceneEl = $('scene');
     var renderer = new THREE.WebGLRenderer({ antialias: true });
     // Cap the resolution: big win on phones with very dense screens.
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    renderer.shadowMap.enabled = true;
+    sceneEl.appendChild(renderer.domElement);
+    var canvas = renderer.domElement;
 
-    var SKY = '#cfe3f0';
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(SKY);
-    scene.fog = new THREE.Fog(SKY, 150, 400);
+    scene.background = new THREE.Color('#cfe9ef');
+    scene.fog = new THREE.Fog('#cfe9ef', 70, 170);
 
-    var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.5, 1000);
+    var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-    // Same light setup as the old OrchardScene.jsx (no shadows, to save battery).
-    scene.add(new THREE.HemisphereLight('#bcd4ff', '#6b5a3e', 0.55));
-    scene.add(new THREE.AmbientLight('#ffffff', 0.25));
-    var sun = new THREE.DirectionalLight('#ffffff', 2.1);
-    sun.position.copy(sunDirection(15)).multiplyScalar(100);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    var sun = new THREE.DirectionalLight(0xfff2d9, 1.1);
+    sun.position.set(35, 48, 22);
+    sun.castShadow = true;
+    var shadowSize = isTouch ? 1024 : 2048;   // smaller shadow map on phones
+    sun.shadow.mapSize.set(shadowSize, shadowSize);
+    Object.assign(sun.shadow.camera, { left: -55, right: 55, top: 55, bottom: -55 });
     scene.add(sun);
 
-    // Sun position for a given hour (from the old app): east in the morning,
-    // south at noon, west in the evening.
-    function sunDirection(hour) {
-      var t = Math.max(0, Math.min(1, (hour - 6) / 14));
-      var az = Math.PI * t;
-      var el = Math.sin(Math.PI * t) * 1.15;
-      return new THREE.Vector3(Math.cos(az) * Math.cos(el), Math.sin(el), Math.sin(az) * Math.cos(el));
+    // ---------------------------------------------------------------
+    // 3. Soil: procedural speckled texture (no image files needed)
+    // ---------------------------------------------------------------
+    function createSoilTexture(base, speckA, speckB, speckC) {
+      var size = 256;
+      var c = document.createElement('canvas');
+      c.width = size;
+      c.height = size;
+      var ctx = c.getContext('2d');
+      ctx.fillStyle = base;
+      ctx.fillRect(0, 0, size, size);
+
+      var colors = [speckA, speckB, speckC];
+      var i, x, y, r;
+      for (i = 0; i < 1500; i++) {
+        x = Math.random() * size;
+        y = Math.random() * size;
+        r = 0.6 + Math.random() * 2.4;
+        ctx.globalAlpha = 0.22 + Math.random() * 0.35;
+        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      for (i = 0; i < 20; i++) {
+        x = Math.random() * size;
+        y = Math.random() * size;
+        r = 8 + Math.random() * 16;
+        var grd = ctx.createRadialGradient(x, y, 0, x, y, r);
+        grd.addColorStop(0, colors[Math.floor(Math.random() * colors.length)]);
+        grd.addColorStop(1, 'transparent');
+        ctx.globalAlpha = 0.16;
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      var tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
     }
 
-    // Ground: a big beige field + a darker soil patch under the orchard.
-    var ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(800, 800),
-      new THREE.MeshLambertMaterial({ color: '#c9b48a' })
+    // Field around the plot (green-ish earth).
+    var fieldTex = createSoilTexture('#9caf7c', '#7f9663', '#b7c497', '#6d8353');
+    fieldTex.repeat.set(40, 40);
+    var field = new THREE.Mesh(
+      new THREE.PlaneGeometry(400, 400),
+      new THREE.MeshStandardMaterial({ map: fieldTex, roughness: 1 })
     );
-    ground.rotation.x = -Math.PI / 2;
-    scene.add(ground);
+    field.rotation.x = -Math.PI / 2;
+    field.position.y = -0.01;
+    field.receiveShadow = true;
+    scene.add(field);
 
-    var soil = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshLambertMaterial({ color: '#8f7a52' })
-    );
-    soil.rotation.x = -Math.PI / 2;
-    soil.position.y = 0.02;
-    scene.add(soil);
+    // The plot (brown earth). A 1 x 1 square, scaled to the plot size.
+    var plotTex = createSoilTexture('#ab8f66', '#8f7550', '#c4a273', '#7a6244');
+    var plotGeo = new THREE.PlaneGeometry(1, 1);
+    plotGeo.rotateX(-Math.PI / 2);
+    var plot = new THREE.Mesh(plotGeo, new THREE.MeshStandardMaterial({ map: plotTex, roughness: 1 }));
+    plot.receiveShadow = true;
+    scene.add(plot);
 
-    // ---------------------------------------------------------------
-    // 2. Trees  (reused from the old Trees.jsx: 2 instanced meshes = 2 draw calls)
-    // ---------------------------------------------------------------
-    var TRUNK_COLOR = '#5a4632';
-    var TRUNK_H = 1.3;
-    var CANOPY_R = 1.9;
-    var CANOPY_Y = TRUNK_H + CANOPY_R * 0.55;
-
-    var trunkGeo = new THREE.CylinderGeometry(0.15, 0.26, TRUNK_H, 6);
-    trunkGeo.translate(0, TRUNK_H / 2, 0);
-    var canopyGeo = new THREE.SphereGeometry(CANOPY_R, 10, 7);
-    canopyGeo.scale(1, 0.82, 1);
-    canopyGeo.translate(0, CANOPY_Y, 0);
-
-    var trunkMat = new THREE.MeshLambertMaterial({ color: TRUNK_COLOR });
-    var canopyMat = new THREE.MeshLambertMaterial({ color: '#ffffff' });
-
-    var trunks = null;
-    var canopies = null;
-    var trees = [];
-    var colors = { good: '#4c9a2a', warning: '#e8912d', danger: '#c8442f' };
-
-    // Stable size + rotation per tree, so it never "jumps" (from the old app).
-    function jitter(id) {
-      var h = 2166136261;
-      for (var i = 0; i < id.length; i++) {
-        h ^= id.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-      }
-      var a = ((h >>> 0) % 1000) / 1000;
-      var b = ((h >>> 10) % 1000) / 1000;
-      return { scale: 0.86 + a * 0.3, spin: b * Math.PI * 2 };
-    }
-
-    // Called by Flutter with { colors: {good, warning, danger}, trees: [{name, x, z, health}] }
-    function setTrees(data) {
-      if (trunks) {
-        scene.remove(trunks, canopies);
-        trunks.dispose();
-        canopies.dispose();
-      }
-      trees = data.trees || [];
-      if (data.colors) colors = data.colors;
-      hideLabel();
-      if (!trees.length) { requestRender(); return; }
-
-      var n = trees.length;
-      trunks = new THREE.InstancedMesh(trunkGeo, trunkMat, n);
-      canopies = new THREE.InstancedMesh(canopyGeo, canopyMat, n);
-
-      var m = new THREE.Matrix4();
-      var q = new THREE.Quaternion();
-      var pos = new THREE.Vector3();
-      var scl = new THREE.Vector3();
-      var up = new THREE.Vector3(0, 1, 0);
-      var col = new THREE.Color();
-      var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-
-      for (var i = 0; i < n; i++) {
-        var t = trees[i];
-        var j = jitter(t.name);
-        pos.set(t.x, 0, t.z);
-        q.setFromAxisAngle(up, j.spin);
-        scl.setScalar(j.scale);
-        m.compose(pos, q, scl);
-        trunks.setMatrixAt(i, m);
-        canopies.setMatrixAt(i, m);
-        canopies.setColorAt(i, col.set(colors[t.health] || colors.good));
-        minX = Math.min(minX, t.x); maxX = Math.max(maxX, t.x);
-        minZ = Math.min(minZ, t.z); maxZ = Math.max(maxZ, t.z);
-      }
-      trunks.computeBoundingSphere();
-      canopies.computeBoundingSphere();
-      scene.add(trunks, canopies);
-
-      // Soil patch slightly bigger than the orchard.
-      var w = maxX - minX + 12;
-      var d = maxZ - minZ + 12;
-      soil.scale.set(w, d, 1);
-      soil.position.x = (minX + maxX) / 2;
-      soil.position.z = (minZ + maxZ) / 2;
-
-      // Frame the whole orchard (same idea as CameraRig in the old app).
-      var r = Math.max(w, d);
-      target.set(soil.position.x, 0, soil.position.z);
-      // Step back far enough that the whole width fits on screen
-      // (a phone held upright is narrow, so it needs more distance).
-      var halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
-      var halfFovX = Math.atan(Math.tan(halfFov) * camera.aspect);
-      radius = Math.max(r * 1.05, (w / 2) / Math.tan(halfFovX) + d / 2);
-      phi = 0.94;
-      theta = 0;
-      minRadius = 8;
-      maxRadius = r * 3;
-      updateCamera();
-    }
-    window.loozSetTrees = function (data) {
-      gotData = true;
-      setTrees(data);
-    };
-
-    // ---------------------------------------------------------------
-    // 3. Touch controls: 1 finger = rotate, 2 fingers = zoom, tap = tree name
-    // ---------------------------------------------------------------
-    var target = new THREE.Vector3();
-    var radius = 100, theta = 0, phi = 0.94;
-    var minRadius = 8, maxRadius = 300;
-
-    function updateCamera() {
-      // Never go under the ground or straight above.
-      phi = Math.max(0.15, Math.min(Math.PI / 2 - 0.05, phi));
-      radius = Math.max(minRadius, Math.min(maxRadius, radius));
-      camera.position.set(
-        target.x + radius * Math.sin(phi) * Math.sin(theta),
-        target.y + radius * Math.cos(phi),
-        target.z + radius * Math.sin(phi) * Math.cos(theta)
-      );
-      camera.lookAt(target);
+    function updatePlot() {
+      plot.scale.set(S.plotW, 1, S.plotL);
+      plotTex.repeat.set(S.plotW / 5, S.plotL / 5);
       requestRender();
     }
 
-    var pointers = {};      // active fingers, by pointer id
-    var pinchStart = 0;     // distance between 2 fingers when the pinch started
+    // ---------------------------------------------------------------
+    // 4. Almond trees: short trunk, 3 splayed branches (vase shape),
+    //    4 leaf clumps, 5 blossom dots, a darker basin on the ground.
+    //    Each part type is ONE InstancedMesh for the whole orchard.
+    // ---------------------------------------------------------------
+    var VARIETY = {
+      main:       { canopy: '#8fa06b', bloom: '#fbf6ea', label: '#6f9a4c' },
+      pollinizer: { canopy: '#c99089', bloom: '#f6d7d0', label: '#e08a86' }
+    };
+    var TRUNK_H = 0.55;
+
+    var trunkGeo = new THREE.CylinderGeometry(0.12, 0.17, TRUNK_H, 8);
+    trunkGeo.translate(0, TRUNK_H / 2, 0);
+    var branchGeo = new THREE.CylinderGeometry(0.045, 0.09, 1, 6);   // length 1, scaled per branch
+    branchGeo.translate(0, 0.5, 0);                                  // base at the origin
+    var lobeGeo = new THREE.IcosahedronGeometry(1, 0);               // radius 1, scaled per clump
+    var bloomGeo = new THREE.IcosahedronGeometry(0.07, 0);
+    var basinGeo = new THREE.RingGeometry(0.2, 0.65, 24);
+    basinGeo.rotateX(-Math.PI / 2);
+    basinGeo.translate(0, 0.015, 0);
+
+    var trunkMat = new THREE.MeshStandardMaterial({ color: '#a58e6f', roughness: 0.95 });
+    var branchMat = new THREE.MeshStandardMaterial({ color: '#ad9678', roughness: 0.95 });
+    var canopyMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.85 });  // tinted per tree
+    var bloomMat = new THREE.MeshBasicMaterial({ color: '#ffffff' });                       // tinted per tree
+    var basinMat = new THREE.MeshBasicMaterial({ color: '#7a6244', transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+
+    // The 3 branches: same angles as the prototype.
+    var UP = new THREE.Vector3(0, 1, 0);
+    var trunkTop = new THREE.Vector3(0, TRUNK_H, 0);
+    var BRANCHES = [
+      { angle: 0.3, tilt: 0.62, length: 0.85 },
+      { angle: 2.4, tilt: 0.58, length: 0.95 },
+      { angle: 4.4, tilt: 0.66, length: 0.8 }
+    ];
+    var branchLocal = [];   // matrix of each branch, relative to the tree foot
+    var lobeCenter = [];    // leaf clump at the tip of each branch
+    BRANCHES.forEach(function (b) {
+      var dir = new THREE.Vector3(
+        Math.sin(b.tilt) * Math.cos(b.angle),
+        Math.cos(b.tilt),
+        Math.sin(b.tilt) * Math.sin(b.angle)
+      ).normalize();
+      var q = new THREE.Quaternion().setFromUnitVectors(UP, dir);
+      branchLocal.push(new THREE.Matrix4().compose(trunkTop, q, new THREE.Vector3(1, b.length, 1)));
+      lobeCenter.push(dir.clone().multiplyScalar(b.length).add(trunkTop).add(new THREE.Vector3(0, 0.15, 0)));
+    });
+    var centerLobe = new THREE.Vector3(0, TRUNK_H + 0.55, 0);
+
+    // Random numbers that are always the same for a given tree id,
+    // so a tree never changes shape when another one is added or removed.
+    function seeded(seed) {
+      var s = (seed * 2654435761) >>> 0;
+      return function () {
+        s = (s + 0x6D2B79F5) >>> 0;
+        var t = s;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    var treesGroup = new THREE.Group();
+    var labelsGroup = new THREE.Group();
+    scene.add(treesGroup, labelsGroup);
+    var treeParts = [];     // the InstancedMeshes now in the scene
+
+    function instanced(geo, mat, perTree, shadow) {
+      var mesh = new THREE.InstancedMesh(geo, mat, S.trees.length * perTree);
+      mesh.userData.perTree = perTree;   // to find the tree from a clicked instance
+      mesh.castShadow = shadow;
+      treesGroup.add(mesh);
+      treeParts.push(mesh);
+      return mesh;
+    }
+
+    function rebuildTrees() {
+      treeParts.forEach(function (mesh) { treesGroup.remove(mesh); mesh.dispose(); });
+      treeParts = [];
+
+      if (S.trees.length) {
+        var trunks = instanced(trunkGeo, trunkMat, 1, true);
+        var branches = instanced(branchGeo, branchMat, 3, true);
+        var lobes = instanced(lobeGeo, canopyMat, 4, true);
+        var blooms = instanced(bloomGeo, bloomMat, 5, false);
+        var basins = instanced(basinGeo, basinMat, 1, false);
+
+        var foot = new THREE.Matrix4();
+        var m = new THREE.Matrix4();
+        var p = new THREE.Vector3();
+        var q = new THREE.Quaternion();
+        var s = new THREE.Vector3();
+        var c = new THREE.Color();
+
+        S.trees.forEach(function (t, i) {
+          var rand = seeded(t.id);
+          var v = VARIETY[t.variety];
+          foot.makeTranslation(t.x, 0, t.z);
+          trunks.setMatrixAt(i, foot);
+          basins.setMatrixAt(i, foot);
+
+          // 3 branches + a leaf clump at the end of each, then the center clump.
+          c.set(v.canopy);
+          for (var b = 0; b < 3; b++) {
+            branches.setMatrixAt(i * 3 + b, m.multiplyMatrices(foot, branchLocal[b]));
+            p.set(t.x + lobeCenter[b].x, lobeCenter[b].y, t.z + lobeCenter[b].z);
+            lobes.setMatrixAt(i * 4 + b, m.compose(p, q, s.setScalar(0.5 + rand() * 0.1)));
+            lobes.setColorAt(i * 4 + b, c);
+          }
+          p.set(t.x, centerLobe.y, t.z);
+          lobes.setMatrixAt(i * 4 + 3, m.compose(p, q, s.setScalar(0.42)));
+          lobes.setColorAt(i * 4 + 3, c);
+
+          // 5 small blossom dots.
+          c.set(v.bloom);
+          for (var k = 0; k < 5; k++) {
+            var a = rand() * Math.PI * 2;
+            var h = TRUNK_H + 0.3 + rand() * 0.95;
+            var r = 0.35 + rand() * 0.35;
+            blooms.setMatrixAt(i * 5 + k, m.makeTranslation(t.x + Math.cos(a) * r, h, t.z + Math.sin(a) * r));
+            blooms.setColorAt(i * 5 + k, c);
+          }
+        });
+        treeParts.forEach(function (mesh) { mesh.computeBoundingSphere(); });
+      }
+      rebuildLabels();
+      refreshUI();
+      requestRender();
+    }
+
+    // ---------------------------------------------------------------
+    // 5. Tree ID labels ("#12"), border colored by variety
+    // ---------------------------------------------------------------
+    var labelCache = {};   // "id|variety" -> SpriteMaterial (reused between rebuilds)
+
+    function labelMaterial(t) {
+      var key = t.id + '|' + t.variety;
+      if (!labelCache[key]) {
+        var c = document.createElement('canvas');
+        c.width = 128;
+        c.height = 64;
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
+        ctx.fillRect(0, 0, 128, 64);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = VARIETY[t.variety].label;
+        ctx.strokeRect(3, 3, 122, 58);
+        ctx.fillStyle = '#292524';
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('#' + t.id, 64, 34);
+        labelCache[key] = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c) });
+      }
+      return labelCache[key];
+    }
+
+    function rebuildLabels() {
+      labelsGroup.clear();
+      var used = {};
+      if (S.labels) {
+        S.trees.forEach(function (t, i) {
+          var sprite = new THREE.Sprite(labelMaterial(t));
+          sprite.scale.set(1.15, 0.58, 1);
+          sprite.position.set(t.x, 2.55, t.z);
+          sprite.userData.index = i;
+          labelsGroup.add(sprite);
+          used[t.id + '|' + t.variety] = true;
+        });
+      }
+      // Free the labels that are not shown anymore.
+      Object.keys(labelCache).forEach(function (key) {
+        if (!used[key]) {
+          labelCache[key].map.dispose();
+          labelCache[key].dispose();
+          delete labelCache[key];
+        }
+      });
+    }
+
+    // ---------------------------------------------------------------
+    // 6. AI layout: rows across the plot, one pollinizer row every N rows
+    // ---------------------------------------------------------------
+    function generateLayout() {
+      var halfW = S.plotW / 2;
+      var halfL = S.plotL / 2;
+      var cols = Math.max(1, Math.floor(S.plotW / S.treeGap) + 1);
+      var rows = Math.max(1, Math.floor(S.plotL / S.rowGap) + 1);
+      var trees = [];
+      var id = 1;
+      for (var r = 0; r < rows; r++) {
+        var z = -halfL + r * S.rowGap;
+        if (z > halfL + 0.001) continue;
+        var isPollinizerRow = S.pollEvery > 0 && (r + 1) % S.pollEvery === 0;
+        for (var c = 0; c < cols; c++) {
+          var x = -halfW + c * S.treeGap;
+          if (x > halfW + 0.001) continue;
+          trees.push({ id: id++, x: x, z: z, variety: isPollinizerRow ? 'pollinizer' : 'main' });
+        }
+      }
+      S.nextId = id;
+      S.trees = trees;
+      rebuildTrees();
+    }
+
+    // ---------------------------------------------------------------
+    // 7. Cameras: orbit (around the plot) and walk (eye height)
+    // ---------------------------------------------------------------
+    var MIN_RADIUS = 14;
+    var maxRadius = 130;
+
+    // Distance needed to see the whole plot (a phone held upright is narrow).
+    function fitRadius() {
+      var halfFovX = Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+      var span = (S.plotW + S.plotL) / Math.SQRT2 + 6;   // plot seen at 45 degrees
+      return (span / 2) / Math.tan(halfFovX);
+    }
+
+    function resetWalker() {
+      walker = { x: 0, z: -(S.plotL / 2) - 6, yaw: 0 };
+    }
+
+    function resetView() {
+      maxRadius = Math.max(130, fitRadius() * 1.3);
+      orbit.theta = Math.PI / 4;
+      orbit.phi = Math.PI / 3.4;
+      orbit.radius = Math.min(maxRadius, Math.max(62, fitRadius()));
+      resetWalker();
+      requestRender();
+    }
+
+    function placeCamera() {
+      if (S.cam === 'walk') {
+        var fx = Math.sin(walker.yaw);
+        var fz = Math.cos(walker.yaw);
+        camera.position.set(walker.x, 1.7, walker.z);
+        camera.lookAt(walker.x + fx, 1.7, walker.z + fz);
+      } else {
+        var o = orbit;
+        camera.position.set(
+          o.target.x + o.radius * Math.sin(o.phi) * Math.sin(o.theta),
+          o.target.y + o.radius * Math.cos(o.phi),
+          o.target.z + o.radius * Math.sin(o.phi) * Math.cos(o.theta)
+        );
+        camera.lookAt(o.target);
+      }
+    }
+
+    // Walk one step (returns true if the walker moved or turned).
+    function stepWalk(dt) {
+      var turnSpeed = 1.7;
+      var moveSpeed = 8;
+      var moved = false;
+      if (keys.left) { walker.yaw += turnSpeed * dt; moved = true; }
+      if (keys.right) { walker.yaw -= turnSpeed * dt; moved = true; }
+      var fx = Math.sin(walker.yaw);
+      var fz = Math.cos(walker.yaw);
+      if (keys.up) { walker.x += fx * moveSpeed * dt; walker.z += fz * moveSpeed * dt; moved = true; }
+      if (keys.down) { walker.x -= fx * moveSpeed * dt; walker.z -= fz * moveSpeed * dt; moved = true; }
+      var limit = 185;
+      walker.x = Math.max(-limit, Math.min(limit, walker.x));
+      walker.z = Math.max(-limit, Math.min(limit, walker.z));
+      return moved;
+    }
+
+    // ---------------------------------------------------------------
+    // 8. Render loop: only draws when something changed (saves battery)
+    // ---------------------------------------------------------------
+    var dirty = true;
+    function requestRender() { dirty = true; }
+
+    var clock = new THREE.Clock();
+    function frame() {
+      requestAnimationFrame(frame);
+      var dt = Math.min(clock.getDelta(), 0.05);
+      if (S.cam === 'walk' && stepWalk(dt)) dirty = true;
+      if (!dirty) return;
+      dirty = false;
+      placeCamera();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      maxRadius = Math.max(130, fitRadius() * 1.3);
+      refreshUI();
+      requestRender();
+    });
+
+    // ---------------------------------------------------------------
+    // 9. Touch / mouse on the 3D view
+    //    1 finger or mouse drag = rotate, 2 fingers = zoom, wheel = zoom,
+    //    tap (manual mode) = plant on the ground / remove a tree.
+    // ---------------------------------------------------------------
+    var pointers = {};
+    var moved = 0;
+    var pinchStart = 0;
     var radiusStart = 0;
-    var moved = 0;          // how much the finger moved (to tell a tap from a drag)
 
     function pointerCount() { return Object.keys(pointers).length; }
     function pinchDistance() {
       var p = Object.keys(pointers).map(function (k) { return pointers[k]; });
       return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
     }
+    function setRadius(r) {
+      orbit.radius = Math.min(maxRadius, Math.max(MIN_RADIUS, r));
+      requestRender();
+    }
 
-    var el = renderer.domElement;
-    el.addEventListener('pointerdown', function (e) {
-      el.setPointerCapture(e.pointerId);
+    canvas.addEventListener('pointerdown', function (e) {
+      if (S.cam !== 'orbit') return;
+      canvas.setPointerCapture(e.pointerId);
       pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
       if (pointerCount() === 1) moved = 0;
       if (pointerCount() === 2) {
         pinchStart = pinchDistance();
-        radiusStart = radius;
-        moved = 999; // a pinch is never a tap
+        radiusStart = orbit.radius;
+        moved = 999;   // a pinch is never a tap
       }
     });
 
-    el.addEventListener('pointermove', function (e) {
+    canvas.addEventListener('pointermove', function (e) {
       var p = pointers[e.pointerId];
       if (!p) return;
       var dx = e.clientX - p.x;
@@ -257,86 +733,208 @@
       p.y = e.clientY;
       if (pointerCount() === 1) {
         moved += Math.abs(dx) + Math.abs(dy);
-        theta -= dx * 0.008;
-        phi -= dy * 0.008;
-        updateCamera();
+        orbit.theta -= dx * 0.0065;
+        orbit.phi = Math.min(Math.PI / 2 - 0.05, Math.max(0.2, orbit.phi - dy * 0.0065));
+        requestRender();
       } else if (pointerCount() === 2 && pinchStart > 0) {
-        radius = radiusStart * pinchStart / Math.max(1, pinchDistance());
-        updateCamera();
+        setRadius(radiusStart * pinchStart / Math.max(1, pinchDistance()));
       }
     });
 
     function endPointer(e) {
       if (!pointers[e.pointerId]) return;
-      var wasTap = pointerCount() === 1 && moved < 8;
+      var wasTap = pointerCount() === 1 && moved < (isTouch ? 10 : 5);
       delete pointers[e.pointerId];
       if (pointerCount() < 2) pinchStart = 0;
-      if (wasTap) pick(e.clientX, e.clientY);
+      if (wasTap) handleTap(e.clientX, e.clientY);
     }
-    el.addEventListener('pointerup', endPointer);
-    el.addEventListener('pointercancel', endPointer);
+    canvas.addEventListener('pointerup', endPointer);
+    canvas.addEventListener('pointercancel', endPointer);
 
-    // Mouse wheel zoom (only for testing on a computer).
-    el.addEventListener('wheel', function (e) {
+    canvas.addEventListener('wheel', function (e) {
+      if (S.cam !== 'orbit') return;
       e.preventDefault();
-      radius *= 1 + e.deltaY * 0.001;
-      updateCamera();
+      setRadius(orbit.radius + e.deltaY * 0.05);
     }, { passive: false });
 
-    // Tap on a tree -> show its name and health color.
     var raycaster = new THREE.Raycaster();
     var ndc = new THREE.Vector2();
-    var label = document.getElementById('label');
 
-    function pick(x, y) {
-      if (!canopies) return;
-      ndc.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
+    function handleTap(x, y) {
+      if (S.cam !== 'orbit' || S.mode !== 'manual') return;
+      var rect = canvas.getBoundingClientRect();
+      ndc.set(((x - rect.left) / rect.width) * 2 - 1, -((y - rect.top) / rect.height) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
-      var hit = raycaster.intersectObject(canopies)[0];
-      if (!hit || hit.instanceId == null) { hideLabel(); return; }
-      var t = trees[hit.instanceId];
-      label.querySelector('.name').textContent = t.name;
-      label.querySelector('.dot').style.background = colors[t.health] || colors.good;
-      label.style.display = 'flex';
-    }
-    function hideLabel() { label.style.display = 'none'; }
 
-    // ---------------------------------------------------------------
-    // 4. Render only when something changes (saves battery)
-    // ---------------------------------------------------------------
-    var renderQueued = false;
-    function requestRender() {
-      if (renderQueued) return;
-      renderQueued = true;
-      requestAnimationFrame(function () {
-        renderQueued = false;
-        renderer.render(scene, camera);
-      });
+      // Tapped a tree (or its label)? -> remove it.
+      var hit = raycaster.intersectObjects(treeParts.concat(labelsGroup.children), false)[0];
+      if (hit) {
+        var index = hit.object.isSprite
+          ? hit.object.userData.index
+          : Math.floor(hit.instanceId / hit.object.userData.perTree);
+        S.trees.splice(index, 1);
+        rebuildTrees();
+        return;
+      }
+      // Tapped the plot? -> plant a tree of the chosen variety.
+      var ground = raycaster.intersectObject(plot)[0];
+      if (ground) {
+        S.trees.push({ id: S.nextId++, x: ground.point.x, z: ground.point.z, variety: S.variety });
+        rebuildTrees();
+      }
     }
 
-    window.addEventListener('resize', function () {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      requestRender();
+    // ---------------------------------------------------------------
+    // 10. Walk controls: keyboard (computer) + arrow pad (touch)
+    // ---------------------------------------------------------------
+    var KEY_DIR = {
+      arrowup: 'up', w: 'up', z: 'up',            // z / q: French AZERTY keyboards
+      arrowdown: 'down', s: 'down',
+      arrowleft: 'left', a: 'left', q: 'left',
+      arrowright: 'right', d: 'right'
+    };
+    function onKey(e, down) {
+      if (S.cam !== 'walk') return;
+      var dir = KEY_DIR[e.key.toLowerCase()];
+      if (!dir) return;
+      e.preventDefault();
+      keys[dir] = down;
+    }
+    window.addEventListener('keydown', function (e) { onKey(e, true); });
+    window.addEventListener('keyup', function (e) { onKey(e, false); });
+    window.addEventListener('blur', function () { keys = {}; });
+
+    document.querySelectorAll('#pad button').forEach(function (btn) {
+      var dir = btn.dataset.dir;
+      function press(e) {
+        e.preventDefault();
+        btn.setPointerCapture(e.pointerId);
+        keys[dir] = true;
+        btn.classList.add('held');
+      }
+      function release() {
+        keys[dir] = false;
+        btn.classList.remove('held');
+      }
+      btn.addEventListener('pointerdown', press);
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointercancel', release);
+      btn.addEventListener('lostpointercapture', release);
+      btn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
     });
 
     // ---------------------------------------------------------------
-    // 5. Demo trees, only if Flutter sent nothing (e.g. page opened in a PC browser)
+    // 11. Buttons and sliders
     // ---------------------------------------------------------------
-    var gotData = false;
-    setTimeout(function () {
-      if (gotData) return;
-      var demo = [];
-      for (var r = 0; r < 10; r++) {
-        for (var c = 0; c < 12; c++) {
-          demo.push({ name: 'Arbre ' + (r * 12 + c + 1), x: (c - 5.5) * 6, z: (r - 4.5) * 7, health: 'good' });
-        }
-      }
-      setTrees({ trees: demo });
-    }, 1500);
+    function setPanel(open) {
+      S.panelOpen = open;
+      refreshUI();
+    }
 
-    updateCamera();
+    function setCam(cam) {
+      S.cam = cam;
+      keys = {};
+      pointers = {};
+      if (cam === 'walk') {
+        resetWalker();
+        if (!isWide()) S.panelOpen = false;
+        // So the arrow keys move the walker, not the focused button.
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      }
+      refreshUI();
+      requestRender();
+    }
+
+    $('btnSettings').onclick = function () { setPanel(!S.panelOpen); };
+    $('btnClose').onclick = function () { setPanel(false); };
+    $('btnWalk').onclick = function () { setCam(S.cam === 'walk' ? 'orbit' : 'walk'); };
+    $('btnLabels').onclick = function () { S.labels = !S.labels; rebuildLabels(); refreshUI(); requestRender(); };
+    $('btnReset').onclick = resetView;
+    $('btnAI').onclick = function () { S.mode = 'ai'; generateLayout(); };
+    $('btnManual').onclick = function () { S.mode = 'manual'; refreshUI(); };
+    $('varMain').onclick = function () { S.variety = 'main'; refreshUI(); };
+    $('varPoll').onclick = function () { S.variety = 'pollinizer'; refreshUI(); };
+    $('btnClear').onclick = function () { S.trees = []; rebuildTrees(); };
+
+    function sliderText(key) {
+      return key === 'pollEvery' ? TXT.every + S.pollEvery : S[key] + ' m';
+    }
+    document.querySelectorAll('input[data-key]').forEach(function (input) {
+      var key = input.dataset.key;
+      input.value = S[key];
+      input.addEventListener('input', function () {
+        S[key] = Number(input.value);
+        document.querySelector('[data-val=' + key + ']').textContent = sliderText(key);
+        if (key === 'plotW' || key === 'plotL') updatePlot();
+        // In AI mode the layout follows the sliders right away.
+        if (S.mode === 'ai') generateLayout();
+      });
+    });
+    document.querySelectorAll('[data-val]').forEach(function (el) {
+      el.textContent = sliderText(el.dataset.val);
+    });
+
+    function toggle(id, on) { $(id).classList.toggle('on', on); }
+    function show(id, visible) { $(id).classList.toggle('hidden', !visible); }
+
+    var buttonsHidden = null;   // last message sent to Flutter
+
+    function refreshUI() {
+      var walking = S.cam === 'walk';
+      document.body.classList.toggle('panel-open', S.panelOpen && !walking);
+
+      toggle('btnSettings', S.panelOpen && !walking);
+      toggle('btnWalk', walking);
+      toggle('btnLabels', S.labels);
+      toggle('btnAI', S.mode === 'ai');
+      toggle('btnManual', S.mode === 'manual');
+      toggle('varMain', S.variety === 'main');
+      toggle('varPoll', S.variety === 'pollinizer');
+      show('btnSettings', !walking);
+      show('manualBox', S.mode === 'manual');
+      show('aiBox', S.mode === 'ai');
+      show('pad', walking);
+
+      // The walk button becomes "back to the 3D view" while walking.
+      var walkBtn = $('btnWalk');
+      setIcon(walkBtn.querySelector('svg'), walking ? 'cube' : 'walk');
+      walkBtn.querySelector('span').textContent = walking ? TXT.view : TXT.walk;
+
+      var main = 0;
+      S.trees.forEach(function (t) { if (t.variety === 'main') main++; });
+      $('nMain').textContent = main;
+      $('nPoll').textContent = S.trees.length - main;
+      $('modeText').textContent = walking ? TXT.modeWalk : (S.mode === 'ai' ? TXT.modeAI : TXT.modeManual);
+      $('hint').textContent = walking
+        ? (isTouch ? '' : TXT.hintWalk)
+        : (S.mode === 'manual' ? TXT.hintManual : TXT.hintOrbit);
+      canvas.style.cursor = walking ? 'default' : (S.mode === 'manual' ? 'crosshair' : 'grab');
+
+      // On a small screen the bottom panel would sit under Flutter's
+      // camera + assistant buttons: ask Flutter to hide them meanwhile.
+      var hide = S.panelOpen && !walking && !isWide();
+      if (hide !== buttonsHidden) {
+        buttonsHidden = hide;
+        tellFlutter(hide ? 'looz:buttons:hide' : 'looz:buttons:show');
+      }
+    }
+
+    // Android / iOS: JavaScript channel "LoozFlutter" added by the WebView.
+    // Flutter web: the page is in an iframe, so we post to the parent window.
+    function tellFlutter(message) {
+      try {
+        if (window.LoozFlutter) window.LoozFlutter.postMessage(message);
+        else if (window.parent !== window) window.parent.postMessage(message, '*');
+      } catch (err) { /* not inside the app: nothing to do */ }
+    }
+
+    // ---------------------------------------------------------------
+    // 12. Start
+    // ---------------------------------------------------------------
+    updatePlot();
+    generateLayout();
+    resetView();
+    frame();
   })();
   </script>
 </body>
