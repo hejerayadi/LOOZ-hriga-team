@@ -1,4 +1,4 @@
-// The main screen (5 tabs), the 2 languages, and the demo login.
+// The main screen (5 tabs), the 2 languages, and the login.
 // Run it with: flutter test
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,10 +53,12 @@ void main() {
     expect(find.text('صباح الخير'), findsOneWidget);
   });
 
-  testWidgets('Demo login: language, phone, code, welcome, then Home', (
+  testWidgets('Login: language, phone, code, name, pack, welcome, Home', (
     tester,
   ) async {
     usePhoneScreen(tester);
+    // A fake login system (every code is 123456): see sign_up_test.dart.
+    useFakeAuth();
     await tester.pumpWidget(const LoozApp());
 
     // 1. Choose French.
@@ -76,7 +78,7 @@ void main() {
     await tester.tap(find.text('Envoyer le code'));
     await tester.pumpAndSettle();
 
-    // 3. Any 6-digit code works.
+    // 3. The code (6 digits; the fake login accepts 123456).
     expect(find.text('Entrez le code'), findsOneWidget);
     for (final digit in '123456'.split('')) {
       await tester.tap(find.text(digit));
@@ -86,7 +88,20 @@ void main() {
     await tester.tap(find.text('Confirmer'));
     await tester.pumpAndSettle();
 
-    // 4. Welcome, then the app.
+    // 4. A new number: the name, then the free pack.
+    expect(find.text('Votre nom'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).at(0), 'Mohamed');
+    await tester.enterText(find.byType(TextField).at(1), 'Ben Salem');
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gratuit'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Continuer'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuer'));
+    await tester.pumpAndSettle();
+
+    // 5. Welcome, then the app.
     expect(find.text('Bienvenue Mohamed'), findsOneWidget);
     await tester.tap(find.text('Commencer'));
     await tester.pumpAndSettle();

@@ -7,16 +7,17 @@ import 'core/theme/app_theme.dart';
 import 'features/alerts/alerts_page.dart';
 import 'features/community/community_page.dart';
 import 'features/home/home_page.dart';
-import 'features/onboarding/language_screen.dart';
+import 'features/onboarding/sign_up_flow.dart';
 import 'features/orchard_3d/orchard_tab.dart';
 import 'features/profile/profile_page.dart';
 import 'shared/widgets/looz_background.dart';
 import 'shared/widgets/shell.dart';
 
 /// MaterialApp = the app "shell": title, theme, language and first screen.
-/// The first screen is the choice of the language, then the (demo) login.
+/// The first screen: Home when the user is logged in (the session is kept),
+/// otherwise the choice of the language, then the login.
 class LoozApp extends StatelessWidget {
-  const LoozApp({super.key, this.home = const LanguageScreen()});
+  const LoozApp({super.key, this.home = const StartScreen()});
 
   /// The first screen (tests can start somewhere else).
   final Widget home;
@@ -40,8 +41,8 @@ class LoozApp extends StatelessWidget {
   }
 }
 
-/// Shown instead of the app when the Supabase keys are missing.
-/// (Not used for now: the login is a demo without Supabase.)
+/// Shown instead of the app when the Supabase keys are missing
+/// (the app was started without the .env file).
 class MissingKeysApp extends StatelessWidget {
   const MissingKeysApp({super.key});
 

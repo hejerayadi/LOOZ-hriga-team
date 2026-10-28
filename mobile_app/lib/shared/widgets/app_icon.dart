@@ -24,6 +24,7 @@ enum AppIcon {
   clock,
   wifi,
   check,
+  logout, // not in the design: "log out" in Profile (same line style)
 }
 
 class LoozIcon extends StatelessWidget {

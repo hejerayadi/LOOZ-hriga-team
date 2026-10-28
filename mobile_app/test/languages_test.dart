@@ -19,6 +19,9 @@ import 'package:looz_mobile/features/community/tips_screen.dart';
 import 'package:looz_mobile/features/journal/journal_screen.dart';
 import 'package:looz_mobile/features/map/map_screen.dart';
 import 'package:looz_mobile/features/onboarding/language_screen.dart';
+import 'package:looz_mobile/features/onboarding/name_screen.dart';
+import 'package:looz_mobile/features/onboarding/pack_screen.dart';
+import 'package:looz_mobile/features/onboarding/payment_choice_screen.dart';
 import 'package:looz_mobile/features/onboarding/phone_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
@@ -39,7 +42,6 @@ const sameInBoth = [
   'FR',
   'العربية',
   'عربي',
-  'م',
 ];
 
 final latin = RegExp('[A-Za-zÀ-ÖØ-öø-ÿ]');
@@ -49,7 +51,29 @@ final arabic = RegExp('[؀-ۿ]');
 final screens = <(String, Widget, Plan, AppTab, bool)>[
   ('language', const LanguageScreen(), Plan.connected, AppTab.home, false),
   ('phone', const PhoneScreen(), Plan.connected, AppTab.home, false),
-  ('code', const CodeScreen(), Plan.connected, AppTab.home, false),
+  (
+    'code',
+    const CodeScreen(phone: '+21650000001'),
+    Plan.connected,
+    AppTab.home,
+    false,
+  ),
+  ('name', const NameScreen(), Plan.free, AppTab.home, false),
+  ('pack', const PackScreen(), Plan.free, AppTab.home, false),
+  (
+    'pay now or later',
+    const PaymentChoiceScreen(plan: Plan.essential),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
+  (
+    'payment (sign-up)',
+    const PaymentScreen(plan: Plan.essential, forSignUp: true),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
   ('welcome', const WelcomeScreen(), Plan.connected, AppTab.home, false),
   ('home', const MainShell(), Plan.connected, AppTab.home, false),
   ('community', const MainShell(), Plan.connected, AppTab.community, false),
@@ -81,6 +105,8 @@ Future<List<String>> textsOf(
   String lang,
 ) async {
   final (_, widget, plan, tab, done) = screen;
+  // A farmer whose name is written in this language.
+  logInTestUser(lang);
   appLocale.value = Locale(lang);
   currentPlan.value = plan;
   currentTab.value = tab;

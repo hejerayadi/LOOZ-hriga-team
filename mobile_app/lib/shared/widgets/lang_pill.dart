@@ -1,8 +1,10 @@
 // The "عربي | FR" switch at the top of the screens. It changes the language
-// of the whole app at once. Like in the design, عربي stays on the left.
+// of the whole app at once (and is saved in the profile when logged in).
+// Like in the design, عربي stays on the left.
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
+import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
 
 class LangPill extends StatelessWidget {
@@ -59,7 +61,7 @@ class _LangButton extends StatelessWidget {
       button: true,
       selected: selected,
       child: GestureDetector(
-        onTap: () => setLanguage(code),
+        onTap: () => changeLanguage(code),
         child: Container(
           height: 38,
           padding: const EdgeInsets.symmetric(horizontal: 14),

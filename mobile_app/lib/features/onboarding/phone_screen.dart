@@ -1,19 +1,23 @@
-// Login, step 1 and 2: the phone number, then the code "sent by SMS".
-//
-// DEMO: no SMS is sent and any 6-digit code works. The real login
-// (Supabase, lib/features/auth/) is kept in the project for later.
+// Login, step 1 and 2: the phone number, then the code sent by SMS
+// (Supabase Auth, see lib/data/auth_service.dart).
+// After the code: a new user gives his name and chooses a pack; a user who
+// already finished the sign-up goes straight to Home (see sign_up_flow.dart).
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
+import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
-import '../../data/fake_data.dart';
+import '../../core/validators.dart';
+import '../../data/auth_service.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/looz_background.dart';
 import '../../shared/widgets/looz_header.dart';
 import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/symbol_text.dart';
-import 'welcome_screen.dart';
+import '../../shared/widgets/text_link.dart';
+import 'auth_messages.dart';
+import 'sign_up_flow.dart';
 
 /// Step 1: the phone number (8 digits after +216).
 class PhoneScreen extends StatelessWidget {
@@ -22,15 +26,15 @@ class PhoneScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final length = phoneGroups.reduce((a, b) => a + b);
     return _KeypadScreen(
       title: l10n.phoneTitle,
       subtitle: l10n.phoneSubtitle,
       action: l10n.sendCode,
-      length: length,
+      busyAction: l10n.sending,
+      length: phoneDigits,
       // "+216 12 345 •••": the digits typed, then dots for the missing ones.
       display: (digits) {
-        final slots = digits.padRight(length, '•');
+        final slots = digits.padRight(phoneDigits, '•');
         final groups = <String>[];
         var start = 0;
         for (final size in phoneGroups) {
@@ -39,14 +43,24 @@ class PhoneScreen extends StatelessWidget {
         }
         return '$phonePrefix ${groups.join(' ')}';
       },
-      onDone: (_) => openScreen(context, const CodeScreen()),
+      onDone: (digits) async {
+        final phone = phoneFromDigits(digits);
+        await authService.sendCode(
+          phone,
+          language: appLocale.value.languageCode,
+        );
+        if (context.mounted) openScreen(context, CodeScreen(phone: phone));
+      },
     );
   }
 }
 
-/// Step 2: the code (any 6 digits, it's a demo).
+/// Step 2: the code of 6 digits sent to [phone].
 class CodeScreen extends StatelessWidget {
-  const CodeScreen({super.key});
+  const CodeScreen({super.key, required this.phone});
+
+  /// "+21698123456".
+  final String phone;
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +69,20 @@ class CodeScreen extends StatelessWidget {
       title: l10n.codeTitle,
       subtitle: l10n.codeSubtitle,
       action: l10n.confirm,
-      length: demoCodeLength,
+      busyAction: l10n.checking,
+      length: codeLength,
       // "1 2 • • • •"
       display: (digits) =>
-          digits.padRight(demoCodeLength, '•').split('').join(' '),
-      onDone: (_) => openScreen(context, const WelcomeScreen()),
+          digits.padRight(codeLength, '•').split('').join(' '),
+      onDone: (code) async {
+        await authService.verifyCode(phone, code);
+        final profile = await startSessionAfterLogin();
+        if (context.mounted) openNextStep(context, profile);
+      },
+      onResend: () => authService.sendCode(
+        phone,
+        language: appLocale.value.languageCode,
+      ),
     );
   }
 }
@@ -70,16 +93,19 @@ class _KeypadScreen extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.action,
+    required this.busyAction,
     required this.length,
     required this.display,
     required this.onDone,
+    this.onResend,
   });
 
   final String title;
   final String subtitle;
 
-  /// Text of the big button.
+  /// Text of the big button, and while waiting for the server.
   final String action;
+  final String busyAction;
 
   /// How many digits are needed.
   final int length;
@@ -87,8 +113,12 @@ class _KeypadScreen extends StatefulWidget {
   /// The text shown above the keypad, from the digits typed.
   final String Function(String digits) display;
 
-  /// Called with the digits when the button is tapped.
-  final ValueChanged<String> onDone;
+  /// Called with the digits when the button is tapped. Throws an
+  /// AuthError when it fails (the message is shown).
+  final Future<void> Function(String digits) onDone;
+
+  /// "أعد إرسال الرمز" (code screen only).
+  final Future<void> Function()? onResend;
 
   @override
   State<_KeypadScreen> createState() => _KeypadScreenState();
@@ -96,9 +126,15 @@ class _KeypadScreen extends StatefulWidget {
 
 class _KeypadScreenState extends State<_KeypadScreen> {
   String _digits = '';
+  bool _busy = false;
+  AuthFailure? _failure;
+  bool _resent = false;
 
   void _onKey(String key) {
+    if (_busy) return;
     setState(() {
+      _failure = null;
+      _resent = false;
       if (key == '⌫') {
         if (_digits.isNotEmpty) {
           _digits = _digits.substring(0, _digits.length - 1);
@@ -110,10 +146,29 @@ class _KeypadScreenState extends State<_KeypadScreen> {
     });
   }
 
+  /// Waits for the server; shows the message if it fails.
+  Future<void> _call(Future<void> Function() call, {bool resend = false}) async {
+    setState(() {
+      _busy = true;
+      _failure = null;
+      _resent = false;
+    });
+    try {
+      await call();
+      if (mounted && resend) setState(() => _resent = true);
+    } catch (error) {
+      if (mounted) setState(() => _failure = failureOf(error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final system = MediaQuery.paddingOf(context);
     final complete = _digits.length == widget.length;
+    final failure = _failure;
     return Scaffold(
       body: LoozBackground(
         child: ListView(
@@ -149,16 +204,34 @@ class _KeypadScreenState extends State<_KeypadScreen> {
                       style: AppTextStyles.keypad,
                     ),
                   ),
-                  const SizedBox(height: 28),
-                  _Keypad(onKey: _onKey),
                 ],
               ),
             ),
+            if (failure != null || _resent) ...[
+              const SizedBox(height: 16),
+              failure != null
+                  ? AuthNote.failure(failure)
+                  : AuthNote.info(l10n.codeResent),
+            ],
+            const SizedBox(height: 28),
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: _Keypad(onKey: _onKey),
+            ),
             const SizedBox(height: 24),
             ActionButton(
-              label: widget.action,
-              onPressed: complete ? () => widget.onDone(_digits) : null,
+              label: _busy ? widget.busyAction : widget.action,
+              onPressed: complete && !_busy
+                  ? () => _call(() => widget.onDone(_digits))
+                  : null,
             ),
+            if (widget.onResend case final resend?)
+              TextLink(
+                label: l10n.resendCode,
+                onTap: () {
+                  if (!_busy) _call(resend, resend: true);
+                },
+              ),
           ],
         ),
       ),

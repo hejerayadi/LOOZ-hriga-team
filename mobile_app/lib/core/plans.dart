@@ -32,11 +32,18 @@ enum Feature {
   final Plan minPlan;
 }
 
-/// The plan of the logged-in user. FAKE for now (no payment yet): it starts
-/// as "connected" so everything is visible, and the developer switch in the
-/// Profile tab changes it. Later: read it from Supabase (user_plan()).
+/// The plan of the logged-in user, read from Supabase (user_plan()) at the
+/// login (see core/session.dart). Free until a paid pack is paid.
+/// (The developer switch in the Profile tab changes it, in debug builds.)
 /// Screens listen to it, so they update as soon as it changes.
-final ValueNotifier<Plan> currentPlan = ValueNotifier(Plan.connected);
+final ValueNotifier<Plan> currentPlan = ValueNotifier(Plan.free);
+
+/// The price of each pack per month, in Tunisian dinars (د.ت / DT).
+/// "XX" = not decided yet. Change the prices HERE: every screen uses them.
+const planPrices = {Plan.essential: 'XX', Plan.connected: 'XX'};
+
+/// The price of a paid pack ("XX").
+String planPrice(Plan plan) => planPrices[plan] ?? '';
 
 /// Can the user (or the given plan) use this feature?
 bool canUse(Feature feature, [Plan? plan]) =>

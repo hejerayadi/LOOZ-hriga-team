@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
+import '../../core/plans.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/css_box.dart';
@@ -101,7 +102,7 @@ class PremiumScreen extends StatelessWidget {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: '${l10n.demoPrice} ${l10n.currency}',
+                      text: '${planPrice(Plan.connected)} ${l10n.currency}',
                       style: AppTextStyles.of(28, FontWeight.w700),
                     ),
                     TextSpan(text: ' / ${l10n.month}'),

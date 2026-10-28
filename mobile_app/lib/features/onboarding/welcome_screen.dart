@@ -1,10 +1,12 @@
-// Login, step 3: "مرحبًا يا محمد" with a smiling face, then the app.
+// End of the sign-up: "مرحبًا يا <first name>" with a smiling face, then
+// the app.
 import 'package:flutter/material.dart';
 
 import '../../app.dart';
 import '../../core/enums.dart';
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
+import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/looz_background.dart';
@@ -44,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
                   const MoodFace(level: StatusLevel.good),
                   const SizedBox(height: 18),
                   Text(
-                    l10n.welcomeUser(l10n.demoFirstName),
+                    l10n.welcomeUser(currentUser.value?.firstName ?? ''),
                     textAlign: TextAlign.center,
                     style: AppTextStyles.headline,
                   ),

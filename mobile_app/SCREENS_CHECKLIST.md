@@ -35,6 +35,22 @@ Every screen and state of the design (`App.tsx`), its Flutter file, and the chec
 | 29 | `states`: empty ("اسأل سؤالك الأول") | `lib/features/states/states_screen.dart` | [x] | [x] | [x] | [x] (in the states sheet) |
 | 30 | Shell: assistant bar + tab bar (5 tabs) | `lib/shared/widgets/shell.dart`, `looz_tab_bar.dart` | [x] | [x] | [x] | [x] on every screen with tabs |
 
+## Sign up / sign in (not in the design: app's own screens, in the design's style)
+
+| # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
+|---|---|---|---|---|---|---|
+| 31 | Start: logged in → Home; offline → "لا يوجد إنترنت" + "حاول مرة أخرى" | `lib/features/onboarding/sign_up_flow.dart` (`StartScreen`) | [x] | [x] | [x] | [x] start of the app |
+| 32 | `phone` / `code`: waiting ("جاري الإرسال…"), error messages, "أعد إرسال الرمز" | `lib/features/onboarding/phone_screen.dart` | [x] | [x] | [x] | [x] "إرسال الرمز", "تأكيد" |
+| 33 | Name: first name + last name, errors under the boxes | `lib/features/onboarding/name_screen.dart` | [x] | [x] | [x] | [x] "تأكيد" (new number) |
+| 34 | Pack: Free / Essential / Connected | `lib/features/onboarding/pack_screen.dart` | [x] | [x] | [x] | [x] "متابعة" (name), login with no pack yet |
+| 35 | Pay now or later (paid pack) | `lib/features/onboarding/payment_choice_screen.dart` | [x] | [x] | [x] | [x] "متابعة" with a paid pack |
+| 36 | `payment` during the sign-up (no tab bar) | `lib/features/premium/payment_screen.dart` | [x] | [x] | [x] | [x] "★ ادفع الآن" |
+| 37 | Profile: real name, phone number, "تسجيل الخروج" | `lib/features/profile/profile_page.dart` | [x] | [x] | [x] | [x] tab "حسابي" |
+
+Checked with `test/sign_up_test.dart` (both flows, errors, session, log out, with a fake login),
+`test/languages_test.dart` (lines 32 to 36) and screenshots in both languages.
+`test_live/auth_live_test.dart` runs the same flow against the real Supabase.
+
 ## How each box was checked
 
 - **Built in the new design**: rebuilt from the design's CSS (sizes, colors, fonts, positions).

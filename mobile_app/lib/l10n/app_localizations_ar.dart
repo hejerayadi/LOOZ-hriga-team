@@ -389,21 +389,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get premiumName => '★ Premium';
 
   @override
-  String get demoFirstName => 'محمد';
-
-  @override
-  String get demoFullName => 'محمد بن سالم';
-
-  @override
-  String get demoCity => 'صفاقس، تونس';
-
-  @override
-  String get demoInitial => 'م';
-
-  @override
-  String get demoPrice => 'XX';
-
-  @override
   String get appName => 'LOOZ';
 
   @override
@@ -433,41 +418,127 @@ class AppLocalizationsAr extends AppLocalizations {
   String get a11yPlay => 'تشغيل';
 
   @override
-  String get authLogin => 'تسجيل الدخول';
+  String get sending => 'جاري الإرسال…';
 
   @override
-  String get authSignup => 'إنشاء حساب';
+  String get checking => 'جاري التحقق…';
 
   @override
-  String get authNoAccount => 'ليس لديك حساب؟ أنشئ حسابًا';
+  String get resendCode => 'أعد إرسال الرمز';
 
   @override
-  String get authName => 'الاسم';
+  String get codeResent => 'أرسلنا رمزًا جديدًا';
 
   @override
-  String get authEmail => 'البريد الإلكتروني';
+  String get nameTitle => 'ما اسمك؟';
 
   @override
-  String get authPassword => 'كلمة المرور';
+  String get nameSubtitle => 'ليتعرّف عليك المجتمع';
 
   @override
-  String get authIAm => 'أنا:';
+  String get firstName => 'الاسم';
 
   @override
-  String get authFarmer => 'فلاح';
+  String get lastName => 'اللقب';
 
   @override
-  String get authExpert => 'خبير';
+  String get continueLabel => 'متابعة';
 
   @override
-  String get authFillAllFields => 'املأ كل الخانات.';
+  String get saving => 'جاري الحفظ…';
 
   @override
-  String get authPasswordTooShort => 'كلمة المرور: 6 أحرف على الأقل.';
+  String get nameRequired => 'هذه الخانة مطلوبة';
 
   @override
-  String get authCheckEmail =>
-      'تم إنشاء الحساب! افتح بريدك الإلكتروني لتأكيده، ثم سجّل الدخول.';
+  String nameTooLong(String max) {
+    return '$max حرفًا على الأكثر';
+  }
+
+  @override
+  String get nameBadCharacters => 'استعمل الحروف فقط';
+
+  @override
+  String get packTitle => 'اختر باقتك';
+
+  @override
+  String get packSubtitle => 'ابدأ مجانًا أو اختر المزيد';
+
+  @override
+  String get packNoPayment => 'بدون دفع';
+
+  @override
+  String packAssistantLimit(String count) {
+    return 'المساعد: $count أسئلة في اليوم';
+  }
+
+  @override
+  String get packRegionalAlerts => 'تنبيهات منطقتك';
+
+  @override
+  String get packAllOfFree => 'كل ما في الباقة المجانية';
+
+  @override
+  String get packAllOfEssential => 'كل ما في الباقة الأساسية';
+
+  @override
+  String get packUnlimitedAssistant => 'المساعد بلا حدود';
+
+  @override
+  String get pack3dOrchard => 'بستانك ثلاثي الأبعاد';
+
+  @override
+  String get packPhotoDiagnosis => 'تشخيص الأوراق بالصورة';
+
+  @override
+  String get packLiveSensors => 'حسّاسات البستان مباشرة';
+
+  @override
+  String get packPredictions => 'توقّع السقي والحصاد';
+
+  @override
+  String get payChoiceTitle => 'متى تدفع؟';
+
+  @override
+  String get payChoiceSubtitle => 'اختر ما يناسبك';
+
+  @override
+  String get payNow => 'ادفع الآن';
+
+  @override
+  String get payLater => 'ادفع لاحقًا';
+
+  @override
+  String get payPendingNote => 'حتى الدفع، تستعمل الباقة المجانية';
+
+  @override
+  String get logOut => 'تسجيل الخروج';
+
+  @override
+  String get errorNoInternet =>
+      'لا يوجد إنترنت. تحقّق من الاتصال وحاول مرة أخرى.';
+
+  @override
+  String get errorWrongCode => 'الرمز غير صحيح أو انتهت صلاحيته.';
+
+  @override
+  String get errorTooManyTries =>
+      'محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.';
+
+  @override
+  String get errorCannotReceiveCode => 'هذا الرقم لا يمكنه استقبال الرموز بعد.';
+
+  @override
+  String get errorInvalidPhone => 'رقم الهاتف غير صحيح.';
+
+  @override
+  String get errorPhoneTaken => 'هذا الرقم مستعمل في حساب آخر.';
+
+  @override
+  String get errorInvalidName => 'الاسم غير مقبول. استعمل الحروف فقط.';
+
+  @override
+  String get errorSessionExpired => 'انتهت الجلسة. سجّل الدخول من جديد.';
 
   @override
   String get somethingWrong => 'حدث خطأ. حاول مرة أخرى.';

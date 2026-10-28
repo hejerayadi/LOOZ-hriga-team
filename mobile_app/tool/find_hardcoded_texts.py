@@ -25,7 +25,14 @@ TECHNICAL = [
     ('font / channel name', lambda line, s: s in ('Cairo', 'LoozFlutter')),
     ('web (iframe) code', lambda line, s: s in ('iframe', 'message', 'none', 'window')),
     ('Supabase setting', lambda line, s: s.startswith('SUPABASE_') or s == 'YOUR-PROJECT' or ('supabase' in line.lower() and s in ('profiles', 'full_name', 'role', 'id'))),
+    ('regular expression (check of a name / phone)', lambda line, s: 'RegExp(' in line),
+    ('price of a pack (XX = not decided, same in both languages)', lambda line, s: 'planPrices' in line and s == 'XX'),
 ]
+
+# Files that only talk to Supabase (no screen): their strings are table and
+# column names, error codes of the server and debug texts, never shown.
+SERVER_FILES = {'data/auth_service.dart', 'data/user_profile.dart'}
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart)'
 
 
 def without_comment(line):
@@ -60,6 +67,9 @@ def main():
                 # Values put in the text ($name, ${...}) and ‏ are not letters.
                 shown = re.sub(r'\$\{[^}]*\}?|\$\w+|\\u[0-9A-Fa-f]{4}', '', text)
                 if not LETTER.search(shown):
+                    continue
+                if path.relative_to(root).as_posix() in SERVER_FILES:
+                    counts[SERVER] = counts.get(SERVER, 0) + 1
                     continue
                 for name, test in TECHNICAL:
                     if test(code, text):

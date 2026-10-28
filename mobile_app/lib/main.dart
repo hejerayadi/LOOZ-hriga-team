@@ -13,8 +13,12 @@ Future<void> main() async {
   // Dark status bar icons (the pages are light).
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
-  // The login is a demo for now, so the app also runs without the keys.
-  // With the keys, Supabase is ready for the real login and data later.
-  if (SupabaseConfig.hasKeys) await SupabaseConfig.init();
+  // The login needs Supabase: without the keys, a help message.
+  if (!SupabaseConfig.hasKeys) {
+    runApp(const MissingKeysApp());
+    return;
+  }
+  // Also reads the session saved on the phone (the user stays logged in).
+  await SupabaseConfig.init();
   runApp(const LoozApp());
 }

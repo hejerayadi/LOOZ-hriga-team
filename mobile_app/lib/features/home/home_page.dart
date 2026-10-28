@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
+import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/fake_data.dart';
 import '../../shared/widgets/alert_card.dart';
@@ -32,9 +33,13 @@ class HomePage extends StatelessWidget {
     return ShellContent(
       children: [
         const LoozHeader(),
-        ScreenTitle(
-          title: l10n.homeTitle,
-          subtitle: l10n.homeSubtitle(l10n.demoFirstName),
+        // "<first name>، أشجارك بخير اليوم", with the name of the farmer.
+        ValueListenableBuilder(
+          valueListenable: currentUser,
+          builder: (context, user, _) => ScreenTitle(
+            title: l10n.homeTitle,
+            subtitle: l10n.homeSubtitle(user?.firstName ?? ''),
+          ),
         ),
         const _WeatherCard(),
         const SizedBox(height: 16),

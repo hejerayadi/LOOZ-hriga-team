@@ -193,26 +193,6 @@
   "@premiumName": {
     "description": "Plan card title (same in both languages)."
   },
-  "demoFirstName": "محمد",
-  "@demoFirstName": {
-    "description": "DEMO user (fake data)."
-  },
-  "demoFullName": "محمد بن سالم",
-  "@demoFullName": {
-    "description": "DEMO user (fake data)."
-  },
-  "demoCity": "صفاقس، تونس",
-  "@demoCity": {
-    "description": "DEMO user (fake data)."
-  },
-  "demoInitial": "م",
-  "@demoInitial": {
-    "description": "DEMO avatar letter (same in both, like the design)."
-  },
-  "demoPrice": "XX",
-  "@demoPrice": {
-    "description": "DEMO price (the design has no price yet)."
-  },
   "appName": "LOOZ",
   "@appName": {
     "description": "APP-ONLY. Brand name."
@@ -254,53 +234,171 @@
   "@a11yPlay": {
     "description": "APP-ONLY. Screen reader label."
   },
-  "authLogin": "تسجيل الدخول",
-  "@authLogin": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "sending": "جاري الإرسال…",
+  "@sending": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authSignup": "إنشاء حساب",
-  "@authSignup": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "checking": "جاري التحقق…",
+  "@checking": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authNoAccount": "ليس لديك حساب؟ أنشئ حسابًا",
-  "@authNoAccount": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "resendCode": "أعد إرسال الرمز",
+  "@resendCode": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authName": "الاسم",
-  "@authName": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "codeResent": "أرسلنا رمزًا جديدًا",
+  "@codeResent": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authEmail": "البريد الإلكتروني",
-  "@authEmail": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "nameTitle": "ما اسمك؟",
+  "@nameTitle": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authPassword": "كلمة المرور",
-  "@authPassword": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "nameSubtitle": "ليتعرّف عليك المجتمع",
+  "@nameSubtitle": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authIAm": "أنا:",
-  "@authIAm": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "firstName": "الاسم",
+  "@firstName": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authFarmer": "فلاح",
-  "@authFarmer": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "lastName": "اللقب",
+  "@lastName": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authExpert": "خبير",
-  "@authExpert": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "continueLabel": "متابعة",
+  "@continueLabel": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authFillAllFields": "املأ كل الخانات.",
-  "@authFillAllFields": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "saving": "جاري الحفظ…",
+  "@saving": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authPasswordTooShort": "كلمة المرور: 6 أحرف على الأقل.",
-  "@authPasswordTooShort": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "nameRequired": "هذه الخانة مطلوبة",
+  "@nameRequired": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
-  "authCheckEmail": "تم إنشاء الحساب! افتح بريدك الإلكتروني لتأكيده، ثم سجّل الدخول.",
-  "@authCheckEmail": {
-    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  "nameTooLong": "{max} حرفًا على الأكثر",
+  "@nameTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "nameBadCharacters": "استعمل الحروف فقط",
+  "@nameBadCharacters": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packTitle": "اختر باقتك",
+  "@packTitle": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packSubtitle": "ابدأ مجانًا أو اختر المزيد",
+  "@packSubtitle": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packNoPayment": "بدون دفع",
+  "@packNoPayment": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packAssistantLimit": "المساعد: {count} أسئلة في اليوم",
+  "@packAssistantLimit": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packRegionalAlerts": "تنبيهات منطقتك",
+  "@packRegionalAlerts": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packAllOfFree": "كل ما في الباقة المجانية",
+  "@packAllOfFree": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packAllOfEssential": "كل ما في الباقة الأساسية",
+  "@packAllOfEssential": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packUnlimitedAssistant": "المساعد بلا حدود",
+  "@packUnlimitedAssistant": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "pack3dOrchard": "بستانك ثلاثي الأبعاد",
+  "@pack3dOrchard": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packPhotoDiagnosis": "تشخيص الأوراق بالصورة",
+  "@packPhotoDiagnosis": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packLiveSensors": "حسّاسات البستان مباشرة",
+  "@packLiveSensors": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "packPredictions": "توقّع السقي والحصاد",
+  "@packPredictions": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "payChoiceTitle": "متى تدفع؟",
+  "@payChoiceTitle": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "payChoiceSubtitle": "اختر ما يناسبك",
+  "@payChoiceSubtitle": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "payNow": "ادفع الآن",
+  "@payNow": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "payLater": "ادفع لاحقًا",
+  "@payLater": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "payPendingNote": "حتى الدفع، تستعمل الباقة المجانية",
+  "@payPendingNote": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "logOut": "تسجيل الخروج",
+  "@logOut": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorNoInternet": "لا يوجد إنترنت. تحقّق من الاتصال وحاول مرة أخرى.",
+  "@errorNoInternet": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorWrongCode": "الرمز غير صحيح أو انتهت صلاحيته.",
+  "@errorWrongCode": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorTooManyTries": "محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.",
+  "@errorTooManyTries": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorCannotReceiveCode": "هذا الرقم لا يمكنه استقبال الرموز بعد.",
+  "@errorCannotReceiveCode": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorInvalidPhone": "رقم الهاتف غير صحيح.",
+  "@errorInvalidPhone": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorPhoneTaken": "هذا الرقم مستعمل في حساب آخر.",
+  "@errorPhoneTaken": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorInvalidName": "الاسم غير مقبول. استعمل الحروف فقط.",
+  "@errorInvalidName": {
+    "description": "APP-ONLY. Sign up / sign in."
+  },
+  "errorSessionExpired": "انتهت الجلسة. سجّل الدخول من جديد.",
+  "@errorSessionExpired": {
+    "description": "APP-ONLY. Sign up / sign in."
   },
   "somethingWrong": "حدث خطأ. حاول مرة أخرى.",
   "@somethingWrong": {

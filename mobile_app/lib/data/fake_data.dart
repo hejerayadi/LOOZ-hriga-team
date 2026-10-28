@@ -1,20 +1,9 @@
 // All the FAKE data of the demo, in one place (the values shown in the
 // design). Replace them with real data from the database later.
-// (The fake texts, like the farmer's name, are in lib/l10n/*.arb: "demo...".)
+// (The login and the farmer's name are real: see lib/data/auth_service.dart.)
 import 'package:flutter/foundation.dart';
 
 import '../core/enums.dart';
-
-// ----- Demo login (no SMS is sent) -----
-
-/// Tunisia's country code, shown before the number.
-const phonePrefix = '+216';
-
-/// A Tunisian number has 8 digits: "•• ••• •••".
-const phoneGroups = [2, 3, 3];
-
-/// Any code with this many digits is accepted.
-const demoCodeLength = 6;
 
 // ----- Home -----
 

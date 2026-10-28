@@ -6,8 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
+import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/data/fake_data.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_tab.dart';
+
+import 'fake_auth_service.dart';
 
 /// Tests use a font where every letter is a square: load Cairo instead,
 /// so the screens are laid out like in the app (call it in setUpAll).
@@ -35,14 +38,39 @@ void noAnimations(WidgetTester tester) {
   addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 }
 
-/// The app keeps the language, plan, tab and demo state in global values:
-/// put them back after each test.
+/// The app keeps the language, plan, tab, user and demo state in global
+/// values: put them back after each test.
 void resetAppState() {
   appLocale.value = const Locale('ar');
   currentPlan.value = Plan.connected;
   currentTab.value = AppTab.home;
   orchardPanelOpen.value = false;
   fakeTreeWatered.value = false;
+  currentUser.value = null;
+}
+
+/// Uses a fake login system (no internet): returns it, to add accounts or
+/// to check what was saved.
+FakeAuthService useFakeAuth() {
+  final fake = FakeAuthService();
+  authService = fake;
+  return fake;
+}
+
+/// A logged-in farmer whose name is written in [lang] (like a real user
+/// would), for the screens that show the name (Home, Profile, welcome).
+void logInTestUser([String lang = 'ar']) {
+  final fake = useFakeAuth();
+  final phone = '+21650000002';
+  currentUser.value = lang == 'ar'
+      ? fake.addUser(
+          phone,
+          firstName: 'محمد',
+          lastName: 'بن سالم',
+          language: 'ar',
+        )
+      : fake.addUser(phone, language: 'fr');
+  fake.loggedIn = phone;
 }
 
 /// Closes the screens (stops their timers) at the end of a test.

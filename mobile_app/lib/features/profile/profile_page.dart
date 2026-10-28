@@ -1,23 +1,31 @@
-// Tab 5 — Profile ("حسابي"): the farmer, the plan, become an expert, and
-// the states of the app.
+// Tab 5 — Profile ("حسابي"): the farmer (name and phone number), the plan,
+// become an expert, the states of the app, and log out.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/plans.dart';
+import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/validators.dart';
 import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/blob.dart';
 import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/looz_header.dart';
 import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/symbol_text.dart';
+import '../onboarding/language_screen.dart';
 import '../premium/premium_screen.dart';
 import '../states/states_screen.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
+
+  Future<void> _logOut(BuildContext context) async {
+    await logOut();
+    if (context.mounted) replaceAllWith(context, const LanguageScreen());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,35 +35,45 @@ class ProfilePage extends StatelessWidget {
       children: [
         const LoozHeader(),
         const SizedBox(height: 42),
-        Row(
-          children: [
-            Container(
-              width: avatar.width,
-              height: avatar.height,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.leaf,
-                borderRadius: blobRadius(avatar, BlobShapes.avatar),
+        // The farmer, from the database: the first letter of the first
+        // name, the full name, and the phone number.
+        ValueListenableBuilder(
+          valueListenable: currentUser,
+          builder: (context, user, _) => Row(
+            children: [
+              Container(
+                width: avatar.width,
+                height: avatar.height,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.leaf,
+                  borderRadius: blobRadius(avatar, BlobShapes.avatar),
+                ),
+                child: Text(
+                  user?.initial ?? '',
+                  style: AppTextStyles.of(34, FontWeight.w800),
+                ),
               ),
-              child: Text(
-                l10n.demoInitial,
-                style: AppTextStyles.of(34, FontWeight.w800),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user?.fullName ?? '',
+                      style: AppTextStyles.headline.copyWith(fontSize: 26),
+                    ),
+                    // Numbers are always written left to right.
+                    Text(
+                      formatPhone(user?.phone ?? ''),
+                      textDirection: TextDirection.ltr,
+                      style: AppTextStyles.of(16),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.demoFullName,
-                    style: AppTextStyles.headline.copyWith(fontSize: 26),
-                  ),
-                  Text(l10n.demoCity, style: AppTextStyles.of(16)),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 25),
         _ProfileRow(
@@ -77,6 +95,13 @@ class ProfilePage extends StatelessWidget {
           icon: AppIcon.wifi,
           label: l10n.appStates,
           onTap: () => openScreen(context, const StatesScreen()),
+        ),
+        // Forgets the session on this phone: back to the first screen.
+        _ProfileRow(
+          icon: AppIcon.logout,
+          label: l10n.logOut,
+          end: const SizedBox.shrink(),
+          onTap: () => _logOut(context),
         ),
         // Only for developers (debug builds): change the fake plan.
         if (kDebugMode) const _DevPlanSwitch(),

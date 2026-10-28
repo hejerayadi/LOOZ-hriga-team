@@ -90,9 +90,13 @@ class ShellBars extends StatelessWidget {
 
 /// A screen opened on top of the tabs (e.g. an alert): the page and the bars.
 class ShellPage extends StatelessWidget {
-  const ShellPage({super.key, required this.children});
+  const ShellPage({super.key, required this.children, this.showBars = true});
 
   final List<Widget> children;
+
+  /// false = without the bars (e.g. the payment during the sign-up, before
+  /// the app is open).
+  final bool showBars;
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +105,8 @@ class ShellPage extends StatelessWidget {
         child: Stack(
           children: [
             ShellContent(children: children),
-            const Positioned.fill(child: ShellBars(selected: null)),
+            if (showBars)
+              const Positioned.fill(child: ShellBars(selected: null)),
           ],
         ),
       ),

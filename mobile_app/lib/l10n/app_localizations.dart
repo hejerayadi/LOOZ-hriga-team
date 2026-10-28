@@ -824,36 +824,6 @@ abstract class AppLocalizations {
   /// **'★ Premium'**
   String get premiumName;
 
-  /// DEMO user (fake data).
-  ///
-  /// In ar, this message translates to:
-  /// **'محمد'**
-  String get demoFirstName;
-
-  /// DEMO user (fake data).
-  ///
-  /// In ar, this message translates to:
-  /// **'محمد بن سالم'**
-  String get demoFullName;
-
-  /// DEMO user (fake data).
-  ///
-  /// In ar, this message translates to:
-  /// **'صفاقس، تونس'**
-  String get demoCity;
-
-  /// DEMO avatar letter (same in both, like the design).
-  ///
-  /// In ar, this message translates to:
-  /// **'م'**
-  String get demoInitial;
-
-  /// DEMO price (the design has no price yet).
-  ///
-  /// In ar, this message translates to:
-  /// **'XX'**
-  String get demoPrice;
-
   /// APP-ONLY. Brand name.
   ///
   /// In ar, this message translates to:
@@ -908,77 +878,239 @@ abstract class AppLocalizations {
   /// **'تشغيل'**
   String get a11yPlay;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'تسجيل الدخول'**
-  String get authLogin;
+  /// **'جاري الإرسال…'**
+  String get sending;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'إنشاء حساب'**
-  String get authSignup;
+  /// **'جاري التحقق…'**
+  String get checking;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'ليس لديك حساب؟ أنشئ حسابًا'**
-  String get authNoAccount;
+  /// **'أعد إرسال الرمز'**
+  String get resendCode;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسلنا رمزًا جديدًا'**
+  String get codeResent;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'ما اسمك؟'**
+  String get nameTitle;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'ليتعرّف عليك المجتمع'**
+  String get nameSubtitle;
+
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
   /// **'الاسم'**
-  String get authName;
+  String get firstName;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'البريد الإلكتروني'**
-  String get authEmail;
+  /// **'اللقب'**
+  String get lastName;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'كلمة المرور'**
-  String get authPassword;
+  /// **'متابعة'**
+  String get continueLabel;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'أنا:'**
-  String get authIAm;
+  /// **'جاري الحفظ…'**
+  String get saving;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'فلاح'**
-  String get authFarmer;
+  /// **'هذه الخانة مطلوبة'**
+  String get nameRequired;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'خبير'**
-  String get authExpert;
+  /// **'{max} حرفًا على الأكثر'**
+  String nameTooLong(String max);
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'املأ كل الخانات.'**
-  String get authFillAllFields;
+  /// **'استعمل الحروف فقط'**
+  String get nameBadCharacters;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'كلمة المرور: 6 أحرف على الأقل.'**
-  String get authPasswordTooShort;
+  /// **'اختر باقتك'**
+  String get packTitle;
 
-  /// APP-ONLY. Old e-mail login (kept, unused).
+  /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'تم إنشاء الحساب! افتح بريدك الإلكتروني لتأكيده، ثم سجّل الدخول.'**
-  String get authCheckEmail;
+  /// **'ابدأ مجانًا أو اختر المزيد'**
+  String get packSubtitle;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون دفع'**
+  String get packNoPayment;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساعد: {count} أسئلة في اليوم'**
+  String packAssistantLimit(String count);
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنبيهات منطقتك'**
+  String get packRegionalAlerts;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل ما في الباقة المجانية'**
+  String get packAllOfFree;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل ما في الباقة الأساسية'**
+  String get packAllOfEssential;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساعد بلا حدود'**
+  String get packUnlimitedAssistant;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'بستانك ثلاثي الأبعاد'**
+  String get pack3dOrchard;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'تشخيص الأوراق بالصورة'**
+  String get packPhotoDiagnosis;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسّاسات البستان مباشرة'**
+  String get packLiveSensors;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'توقّع السقي والحصاد'**
+  String get packPredictions;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'متى تدفع؟'**
+  String get payChoiceTitle;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر ما يناسبك'**
+  String get payChoiceSubtitle;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع الآن'**
+  String get payNow;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع لاحقًا'**
+  String get payLater;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى الدفع، تستعمل الباقة المجانية'**
+  String get payPendingNote;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الخروج'**
+  String get logOut;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد إنترنت. تحقّق من الاتصال وحاول مرة أخرى.'**
+  String get errorNoInternet;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرمز غير صحيح أو انتهت صلاحيته.'**
+  String get errorWrongCode;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.'**
+  String get errorTooManyTries;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الرقم لا يمكنه استقبال الرموز بعد.'**
+  String get errorCannotReceiveCode;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف غير صحيح.'**
+  String get errorInvalidPhone;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الرقم مستعمل في حساب آخر.'**
+  String get errorPhoneTaken;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم غير مقبول. استعمل الحروف فقط.'**
+  String get errorInvalidName;
+
+  /// APP-ONLY. Sign up / sign in.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت الجلسة. سجّل الدخول من جديد.'**
+  String get errorSessionExpired;
 
   /// APP-ONLY. Error message.
   ///

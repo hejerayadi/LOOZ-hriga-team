@@ -2,6 +2,8 @@
 //
 // DEMO: nothing is paid. The card fields show the design's example, and
 // "تأكيد" turns the (fake) plan into Premium.
+// At the sign-up ("ادفع الآن"), "تأكيد" goes back to the sign-up, which
+// saves the pack as "pending" (no tab bar there: the app is not open yet).
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
@@ -18,7 +20,17 @@ import '../../shared/widgets/shell.dart';
 import 'qr_screen.dart';
 
 class PaymentScreen extends StatelessWidget {
-  const PaymentScreen({super.key});
+  const PaymentScreen({
+    super.key,
+    this.plan = Plan.connected,
+    this.forSignUp = false,
+  });
+
+  /// The pack paid (its price is shown). Premium = the biggest pack.
+  final Plan plan;
+
+  /// true = opened by the sign-up: "تأكيد" closes it with the result true.
+  final bool forSignUp;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +47,7 @@ class PaymentScreen extends StatelessWidget {
       child: Text(text, style: field),
     );
     return ShellPage(
+      showBars: !forSignUp,
       children: [
         ScreenTitle(title: l10n.paymentTitle, subtitle: l10n.paymentSubtitle),
         CssBox(
@@ -47,7 +60,7 @@ class PaymentScreen extends StatelessWidget {
               const IconBlob(icon: AppIcon.user, size: 90, iconSize: 48),
               const SizedBox(height: 20),
               Text(
-                '${l10n.demoPrice} ${l10n.pricePerMonth}',
+                '${planPrice(plan)} ${l10n.pricePerMonth}',
                 style: AppTextStyles.of(26, FontWeight.w700),
               ),
               const SizedBox(height: 20),
@@ -67,6 +80,10 @@ class PaymentScreen extends StatelessWidget {
         ActionButton(
           label: '★ ${l10n.confirm}',
           onPressed: () {
+            if (forSignUp) {
+              Navigator.of(context).pop(true);
+              return;
+            }
             currentPlan.value = Plan.connected;
             openScreen(context, const QrScreen());
           },

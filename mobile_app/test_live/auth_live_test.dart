@@ -1,0 +1,478 @@
+// LIVE test: the sign-up and the sign-in against the REAL Supabase project,
+// with the test phone numbers of the dashboard (code 123456, no SMS sent).
+//
+//   +21650000001 = a NEW user (the whole sign-up in the app)
+//   +21650000002 = an EXISTING user (phone, code, then Home directly)
+//
+// Run it from mobile_app/ (needs internet and the .env file):
+//   flutter test test_live --dart-define-from-file=.env
+//
+// To test +21650000001 as a new user again, delete it first in
+// Supabase > Authentication > Users (its profile is deleted with it).
+// Supabase sends 1 code per number per minute: the test waits when needed.
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:looz_mobile/app.dart';
+import 'package:looz_mobile/core/plans.dart';
+import 'package:looz_mobile/core/session.dart';
+import 'package:looz_mobile/core/supabase_config.dart';
+import 'package:looz_mobile/data/auth_service.dart';
+import 'package:looz_mobile/data/user_profile.dart';
+import 'package:looz_mobile/features/home/home_page.dart';
+import 'package:looz_mobile/features/onboarding/auth_messages.dart';
+import 'package:looz_mobile/features/onboarding/language_screen.dart';
+import 'package:looz_mobile/features/onboarding/name_screen.dart';
+import 'package:looz_mobile/features/onboarding/pack_screen.dart';
+import 'package:looz_mobile/features/onboarding/payment_choice_screen.dart';
+import 'package:looz_mobile/features/onboarding/phone_screen.dart';
+
+import '../test/test_helpers.dart';
+
+const newUserPhone = '+21650000001';
+const existingUserPhone = '+21650000002';
+const testCode = '123456';
+const _slow = Timeout(Duration(minutes: 6));
+
+/// A client like the app's (publishable key only), without saving the
+/// session on disk (the test keeps it in memory).
+SupabaseClient newClient() => SupabaseClient(
+  SupabaseConfig.url,
+  SupabaseConfig.publishableKey,
+  authOptions: const AuthClientOptions(
+    authFlowType: AuthFlowType.implicit,
+    autoRefreshToken: false,
+  ),
+);
+
+final _clock = Stopwatch()..start();
+
+/// Prints where the test is (to see the step where a run stops).
+void step(String text) {
+  // ignore: avoid_print
+  print('  [${_clock.elapsed.inSeconds} s] $text');
+}
+
+/// Runs [work] like the app's own calls (a client used by the app only
+/// answers this way: inside `runAsync` it waits forever), lets real time
+/// pass until the server answers, and fails after [seconds].
+Future<T> serverCall<T>(
+  WidgetTester tester,
+  String what,
+  Future<T> Function() work, {
+  int seconds = 60,
+}) async {
+  step(what);
+  var done = false;
+  late T result;
+  Object? error;
+  work().then(
+    (value) {
+      result = value;
+      done = true;
+    },
+    onError: (Object e) {
+      error = e;
+      done = true;
+    },
+  );
+  final end = DateTime.now().add(Duration(seconds: seconds));
+  while (!done && DateTime.now().isBefore(end)) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  if (!done) fail('$what: no answer after $seconds s');
+  if (error != null) throw error!;
+  return result;
+}
+
+/// Asks a code, and waits when Supabase says "1 code per minute".
+Future<void> sendCodeWaiting(AuthService service, String phone) async {
+  try {
+    await service.sendCode(phone, language: 'ar');
+  } on AuthError catch (error) {
+    if (error.failure != AuthFailure.tooManyTries) rethrow;
+    final wait = RegExp(r'(\d+) seconds').firstMatch('${error.cause}');
+    await Future<void>.delayed(
+      Duration(seconds: int.parse(wait?.group(1) ?? '60') + 1),
+    );
+    await service.sendCode(phone, language: 'ar');
+  }
+}
+
+/// Lets real time pass (the server answers) and updates the screen, until
+/// one of [finders] is shown.
+Future<void> waitFor(
+  WidgetTester tester,
+  List<Finder> finders, {
+  int seconds = 40,
+}) async {
+  final end = DateTime.now().add(Duration(seconds: seconds));
+  while (DateTime.now().isBefore(end)) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    for (final finder in finders) {
+      if (finder.evaluate().isNotEmpty) {
+        await tester.pumpAndSettle();
+        return;
+      }
+    }
+  }
+  // The screen may show an error message: say which one.
+  final notes = find.byType(AuthNote).evaluate();
+  final shown = notes.map((e) => (e.widget as AuthNote).failure).toList();
+  fail('Nothing of $finders after $seconds s. Error messages shown: $shown');
+}
+
+Future<void> tapAndWait(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
+Future<void> typeDigits(WidgetTester tester, String digits) async {
+  for (final digit in digits.split('')) {
+    await tester.tap(find.text(digit).last);
+  }
+  await tester.pump();
+}
+
+/// Taps "send the code" on the phone screen until the code screen opens
+/// (waits a minute when Supabase asks to).
+Future<void> sendCodeOnScreen(WidgetTester tester, String button) async {
+  for (var attempt = 0; attempt < 2; attempt++) {
+    await tester.tap(find.text(button));
+    await waitFor(tester, [find.byType(CodeScreen), find.byType(AuthNote)]);
+    if (find.byType(CodeScreen).evaluate().isNotEmpty) return;
+    final note = tester.widget<AuthNote>(find.byType(AuthNote));
+    if (note.failure == AuthFailure.cannotReceiveCode) {
+      fail(
+        'Supabase refuses the test number: is "Phone" switched on (and '
+        'saved) in Authentication > Sign In / Providers, with the test numbers?',
+      );
+    }
+    if (note.failure != AuthFailure.tooManyTries) {
+      fail('Error on the phone screen: ${note.failure}');
+    }
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(seconds: 61)),
+    );
+    await tester.pump();
+  }
+  fail('No code screen');
+}
+
+/// Prints a profile row (what is saved in the database).
+void printRow(String title, Map<String, dynamic> row) {
+  // ignore: avoid_print
+  print('\n$title\n${const JsonEncoder.withIndent('  ').convert(row)}');
+}
+
+void main() {
+  setUpAll(() async {
+    await loadAppFonts();
+    // Real internet (Flutter tests block it by default).
+    HttpOverrides.global = null;
+    expect(
+      SupabaseConfig.hasKeys,
+      isTrue,
+      reason: 'Run with --dart-define-from-file=.env',
+    );
+  });
+  tearDown(resetAppState);
+
+  test('0. Supabase: sign-in with the phone is switched on', () async {
+    final http = HttpClient();
+    final request = await http.getUrl(
+      Uri.parse('${SupabaseConfig.url}/auth/v1/settings'),
+    );
+    request.headers.set('apikey', SupabaseConfig.publishableKey);
+    final response = await request.close();
+    final settings =
+        jsonDecode(await response.transform(utf8.decoder).join()) as Map;
+    http.close();
+    expect(
+      (settings['external'] as Map)['phone'],
+      isTrue,
+      reason:
+          'Authentication > Sign In / Providers > Phone: switch it on '
+          'and click Save',
+    );
+  });
+
+  testWidgets('1. New user $newUserPhone: the whole sign-up in the app', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    noAnimations(tester);
+    final client = (await tester.runAsync(() async => newClient()))!;
+    authService = SupabaseAuthService(client);
+    await tester.pumpWidget(const LoozApp());
+    await tester.pumpAndSettle();
+
+    // Language, phone, code.
+    step('language');
+    await tapAndWait(tester, find.text('العربية'));
+    await typeDigits(tester, '50000001');
+    step('phone typed, asking the code');
+    await sendCodeOnScreen(tester, 'إرسال الرمز');
+    await typeDigits(tester, testCode);
+    step('code typed');
+    await tester.tap(find.text('تأكيد'));
+    await waitFor(tester, [
+      find.byType(NameScreen),
+      find.byType(PackScreen),
+      find.byType(HomePage),
+    ]);
+    if (find.byType(NameScreen).evaluate().isEmpty) {
+      fail(
+        '$newUserPhone already has a name: delete it in '
+        'Authentication > Users to test a new user again.',
+      );
+    }
+
+    // The name, the pack (Essential), "pay later".
+    step('name screen');
+    await tester.enterText(find.byType(TextField).at(0), 'محمد');
+    await tester.enterText(find.byType(TextField).at(1), 'بن سالم');
+    await tester.tap(find.text('متابعة'));
+    await waitFor(tester, [find.byType(PackScreen)]);
+    step('pack screen');
+    await tapAndWait(tester, find.text('أساسي'));
+    await tapAndWait(tester, find.text('متابعة'));
+    expect(find.byType(PaymentChoiceScreen), findsOneWidget);
+    step('pay later');
+    await tester.tap(find.text('ادفع لاحقًا'));
+    await waitFor(tester, [find.text('مرحبًا يا محمد')]);
+    step('welcome');
+    await tapAndWait(tester, find.text('ابدأ'));
+    expect(find.text('محمد، أشجارك بخير اليوم'), findsOneWidget);
+
+    // What the database saved.
+    final row = await serverCall(
+      tester,
+      'reading the profiles row',
+      () => client
+          .from('profiles')
+          .select('${UserProfile.columns}, name, role, updated_at')
+          .eq('phone', newUserPhone)
+          .single(),
+    );
+    printRow('profiles row of $newUserPhone (new user):', row);
+    expect(row['first_name'], 'محمد');
+    expect(row['last_name'], 'بن سالم');
+    expect(row['name'], 'محمد بن سالم'); // kept for the dashboard
+    expect(row['language'], 'ar');
+    expect(row['chosen_plan'], 'essential');
+    expect(row['payment_status'], 'pending');
+    expect(row['plan_chosen_at'], isNotNull);
+    expect(row['role'], 'farmer');
+    // Not paid: the free plan.
+    expect(
+      await serverCall(tester, 'user_plan()', () => client.rpc('user_plan')),
+      'free',
+    );
+    expect(currentPlan.value, Plan.free);
+
+    // The app is closed and opened again: the saved session is used, and
+    // the name is read from the database.
+    final saved = jsonEncode(client.auth.currentSession!.toJson());
+    final reopened = await serverCall(tester, 'saved session', () async {
+      final c = newClient();
+      await c.auth.recoverSession(saved);
+      return c;
+    });
+    currentUser.value = null;
+    authService = SupabaseAuthService(reopened);
+    await tester.pumpWidget(const SizedBox());
+    step('app opened again');
+    await tester.pumpWidget(const LoozApp());
+    await waitFor(tester, [find.byType(HomePage)]);
+    expect(find.byType(LanguageScreen), findsNothing);
+    expect(find.text('محمد، أشجارك بخير اليوم'), findsOneWidget);
+
+    // Log out in Profile: the session is forgotten.
+    step('log out');
+    await tapAndWait(tester, find.text('حسابي').last);
+    expect(find.text('محمد بن سالم'), findsOneWidget);
+    expect(find.text('+216 50 000 001'), findsOneWidget);
+    await tester.tap(find.text('تسجيل الخروج'));
+    await waitFor(tester, [find.byType(LanguageScreen)]);
+    expect(reopened.auth.currentSession, isNull);
+    expect(currentUser.value, isNull);
+
+    await tester.pumpWidget(const SizedBox());
+    await serverCall(tester, 'closing the clients', () async {
+      await client.dispose();
+      await reopened.dispose();
+    });
+  }, timeout: _slow);
+
+  testWidgets('2. Existing user $existingUserPhone: phone, code, Home', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    noAnimations(tester);
+
+    // The first time, this number finishes its sign-up here (no screens).
+    await serverCall(
+      tester,
+      'setup of $existingUserPhone',
+      seconds: 150,
+      () async {
+        final c = newClient();
+        final service = SupabaseAuthService(c);
+        await sendCodeWaiting(service, existingUserPhone);
+        await service.verifyCode(existingUserPhone, testCode);
+        var profile = await service.loadProfile();
+        if (!profile.hasName) {
+          profile = await service.saveName('Mohamed', 'Ben Salem');
+        }
+        if (!profile.hasChosenPlan) await service.choosePlan(Plan.free);
+        await service.signOut();
+        await c.dispose();
+      },
+    );
+
+    final client = (await tester.runAsync(() async => newClient()))!;
+    authService = SupabaseAuthService(client);
+    await tester.pumpWidget(const LoozApp());
+    await tester.pumpAndSettle();
+    step('language');
+    await tapAndWait(tester, find.text('Français'));
+    await typeDigits(tester, '50000002');
+    step('phone typed, asking the code');
+    await sendCodeOnScreen(tester, 'Envoyer le code');
+    await typeDigits(tester, testCode);
+    step('code typed');
+    await tester.tap(find.text('Confirmer'));
+    await waitFor(tester, [
+      find.byType(HomePage),
+      find.byType(NameScreen),
+      find.byType(PackScreen),
+    ]);
+
+    // Straight to Home, with the name saved before.
+    expect(find.byType(HomePage), findsOneWidget);
+    expect(find.byType(NameScreen), findsNothing);
+    expect(find.byType(PackScreen), findsNothing);
+    expect(find.text('Mohamed, vos arbres vont bien'), findsOneWidget);
+
+    final row = await serverCall(
+      tester,
+      'reading the profiles row',
+      () => client
+          .from('profiles')
+          .select('${UserProfile.columns}, name, role, updated_at')
+          .eq('phone', existingUserPhone)
+          .single(),
+    );
+    printRow('profiles row of $existingUserPhone (existing user):', row);
+    expect(row['first_name'], 'Mohamed');
+    expect(row['language'], 'fr'); // the language chosen at this login
+
+    await serverCall(tester, 'closing the client', () async {
+      await client.auth.signOut();
+      await client.dispose();
+    });
+    await tester.pumpWidget(const SizedBox());
+  }, timeout: _slow);
+
+  test('3. The database rules protect the profiles', () async {
+    final client = newClient();
+    final service = SupabaseAuthService(client);
+    await sendCodeWaiting(service, newUserPhone);
+    await service.verifyCode(newUserPhone, testCode);
+    final me = client.auth.currentUser!.id;
+
+    // A user reads only his own profile.
+    final all = await client.from('profiles').select('id, phone');
+    expect(all, hasLength(1));
+    expect(all.single['phone'], newUserPhone);
+    final other = await client
+        .from('profiles')
+        .select('id')
+        .eq('phone', existingUserPhone);
+    expect(other, isEmpty, reason: 'another user is visible');
+
+    // Protected fields: refused.
+    for (final change in <Map<String, Object>>[
+      {'payment_status': 'paid'},
+      {'chosen_plan': 'connected'},
+      {'phone': '+21650000009'},
+      {'verified': true},
+      {'role': 'admin'},
+    ]) {
+      await expectLater(
+        client.from('profiles').update(change).eq('id', me),
+        throwsA(isA<PostgrestException>()),
+        reason: '$change',
+      );
+    }
+
+    // Wrong values: refused by the database itself.
+    await expectLater(
+      client.from('profiles').update({'first_name': '<b>x</b>'}).eq('id', me),
+      throwsA(isA<PostgrestException>().having((e) => e.code, 'code', '23514')),
+    );
+    await expectLater(
+      client.from('profiles').update({'language': 'en'}).eq('id', me),
+      throwsA(isA<PostgrestException>().having((e) => e.code, 'code', '23514')),
+    );
+    await expectLater(
+      client.rpc('choose_plan', params: {'p_plan': 'gold'}),
+      throwsA(isA<PostgrestException>()),
+    );
+
+    // The plan cannot be changed by the user.
+    await client
+        .from('subscriptions')
+        .update({'plan': 'connected'})
+        .eq('user_id', me);
+    expect(await client.rpc('user_plan'), 'free');
+    final subscription = await client.from('subscriptions').select('plan');
+    expect(subscription, hasLength(1));
+
+    // His own name and language: allowed.
+    final renamed = await service.saveName('محمد', 'بن سالم');
+    expect(renamed.firstName, 'محمد');
+
+    // Not logged in: nothing is visible.
+    final anonymous = newClient();
+    expect(await anonymous.from('profiles').select('id'), isEmpty);
+
+    await service.signOut();
+    await client.dispose();
+    await anonymous.dispose();
+  }, timeout: _slow);
+
+  // Each user can only read his own row: log in as each one to show it.
+  test('4. What is saved for $newUserPhone and $existingUserPhone', () async {
+    for (final phone in [newUserPhone, existingUserPhone]) {
+      final client = newClient();
+      final service = SupabaseAuthService(client);
+      await sendCodeWaiting(service, phone);
+      await service.verifyCode(phone, testCode);
+      final row = await client
+          .from('profiles')
+          .select('${UserProfile.columns}, name, role, updated_at')
+          .single();
+      printRow('profiles row of $phone:', row);
+      printRow('its subscription:', {
+        'rows': await client.from('subscriptions').select(),
+        'user_plan()': await client.rpc('user_plan'),
+      });
+      await service.signOut();
+      await client.dispose();
+    }
+  }, timeout: _slow);
+}

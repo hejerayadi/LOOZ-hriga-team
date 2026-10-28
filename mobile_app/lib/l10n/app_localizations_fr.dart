@@ -389,21 +389,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get premiumName => '★ Premium';
 
   @override
-  String get demoFirstName => 'Mohamed';
-
-  @override
-  String get demoFullName => 'Mohamed Ben Salem';
-
-  @override
-  String get demoCity => 'Sfax, Tunisie';
-
-  @override
-  String get demoInitial => 'م';
-
-  @override
-  String get demoPrice => 'XX';
-
-  @override
   String get appName => 'LOOZ';
 
   @override
@@ -433,41 +418,130 @@ class AppLocalizationsFr extends AppLocalizations {
   String get a11yPlay => 'Lire';
 
   @override
-  String get authLogin => 'Se connecter';
+  String get sending => 'Envoi…';
 
   @override
-  String get authSignup => 'Créer un compte';
+  String get checking => 'Vérification…';
 
   @override
-  String get authNoAccount => 'Pas de compte ? Créer un compte';
+  String get resendCode => 'Renvoyer le code';
 
   @override
-  String get authName => 'Nom';
+  String get codeResent => 'Nouveau code envoyé';
 
   @override
-  String get authEmail => 'E-mail';
+  String get nameTitle => 'Votre nom';
 
   @override
-  String get authPassword => 'Mot de passe';
+  String get nameSubtitle => 'Pour vous présenter à la communauté';
 
   @override
-  String get authIAm => 'Je suis :';
+  String get firstName => 'Prénom';
 
   @override
-  String get authFarmer => 'Agriculteur';
+  String get lastName => 'Nom';
 
   @override
-  String get authExpert => 'Expert';
+  String get continueLabel => 'Continuer';
 
   @override
-  String get authFillAllFields => 'Remplissez tous les champs.';
+  String get saving => 'Enregistrement…';
 
   @override
-  String get authPasswordTooShort => 'Mot de passe : 6 caractères minimum.';
+  String get nameRequired => 'Ce champ est obligatoire';
 
   @override
-  String get authCheckEmail =>
-      'Compte créé ! Ouvrez votre e-mail pour le confirmer, puis connectez-vous.';
+  String nameTooLong(String max) {
+    return '$max lettres maximum';
+  }
+
+  @override
+  String get nameBadCharacters => 'Utilisez seulement des lettres';
+
+  @override
+  String get packTitle => 'Choisissez votre offre';
+
+  @override
+  String get packSubtitle => 'Gratuite ou plus complète';
+
+  @override
+  String get packNoPayment => 'Sans paiement';
+
+  @override
+  String packAssistantLimit(String count) {
+    return 'Assistant : $count questions par jour';
+  }
+
+  @override
+  String get packRegionalAlerts => 'Alertes de votre région';
+
+  @override
+  String get packAllOfFree => 'Toute l\'offre gratuite';
+
+  @override
+  String get packAllOfEssential => 'Toute l\'offre Essentiel';
+
+  @override
+  String get packUnlimitedAssistant => 'Assistant illimité';
+
+  @override
+  String get pack3dOrchard => 'Votre verger en 3D';
+
+  @override
+  String get packPhotoDiagnosis => 'Diagnostic des feuilles par photo';
+
+  @override
+  String get packLiveSensors => 'Capteurs du verger en direct';
+
+  @override
+  String get packPredictions => 'Prévisions d\'arrosage et de récolte';
+
+  @override
+  String get payChoiceTitle => 'Quand payer ?';
+
+  @override
+  String get payChoiceSubtitle => 'Comme vous préférez';
+
+  @override
+  String get payNow => 'Payer maintenant';
+
+  @override
+  String get payLater => 'Payer plus tard';
+
+  @override
+  String get payPendingNote =>
+      'En attendant le paiement, vous avez l\'offre gratuite';
+
+  @override
+  String get logOut => 'Se déconnecter';
+
+  @override
+  String get errorNoInternet =>
+      'Pas d\'internet. Vérifiez la connexion et réessayez.';
+
+  @override
+  String get errorWrongCode => 'Code incorrect ou expiré.';
+
+  @override
+  String get errorTooManyTries =>
+      'Trop d\'essais. Attendez une minute et réessayez.';
+
+  @override
+  String get errorCannotReceiveCode =>
+      'Ce numéro ne peut pas encore recevoir de code.';
+
+  @override
+  String get errorInvalidPhone => 'Numéro de téléphone invalide.';
+
+  @override
+  String get errorPhoneTaken =>
+      'Ce numéro est déjà utilisé par un autre compte.';
+
+  @override
+  String get errorInvalidName => 'Nom refusé. Utilisez seulement des lettres.';
+
+  @override
+  String get errorSessionExpired => 'Session expirée. Reconnectez-vous.';
 
   @override
   String get somethingWrong => 'Une erreur est survenue. Réessayez.';
