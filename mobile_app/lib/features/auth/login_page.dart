@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/strings/app_strings.dart';
+import '../../core/locale.dart';
 import '../../core/supabase_config.dart';
 import '../../core/theme/app_theme.dart';
 import 'auth_widgets.dart';
@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
     final email = _email.text.trim();
     final password = _password.text;
     if (email.isEmpty || password.isEmpty) {
-      showMessage(context, AppStrings.fillAllFields);
+      showMessage(context, context.l10n.authFillAllFields);
       return;
     }
 
@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
     } on AuthException catch (e) {
       if (mounted) showMessage(context, e.message);
     } catch (_) {
-      if (mounted) showMessage(context, AppStrings.somethingWrong);
+      if (mounted) showMessage(context, context.l10n.somethingWrong);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -56,33 +56,40 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         const Icon(Icons.park, size: 96, color: AppColors.olive),
         Text(
-          AppStrings.appName,
+          context.l10n.appName,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.headlineMedium,
         ),
         const SizedBox(height: 32),
         AuthField(
           controller: _email,
-          label: AppStrings.email,
+          label: context.l10n.authEmail,
           icon: Icons.email,
           keyboardType: TextInputType.emailAddress,
         ),
         AuthField(
           controller: _password,
-          label: AppStrings.password,
+          label: context.l10n.authPassword,
           icon: Icons.lock,
           obscure: true,
         ),
         const SizedBox(height: 16),
-        AuthButton(text: AppStrings.login, loading: _loading, onPressed: _login),
+        AuthButton(
+          text: context.l10n.authLogin,
+          loading: _loading,
+          onPressed: _login,
+        ),
         const SizedBox(height: 16),
         TextButton(
           onPressed: _loading
               ? null
-              : () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SignupPage()),
-                  ),
-          child: const Text(AppStrings.noAccount, style: TextStyle(fontSize: 18)),
+              : () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const SignupPage())),
+          child: Text(
+            context.l10n.authNoAccount,
+            style: TextStyle(fontSize: 18),
+          ),
         ),
       ],
     );

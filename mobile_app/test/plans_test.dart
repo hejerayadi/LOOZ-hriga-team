@@ -1,17 +1,20 @@
 // Checks the subscription plans: who can use what, and the locked screens.
 // Run it with: flutter test
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:looz_mobile/app.dart';
 import 'package:looz_mobile/core/plans.dart';
-import 'package:looz_mobile/core/strings/app_strings.dart';
-import 'package:looz_mobile/features/alerts/alerts_page.dart';
-import 'package:looz_mobile/features/plans/plans_screen.dart';
+import 'package:looz_mobile/features/camera/camera_screen.dart';
+import 'package:looz_mobile/features/premium/payment_screen.dart';
+import 'package:looz_mobile/features/premium/premium_screen.dart';
+import 'package:looz_mobile/shared/widgets/camera_button.dart';
+
+import 'test_helpers.dart';
 
 void main() {
-  // currentPlan is shared by all tests: put it back after each one.
-  tearDown(() => currentPlan.value = Plan.connected);
+  setUpAll(loadAppFonts);
+  // The plan, language and tab are shared by all tests: put them back.
+  tearDown(resetAppState);
 
   test('each feature needs the right plan', () {
     const free = [Feature.community, Feature.assistant, Feature.regionalAlerts];
@@ -47,61 +50,79 @@ void main() {
     expect(assistantDailyLimit(Plan.connected), isNull);
   });
 
-  testWidgets('free plan: 3D and photos locked on "Mon verger"', (tester) async {
+  testWidgets('free plan: the 3D orchard and the photos are locked', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
     currentPlan.value = Plan.free;
-    await tester.pumpWidget(const MaterialApp(home: MainShell()));
-    expect(find.text(AppStrings.feature(Feature.orchard3d)), findsOneWidget);
-    expect(find.text(AppStrings.upgradeTo(Plan.essential)), findsNWidgets(2));
+    await tester.pumpWidget(const LoozApp(home: MainShell()));
+
+    // The "بستاني ★" tab shows the design's locked screen.
+    await tester.tap(findTextWithSymbol('بستاني ★'));
+    await tester.pumpAndSettle();
+    expect(find.text('بستانك في جيبك'), findsOneWidget);
+    expect(findTextWithSymbol('★ ابدأ بريميوم'), findsOneWidget);
+
+    // The camera (photo diagnosis) shows the locked screen too.
+    await tester.tap(findTextWithSymbol('الرئيسية'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(CameraButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(CameraScreen), findsNothing);
+    expect(find.text('بستانك في جيبك'), findsOneWidget);
   });
 
-  testWidgets('connected plan: nothing locked on "Mon verger"', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainShell()));
+  testWidgets('connected plan: nothing locked', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const LoozApp(home: MainShell()));
     expect(find.textContaining('Passer à'), findsNothing);
-  });
+    expect(find.text('بستانك في جيبك'), findsNothing);
+    // (The 3D orchard itself needs a real WebView: not testable here.)
+    expect(canUse(Feature.orchard3d), isTrue);
 
-  testWidgets('alerts: essential sees tree alerts, zone alerts locked', (
-    tester,
-  ) async {
-    currentPlan.value = Plan.essential;
-    await tester.pumpWidget(const MaterialApp(home: AlertsPage()));
-    expect(find.text('Risque maladie'), findsOneWidget); // tree (photo)
-    expect(find.text('Forte chaleur'), findsOneWidget); // regional
-    expect(find.text('Sol sec'), findsNothing); // zone: locked
-    expect(find.text(AppStrings.upgradeTo(Plan.connected)), findsOneWidget);
-  });
-
-  testWidgets('plans screen: "Contactez-nous" only on bigger plans', (
-    tester,
-  ) async {
-    currentPlan.value = Plan.essential;
-    await tester.pumpWidget(const MaterialApp(home: PlansScreen()));
-    expect(find.text(AppStrings.yourPlan), findsOneWidget);
-    await tester.scrollUntilVisible(find.text(AppStrings.contactUs), 300);
-    expect(find.text(AppStrings.contactUs), findsOneWidget); // only Connecté
-  });
-
-  testWidgets('profile shows the plan, and the test switch changes it', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const MaterialApp(home: MainShell()));
-    await tester.tap(find.text(AppStrings.tabProfile).last);
+    await tester.tap(find.byType(CameraButton));
     await tester.pumpAndSettle();
-    // Badge + test switch both show "Connecté".
-    expect(find.text(AppStrings.plan(Plan.connected)), findsNWidgets(2));
+    expect(find.byType(CameraScreen), findsOneWidget);
+  });
 
-    final freeSegment = find.descendant(
-      of: find.byType(SegmentedButton<Plan>),
-      matching: find.text(AppStrings.plan(Plan.free)),
-    );
-    await tester.ensureVisible(freeSegment);
+  testWidgets('premium screen: free vs Premium, the price, then payment', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    currentPlan.value = Plan.free;
+    await tester.pumpWidget(const LoozApp(home: PremiumScreen()));
+    expect(find.text('مجاني'), findsOneWidget);
+    expect(findTextWithSymbol('★ Premium'), findsOneWidget);
+    expect(findTextWithSymbol('✓ خريطة البستان'), findsOneWidget);
+    expect(find.text('إلغاء في أي وقت'), findsOneWidget);
+
+    await tester.tap(findTextWithSymbol('★ ابدأ بريميوم'));
     await tester.pumpAndSettle();
-    await tester.tap(freeSegment);
+    expect(find.byType(PaymentScreen), findsOneWidget);
+    // DEMO payment: "★ تأكيد" turns the plan into Premium.
+    await tester.tap(findTextWithSymbol('★ تأكيد'));
+    await tester.pumpAndSettle();
+    expect(currentPlan.value, Plan.connected);
+  });
+
+  testWidgets('profile: the test switch changes the plan', (tester) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(const LoozApp(home: MainShell()));
+    await tester.tap(find.text('حسابي')); // the Profile tab
+    await tester.pumpAndSettle();
+
+    // The switch shows the 3 plans (debug builds only).
+    expect(find.text('وضع التجربة: تغيير الخطة'), findsOneWidget);
+    expect(find.text('متصل'), findsOneWidget);
+    await tester.ensureVisible(find.text('مجاني'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('مجاني'));
     await tester.pumpAndSettle();
     expect(currentPlan.value, Plan.free);
 
-    // "Mon verger" updates at once.
-    await tester.tap(find.text(AppStrings.tabHome).last);
+    // The "بستاني ★" tab updates at once: now locked.
+    await tester.tap(findTextWithSymbol('بستاني ★'));
     await tester.pumpAndSettle();
-    expect(find.text(AppStrings.upgradeTo(Plan.essential)), findsWidgets);
+    expect(findTextWithSymbol('★ ابدأ بريميوم'), findsOneWidget);
   });
 }

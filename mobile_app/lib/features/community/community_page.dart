@@ -1,92 +1,123 @@
-// Tab 2 — "Communauté": posts from farmers and experts.
+// Tab 2 — Community ("المجتمع"): a question from a farmer with its photo,
+// the tip of the day, and a button to ask a question.
 import 'package:flutter/material.dart';
 
-import '../../core/strings/app_strings.dart';
+import '../../core/locale.dart';
+import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
-import '../../shared/widgets/looz_page.dart';
-import '../../shared/widgets/role_badge.dart';
-import 'community_data.dart';
+import '../../data/fake_data.dart';
+import '../../shared/widgets/action_button.dart';
+import '../../shared/widgets/app_icon.dart';
+import '../../shared/widgets/css_box.dart';
+import '../../shared/widgets/screen_title.dart';
+import '../../shared/widgets/shell.dart';
+import '../../shared/widgets/symbol_text.dart';
+import '../../shared/widgets/tip_row.dart';
+import '../ask/ask_screen.dart';
+import 'tips_screen.dart';
 
 class CommunityPage extends StatelessWidget {
   const CommunityPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return LoozPage(
-      title: AppStrings.tabCommunity,
-      children: fakePosts.map((post) => _PostCard(post: post)).toList(),
+    final l10n = context.l10n;
+    return ShellContent(
+      children: [
+        ScreenTitle(
+          title: l10n.communityTitle,
+          subtitle: l10n.communitySubtitle,
+        ),
+        const _FeedCard(),
+        const SizedBox(height: 14),
+        TipRow(
+          icon: AppIcon.drop,
+          text: l10n.tipOfTheDay,
+          onSpeaker: () => openScreen(context, const TipsScreen()),
+        ),
+        const SizedBox(height: 14),
+        ActionButton(
+          label: l10n.askAQuestion,
+          onPressed: () => openScreen(context, const AskScreen()),
+        ),
+      ],
     );
   }
 }
 
-/// One post: author + role badge, photo placeholder, text, like/comment.
-class _PostCard extends StatelessWidget {
-  const _PostCard({required this.post});
-
-  final Post post;
+/// A farmer's question: photo, text, answers and the expert badge.
+class _FeedCard extends StatelessWidget {
+  const _FeedCard();
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Card(
-      clipBehavior: Clip.antiAlias, // so the photo follows the round corners
+    final l10n = context.l10n;
+    return CssBox(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      shadows: AppShadows.card,
+      padding: const EdgeInsets.all(10),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Author line
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  radius: 26,
-                  backgroundColor: AppColors.almond,
-                  child: Icon(Icons.person, size: 32, color: AppColors.brown),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(post.author, style: textTheme.titleMedium),
-                      const SizedBox(height: 4),
-                      RoleBadge(role: post.role),
-                    ],
-                  ),
-                ),
-              ],
+          ClipRRect(
+            borderRadius: BorderRadius.circular(25),
+            child: Image.asset(
+              'assets/images/almond_blossoms.jpg',
+              height: 220,
+              fit: BoxFit.cover,
+              semanticLabel: l10n.almondBlossoms,
             ),
           ),
-          // Photo placeholder (real photos later)
-          Container(
-            height: 160,
-            width: double.infinity,
-            color: AppColors.olive.withValues(alpha: 0.15),
-            child: const Icon(Icons.image, size: 64, color: AppColors.olive),
-          ),
-          // Text
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(post.text, style: textTheme.bodyLarge),
-          ),
-          // Like + comment
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-            child: Row(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  iconSize: 30,
-                  onPressed: () {},
-                  icon: const Icon(Icons.favorite_border, color: AppColors.danger),
+                Text(
+                  l10n.isThisFlowerHealthy,
+                  style: AppTextStyles.of(20, FontWeight.w700),
                 ),
-                Text('${post.likes}', style: textTheme.bodyLarge),
-                const SizedBox(width: 16),
-                IconButton(
-                  iconSize: 30,
-                  onPressed: () {},
-                  icon: const Icon(Icons.chat_bubble_outline, color: AppColors.brown),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    // DEMO: the voice answers can't be played yet.
+                    Semantics(
+                      button: true,
+                      label: l10n.a11yPlay,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          color: AppColors.lightGreen,
+                          shape: BoxShape.circle,
+                        ),
+                        child: SymbolText('▶', style: AppTextStyles.of(16)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      l10n.answers('$fakeAnswers'),
+                      style: AppTextStyles.of(16),
+                    ),
+                  ],
                 ),
-                Text('${post.comments}', style: textTheme.bodyLarge),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.mint,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                  child: SymbolText(
+                    '◆ ${l10n.verifiedExpert}',
+                    style: AppTextStyles.of(16, FontWeight.w800),
+                  ),
+                ),
               ],
             ),
           ),

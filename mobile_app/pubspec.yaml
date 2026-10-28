@@ -36,6 +36,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   webview_flutter: ^4.14.1
   supabase_flutter: ^2.18.3
+  # Arabic (default, right-to-left) + French: texts in lib/l10n/*.arb.
+  flutter_localizations:
+    sdk: flutter
+  intl: any # needed by the code generated from the .arb files
+  # Draws the design's icons and symbols (assets/icons, assets/symbols).
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +59,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  # Builds lib/l10n/app_localizations.dart from the .arb files (see l10n.yaml).
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -61,8 +69,27 @@ flutter:
 
   # Files bundled inside the app.
   # orchard_3d/ = the 3D orchard page (HTML + three.js) shown in a WebView.
+  # images/ = the Looz logos and the almond blossom photo (from the design).
+  # icons/ = the design's line icons; symbols/ = its symbols (★ ✿ ⌫ ...).
   assets:
     - assets/orchard_3d/
+    - assets/images/
+    - assets/icons/
+    - assets/symbols/
+
+  # Cairo, the font of the design (bundled, so it works offline).
+  # License: assets/fonts/Cairo-OFL.txt
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Cairo-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Cairo-ExtraBold.ttf
+          weight: 800
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

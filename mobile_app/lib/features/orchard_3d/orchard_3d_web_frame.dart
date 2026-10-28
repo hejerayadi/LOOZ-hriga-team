@@ -13,6 +13,7 @@ class Orchard3dWebFrame extends StatefulWidget {
     super.key,
     required this.asset,
     required this.data,
+    required this.language,
     required this.onMessage,
   });
 
@@ -21,6 +22,9 @@ class Orchard3dWebFrame extends StatefulWidget {
 
   /// The orchard as JSON text, sent when the page is ready.
   final String data;
+
+  /// 'ar' or 'fr' (sent again when it changes).
+  final String language;
 
   /// Called with each other 'looz:...' message the page sends.
   final ValueChanged<String> onMessage;
@@ -33,6 +37,7 @@ class _Orchard3dWebFrameState extends State<Orchard3dWebFrame> {
   // Kept in a variable so the same listener can be removed in dispose().
   late final JSFunction _listener = _onMessage.toJS;
   _IFrame? _frame;
+  bool _ready = false; // the page got the data
 
   @override
   void initState() {
@@ -56,9 +61,21 @@ class _Orchard3dWebFrameState extends State<Orchard3dWebFrame> {
         widget.data.toJS,
         _window.location.origin,
       );
+      _ready = true;
     } else if (text.startsWith('looz:')) {
       // Ignore messages that do not come from the 3D page.
       widget.onMessage(text);
+    }
+  }
+
+  @override
+  void didUpdateWidget(Orchard3dWebFrame old) {
+    super.didUpdateWidget(old);
+    if (_ready && old.language != widget.language) {
+      _frame?.contentWindow?.postMessage(
+        '{"looz_lang":"${widget.language}"}'.toJS,
+        _window.location.origin,
+      );
     }
   }
 

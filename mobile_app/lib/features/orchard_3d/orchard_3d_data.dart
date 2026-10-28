@@ -5,13 +5,16 @@
 // - A tree's health = its zone's health.
 // - The only tree-level information is a photo diagnosis (camera button).
 //
-// Used by the 3D page (orchard3dJson below) and the "Mon verger" tab.
+// Used by the 3D page (orchard3dJson below), in the "بستاني ★" tab.
 // The classes use the same fields as the Supabase tables (zones, nodes,
 // trees, tree_photos), so later we only replace the fake lists with real data.
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart' show Locale;
+
 import '../../core/enums.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// One corner of a zone, in the 3D scene (meters). Table zones, column boundary.
 class ZonePoint {
@@ -25,14 +28,16 @@ class ZonePoint {
 class Zone {
   const Zone({
     required this.id,
-    required this.name,
+    required this.letter,
     required this.boundary,
     required this.health,
     this.soilNotes = '',
   });
 
   final String id;
-  final String name;
+
+  /// "A", "B"...: the zone is called "Zone A" / "المنطقة A" (see zoneName).
+  final String letter;
   final List<ZonePoint> boundary;
   final StatusLevel health;
   final String soilNotes;
@@ -112,9 +117,8 @@ const double orchardLength = 36;
 const List<Zone> fakeZones = [
   Zone(
     id: 'zone-a',
-    name: 'Zone A',
+    letter: 'A',
     health: StatusLevel.good,
-    soilNotes: 'Sol limoneux, bien drainé',
     boundary: [
       ZonePoint(-24, -18),
       ZonePoint(2, -18),
@@ -124,9 +128,8 @@ const List<Zone> fakeZones = [
   ),
   Zone(
     id: 'zone-b',
-    name: 'Zone B',
+    letter: 'B',
     health: StatusLevel.warning,
-    soilNotes: 'Sol sableux, sèche vite',
     boundary: [
       ZonePoint(2, -18),
       ZonePoint(24, -18),
@@ -137,9 +140,8 @@ const List<Zone> fakeZones = [
   ),
   Zone(
     id: 'zone-c',
-    name: 'Zone C',
+    letter: 'C',
     health: StatusLevel.danger,
-    soilNotes: 'Argile lourde, eau stagnante',
     boundary: [
       ZonePoint(-24, 0),
       ZonePoint(-2, -2),
@@ -150,9 +152,8 @@ const List<Zone> fakeZones = [
   ),
   Zone(
     id: 'zone-d',
-    name: 'Zone D',
+    letter: 'D',
     health: StatusLevel.good,
-    soilNotes: 'Sol profond',
     boundary: [
       ZonePoint(-2, -2),
       ZonePoint(8, 2),
@@ -218,20 +219,20 @@ List<SensorNode> fakeNodes() {
 /// Photos taken with the camera button. Only the LATEST photo of a tree counts.
 List<TreePhoto> fakePhotos() {
   final now = DateTime.now();
-  TreePhoto photo(int tree, StatusLevel status, String result, int daysAgo) =>
-      TreePhoto(
-        treeNumber: tree,
-        imagePath: 'photos/tree-$tree-$daysAgo.jpg',
-        aiResult: result,
-        status: status,
-        createdAt: now.subtract(Duration(days: daysAgo)),
-      );
+  // (The AI's text comes with the real photos later: empty here.)
+  TreePhoto photo(int tree, StatusLevel status, int daysAgo) => TreePhoto(
+    treeNumber: tree,
+    imagePath: 'photos/tree-$tree-$daysAgo.jpg',
+    aiResult: '',
+    status: status,
+    createdAt: now.subtract(Duration(days: daysAgo)),
+  );
   return [
-    photo(4, StatusLevel.good, 'Sain', 20),
-    photo(4, StatusLevel.danger, 'Tavelure', 1), // latest = danger: marker
-    photo(46, StatusLevel.warning, 'Pucerons', 3), // marker
-    photo(20, StatusLevel.warning, 'Feuilles jaunes', 15),
-    photo(20, StatusLevel.good, 'Sain', 2), // latest = good: no marker
+    photo(4, StatusLevel.good, 20),
+    photo(4, StatusLevel.danger, 1), // latest = danger: marker
+    photo(46, StatusLevel.warning, 3), // marker
+    photo(20, StatusLevel.warning, 15),
+    photo(20, StatusLevel.good, 2), // latest = good: no marker
   ];
 }
 
@@ -303,13 +304,19 @@ bool _inside(List<ZonePoint> polygon, double x, double z) {
 String _hex(int argb) =>
     '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 
+/// The name of a zone in a language ('ar' or 'fr'): "المنطقة A", "Zone A".
+String zoneName(Zone zone, String languageCode) =>
+    lookupAppLocalizations(Locale(languageCode)).zoneName(zone.letter);
+
 /// Everything the 3D page needs, as JSON text.
 /// liveData = false (plan without "Connecté"): no nodes are sent, like the
 /// database does, and the page shows a lock instead of the live zone data.
-String orchard3dJson({bool liveData = true}) {
+/// language = the app's language: the page shows its texts in it.
+String orchard3dJson({bool liveData = true, String language = 'ar'}) {
   final photos = latestPhotos();
   return jsonEncode({
     'live': liveData,
+    'lang': language,
     // Same green / orange / red as the rest of the app.
     'colors': {
       'good': _hex(AppColors.good.toARGB32()),
@@ -321,7 +328,11 @@ String orchard3dJson({bool liveData = true}) {
       for (final zone in fakeZones)
         {
           'id': zone.id,
-          'name': zone.name,
+          'name': zoneName(zone, language),
+          // Both languages, so the page can switch without new data.
+          'names': {
+            for (final code in ['ar', 'fr']) code: zoneName(zone, code),
+          },
           'health': zone.health.name,
           'soil_notes': zone.soilNotes,
           'boundary': [

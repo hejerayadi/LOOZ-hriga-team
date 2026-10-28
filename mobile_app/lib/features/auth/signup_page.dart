@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/enums.dart';
-import '../../core/strings/app_strings.dart';
+import '../../core/locale.dart';
 import '../../core/supabase_config.dart';
 import 'auth_widgets.dart';
 
@@ -38,11 +38,11 @@ class _SignupPageState extends State<SignupPage> {
     final email = _email.text.trim();
     final password = _password.text;
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      showMessage(context, AppStrings.fillAllFields);
+      showMessage(context, context.l10n.authFillAllFields);
       return;
     }
     if (password.length < 6) {
-      showMessage(context, AppStrings.passwordTooShort);
+      showMessage(context, context.l10n.authPasswordTooShort);
       return;
     }
 
@@ -57,14 +57,14 @@ class _SignupPageState extends State<SignupPage> {
       if (!mounted) return;
       if (response.session == null) {
         // Supabase asks to confirm the e-mail first: go back to Login.
-        showMessage(context, AppStrings.checkEmail);
+        showMessage(context, context.l10n.authCheckEmail);
       }
       // If already logged in, AuthGate (under this page) now shows the app.
       Navigator.of(context).pop();
     } on AuthException catch (e) {
       if (mounted) showMessage(context, e.message);
     } catch (_) {
-      if (mounted) showMessage(context, AppStrings.somethingWrong);
+      if (mounted) showMessage(context, context.l10n.somethingWrong);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -73,35 +73,42 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
-      title: AppStrings.signup,
+      title: context.l10n.authSignup,
       children: [
-        AuthField(controller: _name, label: AppStrings.name, icon: Icons.person),
+        AuthField(
+          controller: _name,
+          label: context.l10n.authName,
+          icon: Icons.person,
+        ),
         AuthField(
           controller: _email,
-          label: AppStrings.email,
+          label: context.l10n.authEmail,
           icon: Icons.email,
           keyboardType: TextInputType.emailAddress,
         ),
         AuthField(
           controller: _password,
-          label: AppStrings.password,
+          label: context.l10n.authPassword,
           icon: Icons.lock,
           obscure: true,
         ),
         const SizedBox(height: 8),
-        Text(AppStrings.iAm, style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          context.l10n.authIAm,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 8),
         SegmentedButton<UserRole>(
-          segments: const [
+          segments: [
             ButtonSegment(
               value: UserRole.farmer,
-              label: Text(AppStrings.farmer),
-              icon: Icon(Icons.agriculture),
+              label: Text(context.l10n.authFarmer),
+              icon: const Icon(Icons.agriculture),
             ),
             ButtonSegment(
               value: UserRole.expert,
-              label: Text(AppStrings.expert),
-              icon: Icon(Icons.school),
+              label: Text(context.l10n.authExpert),
+              icon: const Icon(Icons.school),
             ),
           ],
           selected: {_role},
@@ -110,7 +117,7 @@ class _SignupPageState extends State<SignupPage> {
         ),
         const SizedBox(height: 24),
         AuthButton(
-          text: AppStrings.signup,
+          text: context.l10n.authSignup,
           loading: _loading,
           onPressed: _signup,
         ),

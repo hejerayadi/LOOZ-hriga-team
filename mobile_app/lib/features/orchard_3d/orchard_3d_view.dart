@@ -18,10 +18,19 @@ const orchard3dAsset = 'assets/orchard_3d/index.html';
 const orchard3dReady = 'looz:ready';
 
 class Orchard3dView extends StatelessWidget {
-  const Orchard3dView({super.key, required this.data, required this.onMessage});
+  const Orchard3dView({
+    super.key,
+    required this.data,
+    required this.language,
+    required this.onMessage,
+  });
 
   /// The orchard as JSON text (see orchard_3d_data.dart).
   final String data;
+
+  /// 'ar' or 'fr': the page shows its texts in this language, and switches
+  /// as soon as it changes.
+  final String language;
 
   /// Called with each other message the 3D page sends
   /// (e.g. 'looz:buttons:hide').
@@ -29,21 +38,36 @@ class Orchard3dView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // No WebView on this platform (e.g. Windows / Linux desktop, or the
+    // tests): an empty frame instead of a crash.
+    if (!kIsWeb && WebViewPlatform.instance == null) {
+      return const SizedBox.expand();
+    }
     // kIsWeb = true when the app runs in a browser (Chrome).
     return kIsWeb
         ? Orchard3dWebFrame(
             asset: orchard3dAsset,
             data: data,
+            language: language,
             onMessage: onMessage,
           )
-        : _Orchard3dWebView(data: data, onMessage: onMessage);
+        : _Orchard3dWebView(
+            data: data,
+            language: language,
+            onMessage: onMessage,
+          );
   }
 }
 
 class _Orchard3dWebView extends StatefulWidget {
-  const _Orchard3dWebView({required this.data, required this.onMessage});
+  const _Orchard3dWebView({
+    required this.data,
+    required this.language,
+    required this.onMessage,
+  });
 
   final String data;
+  final String language;
   final ValueChanged<String> onMessage;
 
   @override
@@ -54,19 +78,23 @@ class _Orchard3dWebViewState extends State<_Orchard3dWebView> {
   late final WebViewController _controller;
   bool _loading = true;
 
+  // true once the page got the data (then it can change language).
+  bool _ready = false;
+
   @override
   void initState() {
     super.initState();
     _controller = WebViewController()
       // three.js needs JavaScript.
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(AppColors.almond)
+      ..setBackgroundColor(AppColors.cream)
       // The page talks to Flutter with LoozFlutter.postMessage('...').
       ..addJavaScriptChannel(
         'LoozFlutter',
         onMessageReceived: (message) {
           if (message.message == orchard3dReady) {
             _controller.runJavaScript('window.loozSetOrchard(${widget.data});');
+            _ready = true;
           } else {
             widget.onMessage(message.message);
           }
@@ -80,6 +108,16 @@ class _Orchard3dWebViewState extends State<_Orchard3dWebView> {
         ),
       )
       ..loadFlutterAsset(orchard3dAsset);
+  }
+
+  @override
+  void didUpdateWidget(_Orchard3dWebView old) {
+    super.didUpdateWidget(old);
+    if (_ready && old.language != widget.language) {
+      _controller.runJavaScript(
+        "window.loozSetLanguage('${widget.language}');",
+      );
+    }
   }
 
   @override

@@ -1,0 +1,313 @@
+{
+  "@@locale": "ar",
+  "@@x-note": "Texts of the Figma design (App.tsx). Arabic is the default.",
+  "tabHome": "الرئيسية",
+  "tabCommunity": "المجتمع",
+  "tabOrchard": "بستاني ★",
+  "tabAlerts": "التنبيهات",
+  "tabProfile": "حسابي",
+  "askAssistant": "اسأل المساعد",
+  "welcomeTitle": "أهلًا بك في لوز",
+  "welcomeSubtitle": "بستانك معك، كل يوم",
+  "phoneTitle": "رقم هاتفك",
+  "phoneSubtitle": "سنرسل رمزًا قصيرًا",
+  "sendCode": "إرسال الرمز",
+  "codeTitle": "أدخل الرمز",
+  "codeSubtitle": "أرسلناه إلى هاتفك",
+  "confirm": "تأكيد",
+  "welcomeUser": "مرحبًا يا {name}",
+  "@welcomeUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "orchardReady": "بستانك جاهز",
+  "start": "ابدأ",
+  "homeTitle": "صباح الخير",
+  "homeSubtitle": "{name}، أشجارك بخير اليوم",
+  "@homeSubtitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "goodDayToWater": "يوم مناسب للسقي",
+  "drySoil": "التربة جافة",
+  "waterToday": "اسقِ اليوم",
+  "quickAsk": "اسأل",
+  "quickJournal": "دفتر",
+  "quickMap": "خريطة",
+  "communityTitle": "المجتمع",
+  "communitySubtitle": "من فلاحي تونس",
+  "almondBlossoms": "أزهار اللوز",
+  "isThisFlowerHealthy": "هل هذه الزهرة سليمة؟",
+  "answers": "{count} إجابة",
+  "@answers": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "verifiedExpert": "خبير موثّق",
+  "tipOfTheDay": "نصيحة اليوم: اسقِ صباحًا",
+  "askAQuestion": "اسأل سؤالًا",
+  "askTitle": "اسأل سؤالًا",
+  "askSubtitle": "اختر الأسهل لك",
+  "speak": "تكلّم",
+  "speakHint": "اضغط وقل سؤالك",
+  "photo": "صورة",
+  "text": "كتابة",
+  "send": "أرسل",
+  "tipsTitle": "مكتبة النصائح",
+  "tipWaterBeforeSun": "اسقِ قبل اشتداد الشمس",
+  "tipCheckLeaves": "افحص الأوراق كل أسبوع",
+  "tipPhotoInsects": "صوّر أي حشرة غريبة",
+  "photographLeaf": "صوّر الورقة",
+  "looking": "جاري النظر…",
+  "resultTitle": "وجدت شيئًا",
+  "maybeAphids": "قد تكون حشرة المنّ",
+  "whatIsIt": "ما هي؟",
+  "smallInsect": "حشرة صغيرة",
+  "why": "لماذا؟",
+  "warmWeather": "جو دافئ",
+  "whatToDo": "ماذا أفعل؟",
+  "rinseLeaf": "اغسل الورقة",
+  "askAnExpert": "اسأل خبيرًا",
+  "listening": "أنا أسمعك",
+  "speakFreely": "تكلّم براحتك…",
+  "alertsTitle": "التنبيهات",
+  "alertsSubtitle": "{count} تحتاج انتباهك",
+  "@alertsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "treeThirsty": "الشجرة {tree} عطشى",
+  "@treeThirsty": {
+    "placeholders": {
+      "tree": {
+        "type": "String"
+      }
+    }
+  },
+  "actNow": "تحرّك الآن",
+  "insectNearby": "حشرة قريبة",
+  "watchLeaves": "راقب الأوراق",
+  "restIsFine": "باقي البستان بخير",
+  "allGood": "كل شيء جيد",
+  "treeName": "الشجرة A-18",
+  "needsWater": "تحتاج ماء",
+  "wellDone": "أحسنت!",
+  "treeHappy": "الشجرة سعيدة الآن",
+  "waterLiters": "اسقِ {liters} لترًا",
+  "@waterLiters": {
+    "placeholders": {
+      "liters": {
+        "type": "String"
+      }
+    }
+  },
+  "noRainDays": "لم تمطر منذ {days} أيام",
+  "@noRainDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "done": "تمّ",
+  "regionalTitle": "تنبيه في منطقتك",
+  "aphidsNearby": "حشرة المنّ قريبة",
+  "checkYourLeaves": "افحص أوراقك اليوم",
+  "farmersReported": "فلاحًا أبلغوا عنها",
+  "meToo": "أنا أراه أيضًا",
+  "myOrchard": "بستاني",
+  "orchardInPocket": "بستانك في جيبك",
+  "benefitTreeMap": "خريطة كل شجرة",
+  "benefitSmartWatering": "سقي ذكي",
+  "benefitEarlyAlert": "تنبيه مبكر",
+  "startPremium": "ابدأ بريميوم",
+  "notNow": "ليس الآن",
+  "premiumTitle": "LOOZ بريميوم",
+  "free": "مجاني",
+  "assistant": "المساعد",
+  "orchardMap": "خريطة البستان",
+  "smartAlerts": "تنبيهات ذكية",
+  "currency": "د.ت",
+  "month": "شهر",
+  "cancelAnytime": "إلغاء في أي وقت",
+  "paymentTitle": "الدفع",
+  "paymentSubtitle": "خطوة واحدة فقط",
+  "pricePerMonth": "د.ت / شهر",
+  "scanTitle": "امسح الرمز",
+  "scanSubtitle": "مرحبًا في بريميوم",
+  "onOrchardDevice": "على جهاز البستان",
+  "openMap": "فتح الخريطة",
+  "treeCount": "{count} شجرة",
+  "@treeCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "look": "راقب",
+  "journalTitle": "دفتر البستان",
+  "journalSubtitle": "ماذا فعلت اليوم؟",
+  "dictateNote": "سجّل بصوتك",
+  "watering": "سقي",
+  "treatment": "علاج",
+  "pruning": "تقليم",
+  "harvest": "حصاد",
+  "save": "حفظ",
+  "myPlan": "خطتي",
+  "becomeExpert": "كن خبيرًا",
+  "appStates": "حالات التطبيق",
+  "sendLater": "سيُرسل لاحقًا",
+  "noInternet": "لا يوجد إنترنت",
+  "tryAgain": "حاول مرة أخرى",
+  "askFirstQuestion": "اسأل سؤالك الأول",
+  "langArabic": "العربية",
+  "@langArabic": {
+    "description": "Language button (same in both languages)."
+  },
+  "langFrench": "Français",
+  "@langFrench": {
+    "description": "Language button (same in both languages)."
+  },
+  "langPillArabic": "عربي",
+  "@langPillArabic": {
+    "description": "Language switch (same in both languages)."
+  },
+  "langPillFrench": "FR",
+  "@langPillFrench": {
+    "description": "Language switch (same in both languages)."
+  },
+  "premiumName": "★ Premium",
+  "@premiumName": {
+    "description": "Plan card title (same in both languages)."
+  },
+  "demoFirstName": "محمد",
+  "@demoFirstName": {
+    "description": "DEMO user (fake data)."
+  },
+  "demoFullName": "محمد بن سالم",
+  "@demoFullName": {
+    "description": "DEMO user (fake data)."
+  },
+  "demoCity": "صفاقس، تونس",
+  "@demoCity": {
+    "description": "DEMO user (fake data)."
+  },
+  "demoInitial": "م",
+  "@demoInitial": {
+    "description": "DEMO avatar letter (same in both, like the design)."
+  },
+  "demoPrice": "XX",
+  "@demoPrice": {
+    "description": "DEMO price (the design has no price yet)."
+  },
+  "appName": "LOOZ",
+  "@appName": {
+    "description": "APP-ONLY. Brand name."
+  },
+  "zoneName": "المنطقة {letter}",
+  "@zoneName": {
+    "placeholders": {
+      "letter": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. 3D orchard zones."
+  },
+  "planEssential": "أساسي",
+  "@planEssential": {
+    "description": "APP-ONLY. Plan name (test switch)."
+  },
+  "planConnected": "متصل",
+  "@planConnected": {
+    "description": "APP-ONLY. Plan name (test switch)."
+  },
+  "devPlanSwitch": "وضع التجربة: تغيير الخطة",
+  "@devPlanSwitch": {
+    "description": "APP-ONLY. Debug builds only."
+  },
+  "a11yCamera": "الكاميرا",
+  "@a11yCamera": {
+    "description": "APP-ONLY. Screen reader label."
+  },
+  "a11yReadAloud": "استمع",
+  "@a11yReadAloud": {
+    "description": "APP-ONLY. Screen reader label."
+  },
+  "a11yClose": "إغلاق",
+  "@a11yClose": {
+    "description": "APP-ONLY. Screen reader label."
+  },
+  "a11yPlay": "تشغيل",
+  "@a11yPlay": {
+    "description": "APP-ONLY. Screen reader label."
+  },
+  "authLogin": "تسجيل الدخول",
+  "@authLogin": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authSignup": "إنشاء حساب",
+  "@authSignup": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authNoAccount": "ليس لديك حساب؟ أنشئ حسابًا",
+  "@authNoAccount": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authName": "الاسم",
+  "@authName": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authEmail": "البريد الإلكتروني",
+  "@authEmail": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authPassword": "كلمة المرور",
+  "@authPassword": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authIAm": "أنا:",
+  "@authIAm": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authFarmer": "فلاح",
+  "@authFarmer": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authExpert": "خبير",
+  "@authExpert": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authFillAllFields": "املأ كل الخانات.",
+  "@authFillAllFields": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authPasswordTooShort": "كلمة المرور: 6 أحرف على الأقل.",
+  "@authPasswordTooShort": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "authCheckEmail": "تم إنشاء الحساب! افتح بريدك الإلكتروني لتأكيده، ثم سجّل الدخول.",
+  "@authCheckEmail": {
+    "description": "APP-ONLY. Old e-mail login (kept, unused)."
+  },
+  "somethingWrong": "حدث خطأ. حاول مرة أخرى.",
+  "@somethingWrong": {
+    "description": "APP-ONLY. Error message."
+  },
+  "missingKeys": "مفاتيح Supabase غير موجودة.\n\nاملأ ملف mobile_app/.env ثم شغّل:\nflutter run --dart-define-from-file=.env",
+  "@missingKeys": {
+    "description": "APP-ONLY. Developer message."
+  }
+}

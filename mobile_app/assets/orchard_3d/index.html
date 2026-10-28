@@ -199,6 +199,20 @@
       body.panel-open #zoneCard { left: 326px; }
     }
 
+    /* ---------- Arabic: right to left ---------- */
+    html[dir=rtl] .slider .val { margin-left: 0; margin-right: auto; }
+    @media (min-width: 720px) {
+      html[dir=rtl] #panel {
+        left: auto; right: 0; transform: translateX(105%);
+        box-shadow: -2px 0 12px rgba(0, 0, 0, .15);
+      }
+      html[dir=rtl] body.panel-open #panel { transform: none; }
+      html[dir=rtl] body.panel-open #topbar { left: 10px; right: 320px; }
+      html[dir=rtl] #zoneCard { left: auto; right: 16px; }
+      html[dir=rtl] body.panel-open #zoneCard { left: auto; right: 326px; }
+    }
+    #pad { direction: ltr; }   /* the arrows stay where they point */
+
     /* ---------- Walk mode: big arrow pad (touch screens) ---------- */
     #pad {
       position: absolute; left: 14px; bottom: 14px;
@@ -321,9 +335,10 @@
     'use strict';
 
     // ---------------------------------------------------------------
-    // 0. Texts (French) and icons
+    // 0. Texts (French and Arabic) and icons
     // ---------------------------------------------------------------
-    var TXT = {
+    var TXTS = {
+      fr: {
       settings: 'Réglages', walk: 'Marcher', view: 'Vue 3D', ids: 'N°', reset: 'Recentrer',
       zones: 'Zones', trees: 'Arbres',
       real: 'Verger', ai: 'IA', manual: 'Manuel', main: 'Principale', poll: 'Pollinisateur', plot: 'Parcelle',
@@ -338,8 +353,31 @@
       moisture: 'Humidité', temp: 'Temp.', battery: 'Batterie',
       online: 'En ligne', offline: 'Hors ligne', ago: 'il y a ', min: ' min', hours: ' h', days: ' j',
       check: 'À vérifier : ',
-      lockedLive: 'Capteurs : données en direct', upgradeConnected: 'Passer à Connecté'
+      lockedLive: 'Capteurs : données en direct', upgradeConnected: 'Démarrer Premium',
+      meters: ' m'
+      },
+      ar: {
+        settings: 'الإعدادات', walk: 'تجوّل', view: 'عرض ثلاثي', ids: 'رقم', reset: 'إعادة التوسيط',
+        zones: 'المناطق', trees: 'الأشجار',
+        real: 'بستاني', ai: 'ذكاء', manual: 'يدوي', main: 'رئيسية', poll: 'ملقّحة', plot: 'القطعة',
+        clear: 'مسح الكل', width: 'العرض', length: 'الطول',
+        treeGap: 'بين الأشجار', rowGap: 'بين الصفوف', pollEvery: 'صف الملقّحات', every: '1 من ',
+        modeReal: 'بستاني', modeAI: 'خطة الذكاء', modeManual: 'يدوي', modeWalk: 'جولة',
+        hintOrbit: 'اسحب: تدوير · بإصبعين / العجلة: تكبير',
+        hintZones: 'المس منطقة: التفاصيل',
+        hintManual: 'المس الأرض: غرس · المس شجرة: إزالة',
+        hintWalk: 'الأسهم أو ZQSD / WASD',
+        health: { good: 'جيدة', warning: 'متوسطة', danger: 'سيئة' },
+        moisture: 'الرطوبة', temp: 'الحرارة', battery: 'البطارية',
+        online: 'متصل', offline: 'غير متصل', ago: 'منذ ', min: ' د', hours: ' س', days: ' ي',
+        check: 'للفحص: ',
+        lockedLive: 'المستشعرات: بيانات مباشرة', upgradeConnected: 'ابدأ بريميوم',
+        meters: ' م'
+      }
     };
+    // The language: from the app (see setLanguage below), Arabic by default.
+    var LANG = /[?&]lang=fr/.test(location.search) ? 'fr' : 'ar';
+    var TXT = TXTS[LANG];
 
     var ICONS = {
       tune: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
@@ -375,7 +413,12 @@
       svg.setAttribute('viewBox', '0 0 24 24');
       svg.innerHTML = ICONS[name];
     }
-    document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = TXT[el.dataset.t]; });
+    function applyTexts() {
+      document.documentElement.lang = LANG;
+      document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
+      document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = TXT[el.dataset.t]; });
+    }
+    applyTexts();
     document.querySelectorAll('svg[data-icon]').forEach(function (el) { setIcon(el, el.dataset.icon); });
 
     var isTouch = window.matchMedia('(pointer: coarse)').matches;
@@ -669,6 +712,25 @@
       return new THREE.SpriteMaterial({ map: tex });
     }
 
+    // The name of a zone, on a white pill with the zone's color.
+    function zoneLabelMaterial(zone) {
+      return canvasSprite(256, 96, function (ctx) {
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.beginPath();
+        ctx.roundRect(4, 4, 248, 88, 44);
+        ctx.fill();
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = zoneColor(zone);
+        ctx.stroke();
+        ctx.fillStyle = '#1f2a24';
+        ctx.font = 'bold 44px sans-serif';
+        ctx.direction = LANG === 'ar' ? 'rtl' : 'ltr';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(zone.name, 128, 50);
+      });
+    }
+
     var labelCache = {};   // "id|variety" -> SpriteMaterial (reused between rebuilds)
 
     function labelMaterial(t) {
@@ -803,20 +865,7 @@
         // Name floating above the zone.
         var cx = 0, cz = 0;
         pts.forEach(function (p) { cx += p.x; cz += p.z; });
-        zone.label = new THREE.Sprite(canvasSprite(256, 96, function (ctx) {
-          ctx.fillStyle = 'rgba(255,255,255,0.95)';
-          ctx.beginPath();
-          ctx.roundRect(4, 4, 248, 88, 44);
-          ctx.fill();
-          ctx.lineWidth = 8;
-          ctx.strokeStyle = zoneColor(zone);
-          ctx.stroke();
-          ctx.fillStyle = '#1f2a24';
-          ctx.font = 'bold 44px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(zone.name, 128, 50);
-        }));
+        zone.label = new THREE.Sprite(zoneLabelMaterial(zone));
         zone.label.scale.set(6, 2.25, 1);
         zone.label.position.set(cx / pts.length, 8, cz / pts.length);   // high enough not to hide tree markers
         zone.label.userData.zoneId = zone.id;
@@ -907,8 +956,9 @@
         syncSliders();
         updatePlot();
       }
+      if (data.lang) setLanguage(data.lang, true);
       ZONES = (data.zones || []).map(function (z) {
-        return { id: z.id, name: z.name, health: z.health, points: z.boundary, node: null };
+        return { id: z.id, names: z.names, name: zoneName(z), health: z.health, points: z.boundary, node: null };
       });
       (data.nodes || []).forEach(function (n) {
         var zone = zoneById(n.zone_id);
@@ -922,12 +972,35 @@
     }
     window.loozSetOrchard = setOrchard;
 
+    function zoneName(zone) { return (zone.names && zone.names[LANG]) || zone.name; }
+
+    // Switches every text of the page to 'ar' or 'fr' (the scene does not change).
+    function setLanguage(lang, quiet) {
+      LANG = lang === 'fr' ? 'fr' : 'ar';
+      TXT = TXTS[LANG];
+      applyTexts();
+      syncSliders();
+      ZONES.forEach(function (zone) {
+        zone.name = zoneName(zone);
+        if (zone.label) {
+          var old = zone.label.material;
+          zone.label.material = zoneLabelMaterial(zone);
+          old.map.dispose();
+          old.dispose();
+        }
+      });
+      if (quiet) return;
+      if (S.zoneId) openZone(S.zoneId); else refreshUI();
+    }
+    window.loozSetLanguage = setLanguage;
+
     // Flutter web: the data arrives as a message from the parent page.
     window.addEventListener('message', function (e) {
       if (e.source !== window.parent || typeof e.data !== 'string') return;
       try {
         var data = JSON.parse(e.data);
         if (data && data.zones) setOrchard(data);
+        else if (data && data.looz_lang) setLanguage(data.looz_lang);
       } catch (err) { /* not our message */ }
     });
 
@@ -1293,7 +1366,7 @@
     $('btnClear').onclick = function () { S.trees = []; rebuildTrees(); };
 
     function sliderText(key) {
-      return key === 'pollEvery' ? TXT.every + S.pollEvery : S[key] + ' m';
+      return key === 'pollEvery' ? TXT.every + S.pollEvery : S[key] + TXT.meters;
     }
     function syncSliders() {
       document.querySelectorAll('input[data-key]').forEach(function (input) { input.value = S[input.dataset.key]; });

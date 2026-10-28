@@ -1,116 +1,193 @@
-// Tab 4 — "Profil": name, role and subscription plan.
-import 'package:flutter/foundation.dart' show kDebugMode;
+// Tab 5 — Profile ("حسابي"): the farmer, the plan, become an expert, and
+// the states of the app.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/locale.dart';
+import '../../core/navigation.dart';
 import '../../core/plans.dart';
-import '../../core/strings/app_strings.dart';
-import '../../core/supabase_config.dart';
 import '../../core/theme/app_theme.dart';
-import '../../shared/widgets/looz_page.dart';
-import '../../shared/widgets/plan_badge.dart';
-import '../../shared/widgets/role_badge.dart';
-import '../plans/plans_screen.dart';
-import 'profile_data.dart';
+import '../../shared/widgets/app_icon.dart';
+import '../../shared/widgets/blob.dart';
+import '../../shared/widgets/css_box.dart';
+import '../../shared/widgets/looz_header.dart';
+import '../../shared/widgets/shell.dart';
+import '../../shared/widgets/symbol_text.dart';
+import '../premium/premium_screen.dart';
+import '../states/states_screen.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const user = fakeUser;
-    // Rebuilds as soon as the plan changes.
-    return ValueListenableBuilder<Plan>(
-      valueListenable: currentPlan,
-      builder: (context, plan, _) => LoozPage(
-        title: AppStrings.tabProfile,
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
+    final l10n = context.l10n;
+    const avatar = Size.square(86);
+    return ShellContent(
+      children: [
+        const LoozHeader(),
+        const SizedBox(height: 42),
+        Row(
+          children: [
+            Container(
+              width: avatar.width,
+              height: avatar.height,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.leaf,
+                borderRadius: blobRadius(avatar, BlobShapes.avatar),
+              ),
+              child: Text(
+                l10n.demoInitial,
+                style: AppTextStyles.of(34, FontWeight.w800),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
-                    radius: 56,
-                    backgroundColor: AppColors.almond,
-                    child: Icon(Icons.person, size: 72, color: AppColors.brown),
-                  ),
-                  const SizedBox(height: 16),
                   Text(
-                    user.name,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    l10n.demoFullName,
+                    style: AppTextStyles.headline.copyWith(fontSize: 26),
                   ),
-                  const SizedBox(height: 12),
-                  RoleBadge(role: user.role),
-                  const SizedBox(height: 12),
-                  // Current plan: "Gratuit", "Essentiel" or "Connecté".
-                  PlanBadge(plan: plan),
+                  Text(l10n.demoCity, style: AppTextStyles.of(16)),
                 ],
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 25),
+        _ProfileRow(
+          icon: AppIcon.tree,
+          label: l10n.myPlan,
+          end: SymbolText(
+            '★',
+            style: AppTextStyles.of(19).copyWith(color: AppColors.midGreen),
           ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () => openPlans(context),
-            icon: const Icon(Icons.workspace_premium),
-            label: const Text(
-              AppStrings.seePlans,
-              style: TextStyle(fontSize: 18),
-            ),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+          onTap: () => openScreen(context, const PremiumScreen()),
+        ),
+        _ProfileRow(
+          icon: AppIcon.people,
+          label: l10n.becomeExpert,
+          // DEMO: there is no "become an expert" screen in the design yet.
+          onTap: null,
+        ),
+        _ProfileRow(
+          icon: AppIcon.wifi,
+          label: l10n.appStates,
+          onTap: () => openScreen(context, const StatesScreen()),
+        ),
+        // Only for developers (debug builds): change the fake plan.
+        if (kDebugMode) const _DevPlanSwitch(),
+      ],
+    );
+  }
+}
+
+class _ProfileRow extends StatelessWidget {
+  const _ProfileRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.end,
+  });
+
+  final AppIcon icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  /// At the end of the row (default: an arrow).
+  final Widget? end;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Semantics(
+        button: true,
+        child: GestureDetector(
+          onTap: onTap,
+          child: CssBox(
+            height: 86,
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            shadows: AppShadows.card,
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                IconBlob(icon: icon),
+                const SizedBox(width: 14),
+                Expanded(child: Text(label, style: AppTextStyles.cardTitle)),
+                const SizedBox(width: 14),
+                end ?? const LoozIcon(AppIcon.arrow),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          // Logout: AuthGate sees it and goes back to the Login screen.
-          OutlinedButton.icon(
-            onPressed: () => supabase.auth.signOut(),
-            icon: const Icon(Icons.logout),
-            label: const Text(
-              AppStrings.logout,
-              style: TextStyle(fontSize: 18),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-          ),
-          // Only while developing (flutter run), never in the real app.
-          if (kDebugMode) _DevPlanSwitch(plan: plan),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// Developer tool: switch the fake user's plan to test all 3 plans.
+/// Debug builds only: the 3 plans, to see the locked screens.
 class _DevPlanSwitch extends StatelessWidget {
-  const _DevPlanSwitch({required this.plan});
-
-  final Plan plan;
+  const _DevPlanSwitch();
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(top: 24),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    final l10n = context.l10n;
+    final names = {
+      Plan.free: l10n.free,
+      Plan.essential: l10n.planEssential,
+      Plan.connected: l10n.planConnected,
+    };
+    return ValueListenableBuilder<Plan>(
+      valueListenable: currentPlan,
+      builder: (context, plan, _) => CssBox(
+        color: AppColors.white70,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        padding: const EdgeInsets.all(12),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Row(
-              children: [
-                Icon(Icons.build, color: AppColors.brown),
-                SizedBox(width: 8),
-                Text(AppStrings.devPlan),
-              ],
+            Text(
+              l10n.devPlanSwitch,
+              style: AppTextStyles.of(15, FontWeight.w700),
             ),
-            const SizedBox(height: 12),
-            SegmentedButton<Plan>(
-              segments: [
+            const SizedBox(height: 8),
+            Row(
+              children: [
                 for (final p in Plan.values)
-                  ButtonSegment(value: p, label: Text(AppStrings.plan(p))),
+                  Expanded(
+                    child: Semantics(
+                      button: true,
+                      selected: p == plan,
+                      child: GestureDetector(
+                        onTap: () => currentPlan.value = p,
+                        child: Container(
+                          height: 38,
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: p == plan
+                                ? AppColors.green
+                                : AppColors.white,
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          child: Text(
+                            names[p]!,
+                            style: AppTextStyles.langPill.copyWith(
+                              color: p == plan
+                                  ? AppColors.white
+                                  : AppColors.green,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
-              selected: {plan},
-              onSelectionChanged: (selection) =>
-                  currentPlan.value = selection.first,
             ),
           ],
         ),

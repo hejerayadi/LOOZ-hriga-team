@@ -1,31 +1,47 @@
-// The root of the app: theme + bottom navigation with 4 tabs.
+// The root of the app: theme, languages, and the main screen with 5 tabs.
 import 'package:flutter/material.dart';
 
-import 'core/strings/app_strings.dart';
+import 'core/locale.dart';
+import 'core/navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'features/alerts/alerts_page.dart';
-import 'features/auth/auth_gate.dart';
 import 'features/community/community_page.dart';
 import 'features/home/home_page.dart';
+import 'features/onboarding/language_screen.dart';
+import 'features/orchard_3d/orchard_tab.dart';
 import 'features/profile/profile_page.dart';
+import 'shared/widgets/looz_background.dart';
+import 'shared/widgets/shell.dart';
 
-/// MaterialApp = the app "shell": title, theme and first screen.
-/// The first screen is AuthGate: Login if not logged in, else the 4 tabs.
+/// MaterialApp = the app "shell": title, theme, language and first screen.
+/// The first screen is the choice of the language, then the (demo) login.
 class LoozApp extends StatelessWidget {
-  const LoozApp({super.key});
+  const LoozApp({super.key, this.home = const LanguageScreen()});
+
+  /// The first screen (tests can start somewhere else).
+  final Widget home;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppStrings.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      home: const AuthGate(),
+    // Rebuilds the app when the language changes. Arabic = right to left:
+    // the layout mirrors by itself.
+    return ValueListenableBuilder<Locale>(
+      valueListenable: appLocale,
+      builder: (context, locale, _) => MaterialApp(
+        onGenerateTitle: (context) => context.l10n.appName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        locale: locale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: home,
+      ),
     );
   }
 }
 
 /// Shown instead of the app when the Supabase keys are missing.
+/// (Not used for now: the login is a demo without Supabase.)
 class MissingKeysApp extends StatelessWidget {
   const MissingKeysApp({super.key});
 
@@ -34,14 +50,19 @@ class MissingKeysApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const Scaffold(
-        body: Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              AppStrings.missingKeys,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18),
+      locale: appLocale.value,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                context.l10n.missingKeys,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.of(18),
+              ),
             ),
           ),
         ),
@@ -50,8 +71,8 @@ class MissingKeysApp extends StatelessWidget {
   }
 }
 
-/// The main screen with the bottom navigation bar.
-/// It remembers which tab is selected (that's why it is "Stateful").
+/// The main screen: the 5 tabs, with the assistant bar and the tab bar
+/// floating at the bottom.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -60,49 +81,58 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  // Index of the selected tab (0 = Home).
-  int _currentIndex = 0;
+  // A tab is built the first time it is shown (so the 3D orchard only
+  // starts when the user opens it), then kept alive.
+  final Set<AppTab> _opened = {};
 
-  // The 4 pages, in the same order as the tabs below.
-  static const List<Widget> _pages = [
-    HomePage(),
-    CommunityPage(),
-    AlertsPage(),
-    ProfilePage(),
-  ];
+  Widget _page(AppTab tab) {
+    switch (tab) {
+      case AppTab.home:
+        return const HomePage();
+      case AppTab.community:
+        return const CommunityPage();
+      case AppTab.orchard:
+        return const OrchardTab();
+      case AppTab.alerts:
+        return const AlertsPage();
+      case AppTab.profile:
+        return const ProfilePage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // IndexedStack keeps every page alive, so the scroll position
-      // is not lost when switching tabs.
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) => setState(() => _currentIndex = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.park_outlined),
-            selectedIcon: Icon(Icons.park),
-            label: AppStrings.tabHome,
+    return ValueListenableBuilder<AppTab>(
+      valueListenable: currentTab,
+      builder: (context, tab, _) {
+        _opened.add(tab);
+        return Scaffold(
+          body: LoozBackground(
+            child: Stack(
+              children: [
+                // IndexedStack keeps every opened page alive, so the scroll
+                // position is not lost when switching tabs.
+                IndexedStack(
+                  index: tab.index,
+                  children: [
+                    for (final t in AppTab.values)
+                      _opened.contains(t) ? _page(t) : const SizedBox.shrink(),
+                  ],
+                ),
+                Positioned.fill(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: orchardPanelOpen,
+                    builder: (context, panelOpen, _) => ShellBars(
+                      selected: tab,
+                      showAssistant: !(tab == AppTab.orchard && panelOpen),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.groups_outlined),
-            selectedIcon: Icon(Icons.groups),
-            label: AppStrings.tabCommunity,
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.notifications_outlined),
-            selectedIcon: Icon(Icons.notifications),
-            label: AppStrings.tabAlerts,
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: AppStrings.tabProfile,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

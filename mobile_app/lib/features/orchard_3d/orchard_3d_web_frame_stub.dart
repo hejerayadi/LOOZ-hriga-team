@@ -7,11 +7,13 @@ class Orchard3dWebFrame extends StatelessWidget {
     super.key,
     required this.asset,
     required this.data,
+    required this.language,
     required this.onMessage,
   });
 
   final String asset;
   final String data;
+  final String language;
   final ValueChanged<String> onMessage;
 
   @override

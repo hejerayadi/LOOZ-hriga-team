@@ -1,25 +1,53 @@
-// Big round AI assistant button: opens the chat screen.
+// The "اسأل المساعد" pill of the assistant bar (the design's "ask-pill"):
+// the orb, the text and a microphone. It opens the voice assistant.
 import 'package:flutter/material.dart';
 
-import '../../core/strings/app_strings.dart';
+import '../../core/locale.dart';
 import '../../core/theme/app_theme.dart';
-import '../../features/assistant/assistant_screen.dart';
+import '../../core/navigation.dart';
+import '../../features/ask/voice_screen.dart';
+import 'app_icon.dart';
+import 'assistant_orb.dart';
 
 class AssistantButton extends StatelessWidget {
-  const AssistantButton({super.key});
+  const AssistantButton({super.key, this.compact = false});
+
+  /// true = only the orb, in a round button.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton.large(
-      heroTag: 'assistant',
-      tooltip: AppStrings.assistant,
-      backgroundColor: AppColors.brown,
-      onPressed: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const AssistantScreen()),
-        );
-      },
-      child: const Icon(Icons.smart_toy, size: 44),
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: () => openScreen(context, const VoiceScreen()),
+        child: Container(
+          width: compact ? AppSizes.roundButton : null,
+          height: AppSizes.assistantBarHeight,
+          decoration: BoxDecoration(
+            color: AppColors.softGreen,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            boxShadow: AppShadows.assistantBar,
+          ),
+          child: compact
+              ? const Center(child: AssistantOrb(size: OrbSize.tiny))
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    const AssistantOrb(size: OrbSize.tiny),
+                    Flexible(
+                      child: Text(
+                        context.l10n.askAssistant,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.assistantBar,
+                      ),
+                    ),
+                    const LoozIcon(AppIcon.mic, size: 25),
+                  ],
+                ),
+        ),
+      ),
     );
   }
 }
