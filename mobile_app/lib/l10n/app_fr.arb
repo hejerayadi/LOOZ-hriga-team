@@ -28,11 +28,102 @@
   "communityTitle": "Communauté",
   "communitySubtitle": "Des agriculteurs tunisiens",
   "almondBlossoms": "Fleurs d'amandier",
-  "isThisFlowerHealthy": "Cette fleur est-elle saine ?",
-  "answers": "{count} réponses",
   "verifiedExpert": "Expert vérifié",
   "tipOfTheDay": "Conseil : arrosez le matin",
   "askAQuestion": "Poser une question",
+  "answers": "{count, plural, =0{Aucune réponse} =1{1 réponse} other{{count} réponses}}",
+  "@answers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityAnswersTitle": "Réponses",
+  "writeAnswerHint": "Écrivez votre réponse ici",
+  "noAnswersYet": "Pas encore de réponse. Soyez le premier à répondre",
+  "writePostHint": "Exemple : les feuilles jaunissent, que faire ?",
+  "newPostTitle": "Publier dans la communauté",
+  "newPostSubtitle": "Une question ou un conseil, avec une photo si vous voulez",
+  "publish": "Publier",
+  "publishing": "Publication…",
+  "takePhoto": "Prendre une photo",
+  "choosePhoto": "Choisir une photo",
+  "changePhoto": "Changer",
+  "removePhoto": "Retirer",
+  "preparingPhoto": "Préparation de la photo…",
+  "uploadingPhoto": "Envoi de la photo…",
+  "photoTooBig": "Photo trop lourde (plus de 5 Mo). Choisissez-en une autre.",
+  "photoWrongType": "Ce fichier n'est pas une photo (JPG, PNG ou WebP).",
+  "uploadFailed": "La photo n'a pas été envoyée. Réessayez.",
+  "cameraDenied": "Looz n'a pas accès à l'appareil photo. Autorisez-le dans les réglages du téléphone.",
+  "galleryDenied": "Looz n'a pas accès à vos photos. Autorisez-le dans les réglages du téléphone.",
+  "noCamera": "Pas d'appareil photo sur cet appareil.",
+  "photoUnavailable": "Photo indisponible",
+  "a11yPostPhoto": "Photo de la publication",
+  "deleteAnswerQuestion": "Supprimer votre réponse ?",
+  "deletePostQuestion": "Supprimer votre question ? Ses réponses seront aussi supprimées.",
+  "deleteAction": "Supprimer",
+  "cancelAction": "Annuler",
+  "textEmpty": "Écrivez d'abord quelque chose",
+  "textTooLong": "Texte trop long : {max} caractères au maximum",
+  "@textTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "textBadCharacters": "N'utilisez pas les signes < et >",
+  "tooFast": "Doucement, réessayez dans une minute",
+  "postGone": "Cette question n'existe plus",
+  "cantDelete": "Vous ne pouvez pas supprimer ceci",
+  "farmerFallbackName": "Agriculteur",
+  "loading": "Chargement…",
+  "soon": "Bientôt",
+  "charCount": "{count} / {max}",
+  "@charCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "timeJustNow": "À l'instant",
+  "timeMinutesAgo": "{count, plural, other{il y a {count} min}}",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{count, plural, other{il y a {count} h}}",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{count, plural, =1{il y a 1 jour} other{il y a {count} jours}}",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "regionSfax": "Sfax",
+  "regionKairouan": "Kairouan",
+  "regionSidiBouzid": "Sidi Bouzid",
+  "regionGafsa": "Gafsa",
+  "regionKasserine": "Kasserine",
+  "regionMahdia": "Mahdia",
+  "regionZaghouan": "Zaghouan",
   "askTitle": "Votre question",
   "askSubtitle": "Choisissez le plus simple",
   "speak": "Parler",

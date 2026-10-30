@@ -98,11 +98,7 @@ class SupabaseAuthService implements AuthService {
   @override
   Future<void> verifyCode(String phone, String code) => _run(() async {
     if (!isValidCode(code)) throw const AuthError(AuthFailure.wrongCode);
-    await _client.auth.verifyOTP(
-      phone: phone,
-      token: code,
-      type: OtpType.sms,
-    );
+    await _client.auth.verifyOTP(phone: phone, token: code, type: OtpType.sms);
   });
 
   @override
@@ -142,7 +138,10 @@ class SupabaseAuthService implements AuthService {
   @override
   Future<Plan> loadPlan() => _run(() async {
     final name = await _client.rpc('user_plan');
-    return Plan.values.firstWhere((p) => p.name == name, orElse: () => Plan.free);
+    return Plan.values.firstWhere(
+      (p) => p.name == name,
+      orElse: () => Plan.free,
+    );
   });
 
   @override
@@ -182,7 +181,7 @@ class SupabaseAuthService implements AuthService {
 /// Codes: https://supabase.com/docs/guides/auth/debugging/error-codes
 AuthFailure failureOf(Object error) {
   if (error is AuthError) return error.failure;
-  if (error is TimeoutException || _isNetworkError(error)) {
+  if (error is TimeoutException || isNetworkError(error)) {
     return AuthFailure.noInternet;
   }
   if (error is AuthSessionMissingException) return AuthFailure.sessionExpired;
@@ -232,7 +231,8 @@ AuthFailure failureOf(Object error) {
 }
 
 /// No connection (the type of error differs between phones and the web).
-bool _isNetworkError(Object error) {
+/// Also used by the community (community_service.dart).
+bool isNetworkError(Object error) {
   final text = error.toString();
   return const [
     'SocketException',

@@ -14,15 +14,29 @@ import 'looz_tab_bar.dart';
 /// The content of a page: scrolls under the bottom bars, with enough
 /// space at the end to scroll the last card above them.
 class ShellContent extends StatelessWidget {
-  const ShellContent({super.key, required this.children});
+  const ShellContent({
+    super.key,
+    required this.children,
+    this.physics,
+    this.controller,
+  });
 
   final List<Widget> children;
+
+  /// e.g. AlwaysScrollableScrollPhysics, to pull down to refresh even
+  /// when the page is short.
+  final ScrollPhysics? physics;
+
+  /// To scroll the page from the code (e.g. back to the top).
+  final ScrollController? controller;
 
   @override
   Widget build(BuildContext context) {
     final system = MediaQuery.paddingOf(context);
     final side = AppSpacing.pageSide(context);
     return ListView(
+      controller: controller,
+      physics: physics,
       padding: EdgeInsets.fromLTRB(
         side,
         system.top + AppSpacing.pageTop,
@@ -100,12 +114,15 @@ class ShellPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // While typing, the keyboard pushes the bars up: hide them, so they do
+    // not cover the text box (e.g. an answer in the community).
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
       body: LoozBackground(
         child: Stack(
           children: [
             ShellContent(children: children),
-            if (showBars)
+            if (showBars && !keyboardOpen)
               const Positioned.fill(child: ShellBars(selected: null)),
           ],
         ),

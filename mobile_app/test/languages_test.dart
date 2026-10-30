@@ -15,7 +15,13 @@ import 'package:looz_mobile/features/ask/voice_screen.dart';
 import 'package:looz_mobile/features/camera/camera_screen.dart';
 import 'package:looz_mobile/features/camera/result_screen.dart';
 import 'package:looz_mobile/features/camera/thinking_screen.dart';
+import 'package:looz_mobile/data/community_models.dart';
+import 'package:looz_mobile/data/community_photos.dart';
+import 'package:looz_mobile/data/community_service.dart';
+import 'package:looz_mobile/features/community/photo_viewer.dart';
+import 'package:looz_mobile/features/community/post_screen.dart';
 import 'package:looz_mobile/features/community/tips_screen.dart';
+import 'package:looz_mobile/features/community/write_post_screen.dart';
 import 'package:looz_mobile/features/journal/journal_screen.dart';
 import 'package:looz_mobile/features/map/map_screen.dart';
 import 'package:looz_mobile/features/onboarding/language_screen.dart';
@@ -29,6 +35,8 @@ import 'package:looz_mobile/features/premium/premium_screen.dart';
 import 'package:looz_mobile/features/premium/qr_screen.dart';
 import 'package:looz_mobile/features/states/states_screen.dart';
 
+import 'fake_community_service.dart';
+import 'fake_photo_picker.dart';
 import 'test_helpers.dart';
 
 // Words the design shows the same in both languages.
@@ -80,6 +88,41 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
   ('my orchard (locked)', const MainShell(), Plan.free, AppTab.orchard, false),
   ('alerts', const MainShell(), Plan.connected, AppTab.alerts, false),
   ('profile', const MainShell(), Plan.connected, AppTab.profile, false),
+  (
+    'community question',
+    const _SamplePostScreen(),
+    Plan.connected,
+    AppTab.home,
+    false,
+  ),
+  (
+    'write a question',
+    const WritePostScreen(),
+    Plan.connected,
+    AppTab.home,
+    false,
+  ),
+  (
+    'new post with a photo',
+    const _NewPostWithPhoto(),
+    Plan.connected,
+    AppTab.home,
+    false,
+  ),
+  (
+    'community post with a photo',
+    const _SamplePhotoPostScreen(),
+    Plan.connected,
+    AppTab.home,
+    false,
+  ),
+  (
+    'photo on the whole screen',
+    PhotoViewer(image: MemoryImage(testPhotoBytes()), label: ''),
+    Plan.connected,
+    AppTab.home,
+    false,
+  ),
   ('tips', const TipsScreen(), Plan.connected, AppTab.home, false),
   ('ask', const AskScreen(), Plan.connected, AppTab.home, false),
   ('voice', const VoiceScreen(), Plan.connected, AppTab.home, false),
@@ -105,8 +148,10 @@ Future<List<String>> textsOf(
   String lang,
 ) async {
   final (_, widget, plan, tab, done) = screen;
-  // A farmer whose name is written in this language.
+  // A farmer whose name is written in this language, and a community
+  // whose farmers write in this language.
   logInTestUser(lang);
+  useFakeCommunity(lang);
   appLocale.value = Locale(lang);
   currentPlan.value = plan;
   currentTab.value = tab;
@@ -119,6 +164,49 @@ Future<List<String>> textsOf(
   ];
   await closeApp(tester);
   return texts;
+}
+
+/// The first question of the fake community (in the language of the test),
+/// with its answers.
+class _SamplePostScreen extends StatelessWidget {
+  const _SamplePostScreen();
+
+  @override
+  Widget build(BuildContext context) =>
+      PostScreen(post: (communityService as FakeCommunityService).posts.first);
+}
+
+/// The new post screen with a photo chosen (given back by the fake camera).
+class _NewPostWithPhoto extends StatelessWidget {
+  const _NewPostWithPhoto();
+
+  @override
+  Widget build(BuildContext context) {
+    (photoPicker as FakePhotoPicker).lost ??= testPhotoBytes();
+    return const WritePostScreen();
+  }
+}
+
+/// A question of the fake community with a farmer's photo.
+class _SamplePhotoPostScreen extends StatelessWidget {
+  const _SamplePhotoPostScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final fake = communityService as FakeCommunityService;
+    final first = fake.posts.first;
+    final post = Post(
+      id: 'photo-post',
+      type: PostType.question,
+      text: first.text,
+      photo: 'farmer-1/photo-post.jpg',
+      createdAt: first.createdAt,
+      author: first.author,
+    );
+    fake.photos[post.photo!] = testPhotoBytes();
+    fake.comments[post.id] = fake.comments[first.id] ?? [];
+    return PostScreen(post: post);
+  }
 }
 
 void main() {

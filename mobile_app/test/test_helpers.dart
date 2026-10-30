@@ -7,10 +7,14 @@ import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/session.dart';
+import 'package:looz_mobile/data/community_photos.dart';
+import 'package:looz_mobile/data/community_service.dart';
 import 'package:looz_mobile/data/fake_data.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_tab.dart';
 
 import 'fake_auth_service.dart';
+import 'fake_community_service.dart';
+import 'fake_photo_picker.dart';
 
 /// Tests use a font where every letter is a square: load Cairo instead,
 /// so the screens are laid out like in the app (call it in setUpAll).
@@ -38,8 +42,8 @@ void noAnimations(WidgetTester tester) {
   addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 }
 
-/// The app keeps the language, plan, tab, user and demo state in global
-/// values: put them back after each test.
+/// The app keeps the language, plan, tab, user, community, camera and demo
+/// state in global values: put them back after each test.
 void resetAppState() {
   appLocale.value = const Locale('ar');
   currentPlan.value = Plan.connected;
@@ -47,6 +51,25 @@ void resetAppState() {
   orchardPanelOpen.value = false;
   fakeTreeWatered.value = false;
   currentUser.value = null;
+  communityService = FakeCommunityService();
+  photoPicker = FakePhotoPicker();
+}
+
+/// Uses a fake community (no internet) with 3 questions written in [lang]:
+/// returns it, to add questions or to check what was written. The camera
+/// and the gallery are fake too (see usePhotoPicker).
+FakeCommunityService useFakeCommunity([String lang = 'ar']) {
+  final fake = FakeCommunityService.sample(lang);
+  communityService = fake;
+  photoPicker = FakePhotoPicker();
+  return fake;
+}
+
+/// Uses a fake camera and gallery: returns it, to choose what they give.
+FakePhotoPicker usePhotoPicker({bool hasCamera = true}) {
+  final fake = FakePhotoPicker(hasCamera: hasCamera);
+  photoPicker = fake;
+  return fake;
 }
 
 /// Uses a fake login system (no internet): returns it, to add accounts or
@@ -71,6 +94,26 @@ void logInTestUser([String lang = 'ar']) {
         )
       : fake.addUser(phone, language: 'fr');
   fake.loggedIn = phone;
+}
+
+/// Scrolls the page until [finder] is built (the list only builds what is
+/// near the screen), then shows it above the bottom bars.
+Future<void> scrollTo(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+
+/// Scrolls to [finder] (above the bottom bars), then taps it.
+Future<void> scrollAndTap(WidgetTester tester, Finder finder) async {
+  await scrollTo(tester, finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
 }
 
 /// Closes the screens (stops their timers) at the end of a test.

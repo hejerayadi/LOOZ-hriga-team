@@ -121,6 +121,29 @@ final sqlFiles = <String, Map<String, Future<bool> Function()>>{
     'function normalize_phone()': () =>
         hasFunction('normalize_phone', {'p': '216'}),
   },
+  'migrations/006_community.sql': {
+    'column profiles.is_demo': () => hasColumn('profiles', 'is_demo'),
+    'column posts.updated_at': () => hasColumn('posts', 'updated_at'),
+    'table comments': () => hasTable('comments'),
+    for (final column in ['post_id', 'author_id', 'hidden', 'created_at'])
+      'column comments.$column': () => hasColumn('comments', column),
+    'view community_posts': () =>
+        hasColumn('community_posts', 'comment_count, has_expert_answer'),
+    'view community_comments': () =>
+        hasColumn('community_comments', 'author_first_name'),
+    'function public_profile()': () =>
+        hasFunction('public_profile', {'p_user': _noId}),
+    'function community_text_ok()': () =>
+        hasFunction('community_text_ok', {'t': 'x', 'max_length': 10}),
+  },
+  // (The private bucket "community" itself can't be seen without logging
+  // in: test_live/community_photo_live_test.dart uploads into it.)
+  'migrations/007_community_photos.sql': {
+    'function community_photo_name_ok()': () =>
+        hasFunction('community_photo_name_ok', {'p_name': 'x'}),
+    'function community_photo_uploads_ok()': () =>
+        hasFunction('community_photo_uploads_ok'),
+  },
 };
 
 void main() {

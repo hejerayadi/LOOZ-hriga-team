@@ -98,14 +98,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get almondBlossoms => 'أزهار اللوز';
 
   @override
-  String get isThisFlowerHealthy => 'هل هذه الزهرة سليمة؟';
-
-  @override
-  String answers(String count) {
-    return '$count إجابة';
-  }
-
-  @override
   String get verifiedExpert => 'خبير موثّق';
 
   @override
@@ -113,6 +105,199 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get askAQuestion => 'اسأل سؤالًا';
+
+  @override
+  String answers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count إجابة',
+      few: '$count إجابات',
+      two: 'إجابتان',
+      one: 'إجابة واحدة',
+      zero: 'لا إجابة بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityAnswersTitle => 'الإجابات';
+
+  @override
+  String get writeAnswerHint => 'اكتب إجابتك هنا';
+
+  @override
+  String get noAnswersYet => 'لا توجد إجابات بعد. كن أول من يجيب';
+
+  @override
+  String get writePostHint => 'مثال: أوراق اللوز صفراء، ماذا أفعل؟';
+
+  @override
+  String get newPostTitle => 'انشر في المجتمع';
+
+  @override
+  String get newPostSubtitle => 'سؤال أو نصيحة، مع صورة إن أردت';
+
+  @override
+  String get publish => 'انشر';
+
+  @override
+  String get publishing => 'جاري النشر…';
+
+  @override
+  String get takePhoto => 'التقط صورة';
+
+  @override
+  String get choosePhoto => 'اختر من الصور';
+
+  @override
+  String get changePhoto => 'تغيير';
+
+  @override
+  String get removePhoto => 'إزالة';
+
+  @override
+  String get preparingPhoto => 'جاري تحضير الصورة…';
+
+  @override
+  String get uploadingPhoto => 'جاري رفع الصورة…';
+
+  @override
+  String get photoTooBig =>
+      'الصورة كبيرة جدًا (أكثر من 5 ميغابايت). اختر صورة أخرى.';
+
+  @override
+  String get photoWrongType => 'هذا الملف ليس صورة (JPG أو PNG أو WebP).';
+
+  @override
+  String get uploadFailed => 'لم تُرفع الصورة. حاول مرة أخرى.';
+
+  @override
+  String get cameraDenied =>
+      'لم تسمح للوز باستخدام الكاميرا. اسمح بذلك من إعدادات الهاتف.';
+
+  @override
+  String get galleryDenied =>
+      'لم تسمح للوز بالوصول إلى صورك. اسمح بذلك من إعدادات الهاتف.';
+
+  @override
+  String get noCamera => 'لا توجد كاميرا على هذا الجهاز.';
+
+  @override
+  String get photoUnavailable => 'تعذّر عرض الصورة';
+
+  @override
+  String get a11yPostPhoto => 'صورة المنشور';
+
+  @override
+  String get deleteAnswerQuestion => 'هل تريد حذف إجابتك؟';
+
+  @override
+  String get deletePostQuestion => 'هل تريد حذف سؤالك؟ ستُحذف إجاباته أيضًا.';
+
+  @override
+  String get deleteAction => 'حذف';
+
+  @override
+  String get cancelAction => 'إلغاء';
+
+  @override
+  String get textEmpty => 'اكتب شيئًا أولًا';
+
+  @override
+  String textTooLong(String max) {
+    return 'النص طويل جدًا: $max حرف على الأكثر';
+  }
+
+  @override
+  String get textBadCharacters => 'لا تستعمل الرمزين < و >';
+
+  @override
+  String get tooFast => 'تمهّل قليلًا، حاول بعد دقيقة';
+
+  @override
+  String get postGone => 'هذا السؤال لم يعد موجودًا';
+
+  @override
+  String get cantDelete => 'لا يمكنك حذف هذا';
+
+  @override
+  String get farmerFallbackName => 'فلاح';
+
+  @override
+  String get loading => 'جاري التحميل…';
+
+  @override
+  String get soon => 'قريبًا';
+
+  @override
+  String charCount(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get timeJustNow => 'الآن';
+
+  @override
+  String timeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count دقيقة',
+      few: 'منذ $count دقائق',
+      two: 'منذ دقيقتين',
+      one: 'منذ دقيقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count ساعة',
+      few: 'منذ $count ساعات',
+      two: 'منذ ساعتين',
+      one: 'منذ ساعة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count يوم',
+      many: 'منذ $count يومًا',
+      few: 'منذ $count أيام',
+      two: 'منذ يومين',
+      one: 'منذ يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get regionSfax => 'صفاقس';
+
+  @override
+  String get regionKairouan => 'القيروان';
+
+  @override
+  String get regionSidiBouzid => 'سيدي بوزيد';
+
+  @override
+  String get regionGafsa => 'قفصة';
+
+  @override
+  String get regionKasserine => 'القصرين';
+
+  @override
+  String get regionMahdia => 'المهدية';
+
+  @override
+  String get regionZaghouan => 'زغوان';
 
   @override
   String get askTitle => 'اسأل سؤالًا';

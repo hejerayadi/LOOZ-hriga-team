@@ -14,9 +14,8 @@ const fakeTemperature = 24;
 const fakeHomeAlertLevel = StatusLevel.warning;
 
 // ----- Community -----
-
-/// Answers to the question of the feed.
-const fakeAnswers = 12;
+// Real now: the questions and answers come from the database
+// (lib/data/community_service.dart).
 
 // ----- Alerts -----
 

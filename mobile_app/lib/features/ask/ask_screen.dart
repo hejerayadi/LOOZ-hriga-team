@@ -13,6 +13,7 @@ import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
 import '../camera/camera_screen.dart';
+import '../community/write_post_screen.dart';
 import 'voice_screen.dart';
 
 class AskScreen extends StatelessWidget {
@@ -62,8 +63,12 @@ class AskScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        // DEMO: there is no screen to type a question in the design yet.
-        _Choice(icon: AppIcon.book, label: l10n.text, onTap: null),
+        // Writes a question for the community (the app's own screen).
+        _Choice(
+          icon: AppIcon.book,
+          label: l10n.text,
+          onTap: () => openScreen(context, const WritePostScreen()),
+        ),
         const SizedBox(height: 14),
         ActionButton(label: l10n.send, onPressed: speak),
       ],

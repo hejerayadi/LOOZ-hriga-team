@@ -1,6 +1,7 @@
-// Checks of what the user types: the phone number and the names.
-// The database checks the same things again (migration 005), so a wrong
-// value is refused even if it does not come from the app.
+// Checks of what the user types: the phone number, the names and the texts
+// of the community. The database checks the same things again (migrations
+// 005 and 006), so a wrong value is refused even if it does not come from
+// the app.
 
 // ----- Phone number -----
 
@@ -62,5 +63,34 @@ NameProblem? checkName(String name) {
   // Counted like the database: letters, not UTF-16 units.
   if (clean.runes.length > nameMaxLength) return NameProblem.tooLong;
   if (!_nameCharacters.hasMatch(clean)) return NameProblem.badCharacters;
+  return null;
+}
+
+// ----- Questions and answers of the community -----
+
+/// Longest question or answer.
+const communityTextMaxLength = 1000;
+
+/// What is wrong with a question or an answer.
+enum TextProblem { empty, tooLong, badCharacters }
+
+// No < or > (so no HTML), no invisible control characters (line breaks are
+// fine) and no characters that turn the text direction.
+final _badTextCharacters = RegExp(
+  '[<>\u0000-\u0009\u000B\u000C\u000E-\u001F\u007F\u202A-\u202E\u2066-\u2069]',
+);
+
+/// The text as it is saved: no spaces or empty lines at the ends.
+String cleanText(String text) => text.trim();
+
+/// The length counted like the database (letters, not UTF-16 units).
+int textLength(String text) => cleanText(text).runes.length;
+
+/// What is wrong with this text (null = it is fine).
+TextProblem? checkText(String text) {
+  final clean = cleanText(text);
+  if (clean.isEmpty) return TextProblem.empty;
+  if (clean.runes.length > communityTextMaxLength) return TextProblem.tooLong;
+  if (_badTextCharacters.hasMatch(clean)) return TextProblem.badCharacters;
   return null;
 }

@@ -43,18 +43,234 @@
   "communityTitle": "المجتمع",
   "communitySubtitle": "من فلاحي تونس",
   "almondBlossoms": "أزهار اللوز",
-  "isThisFlowerHealthy": "هل هذه الزهرة سليمة؟",
-  "answers": "{count} إجابة",
-  "@answers": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "verifiedExpert": "خبير موثّق",
   "tipOfTheDay": "نصيحة اليوم: اسقِ صباحًا",
   "askAQuestion": "اسأل سؤالًا",
+  "answers": "{count, plural, =0{لا إجابة بعد} =1{إجابة واحدة} =2{إجابتان} few{{count} إجابات} other{{count} إجابة}}",
+  "@answers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Community."
+  },
+  "communityAnswersTitle": "الإجابات",
+  "@communityAnswersTitle": {
+    "description": "APP-ONLY. Community."
+  },
+  "writeAnswerHint": "اكتب إجابتك هنا",
+  "@writeAnswerHint": {
+    "description": "APP-ONLY. Community."
+  },
+  "noAnswersYet": "لا توجد إجابات بعد. كن أول من يجيب",
+  "@noAnswersYet": {
+    "description": "APP-ONLY. Community."
+  },
+  "writePostHint": "مثال: أوراق اللوز صفراء، ماذا أفعل؟",
+  "@writePostHint": {
+    "description": "APP-ONLY. Community."
+  },
+  "newPostTitle": "انشر في المجتمع",
+  "@newPostTitle": {
+    "description": "APP-ONLY. Community."
+  },
+  "newPostSubtitle": "سؤال أو نصيحة، مع صورة إن أردت",
+  "@newPostSubtitle": {
+    "description": "APP-ONLY. Community."
+  },
+  "publish": "انشر",
+  "@publish": {
+    "description": "APP-ONLY. Community."
+  },
+  "publishing": "جاري النشر…",
+  "@publishing": {
+    "description": "APP-ONLY. Community."
+  },
+  "takePhoto": "التقط صورة",
+  "@takePhoto": {
+    "description": "APP-ONLY. Community."
+  },
+  "choosePhoto": "اختر من الصور",
+  "@choosePhoto": {
+    "description": "APP-ONLY. Community."
+  },
+  "changePhoto": "تغيير",
+  "@changePhoto": {
+    "description": "APP-ONLY. Community."
+  },
+  "removePhoto": "إزالة",
+  "@removePhoto": {
+    "description": "APP-ONLY. Community."
+  },
+  "preparingPhoto": "جاري تحضير الصورة…",
+  "@preparingPhoto": {
+    "description": "APP-ONLY. Community."
+  },
+  "uploadingPhoto": "جاري رفع الصورة…",
+  "@uploadingPhoto": {
+    "description": "APP-ONLY. Community."
+  },
+  "photoTooBig": "الصورة كبيرة جدًا (أكثر من 5 ميغابايت). اختر صورة أخرى.",
+  "@photoTooBig": {
+    "description": "APP-ONLY. Community."
+  },
+  "photoWrongType": "هذا الملف ليس صورة (JPG أو PNG أو WebP).",
+  "@photoWrongType": {
+    "description": "APP-ONLY. Community."
+  },
+  "uploadFailed": "لم تُرفع الصورة. حاول مرة أخرى.",
+  "@uploadFailed": {
+    "description": "APP-ONLY. Community."
+  },
+  "cameraDenied": "لم تسمح للوز باستخدام الكاميرا. اسمح بذلك من إعدادات الهاتف.",
+  "@cameraDenied": {
+    "description": "APP-ONLY. Community."
+  },
+  "galleryDenied": "لم تسمح للوز بالوصول إلى صورك. اسمح بذلك من إعدادات الهاتف.",
+  "@galleryDenied": {
+    "description": "APP-ONLY. Community."
+  },
+  "noCamera": "لا توجد كاميرا على هذا الجهاز.",
+  "@noCamera": {
+    "description": "APP-ONLY. Community."
+  },
+  "photoUnavailable": "تعذّر عرض الصورة",
+  "@photoUnavailable": {
+    "description": "APP-ONLY. Community."
+  },
+  "a11yPostPhoto": "صورة المنشور",
+  "@a11yPostPhoto": {
+    "description": "APP-ONLY. Community."
+  },
+  "deleteAnswerQuestion": "هل تريد حذف إجابتك؟",
+  "@deleteAnswerQuestion": {
+    "description": "APP-ONLY. Community."
+  },
+  "deletePostQuestion": "هل تريد حذف سؤالك؟ ستُحذف إجاباته أيضًا.",
+  "@deletePostQuestion": {
+    "description": "APP-ONLY. Community."
+  },
+  "deleteAction": "حذف",
+  "@deleteAction": {
+    "description": "APP-ONLY. Community."
+  },
+  "cancelAction": "إلغاء",
+  "@cancelAction": {
+    "description": "APP-ONLY. Community."
+  },
+  "textEmpty": "اكتب شيئًا أولًا",
+  "@textEmpty": {
+    "description": "APP-ONLY. Community."
+  },
+  "textTooLong": "النص طويل جدًا: {max} حرف على الأكثر",
+  "@textTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Community."
+  },
+  "textBadCharacters": "لا تستعمل الرمزين < و >",
+  "@textBadCharacters": {
+    "description": "APP-ONLY. Community."
+  },
+  "tooFast": "تمهّل قليلًا، حاول بعد دقيقة",
+  "@tooFast": {
+    "description": "APP-ONLY. Community."
+  },
+  "postGone": "هذا السؤال لم يعد موجودًا",
+  "@postGone": {
+    "description": "APP-ONLY. Community."
+  },
+  "cantDelete": "لا يمكنك حذف هذا",
+  "@cantDelete": {
+    "description": "APP-ONLY. Community."
+  },
+  "farmerFallbackName": "فلاح",
+  "@farmerFallbackName": {
+    "description": "APP-ONLY. Community."
+  },
+  "loading": "جاري التحميل…",
+  "@loading": {
+    "description": "APP-ONLY. Community."
+  },
+  "soon": "قريبًا",
+  "@soon": {
+    "description": "APP-ONLY. Community."
+  },
+  "charCount": "{count} / {max}",
+  "@charCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Community."
+  },
+  "timeJustNow": "الآن",
+  "@timeJustNow": {
+    "description": "APP-ONLY. Community."
+  },
+  "timeMinutesAgo": "{count, plural, =1{منذ دقيقة} =2{منذ دقيقتين} few{منذ {count} دقائق} other{منذ {count} دقيقة}}",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Community."
+  },
+  "timeHoursAgo": "{count, plural, =1{منذ ساعة} =2{منذ ساعتين} few{منذ {count} ساعات} other{منذ {count} ساعة}}",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Community."
+  },
+  "timeDaysAgo": "{count, plural, =1{منذ يوم} =2{منذ يومين} few{منذ {count} أيام} many{منذ {count} يومًا} other{منذ {count} يوم}}",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Community."
+  },
+  "regionSfax": "صفاقس",
+  "@regionSfax": {
+    "description": "APP-ONLY. Community."
+  },
+  "regionKairouan": "القيروان",
+  "@regionKairouan": {
+    "description": "APP-ONLY. Community."
+  },
+  "regionSidiBouzid": "سيدي بوزيد",
+  "@regionSidiBouzid": {
+    "description": "APP-ONLY. Community."
+  },
+  "regionGafsa": "قفصة",
+  "@regionGafsa": {
+    "description": "APP-ONLY. Community."
+  },
+  "regionKasserine": "القصرين",
+  "@regionKasserine": {
+    "description": "APP-ONLY. Community."
+  },
+  "regionMahdia": "المهدية",
+  "@regionMahdia": {
+    "description": "APP-ONLY. Community."
+  },
+  "regionZaghouan": "زغوان",
+  "@regionZaghouan": {
+    "description": "APP-ONLY. Community."
+  },
   "askTitle": "اسأل سؤالًا",
   "askSubtitle": "اختر الأسهل لك",
   "speak": "تكلّم",

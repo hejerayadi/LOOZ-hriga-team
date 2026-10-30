@@ -98,14 +98,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get almondBlossoms => 'Fleurs d\'amandier';
 
   @override
-  String get isThisFlowerHealthy => 'Cette fleur est-elle saine ?';
-
-  @override
-  String answers(String count) {
-    return '$count réponses';
-  }
-
-  @override
   String get verifiedExpert => 'Expert vérifié';
 
   @override
@@ -113,6 +105,192 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get askAQuestion => 'Poser une question';
+
+  @override
+  String answers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count réponses',
+      one: '1 réponse',
+      zero: 'Aucune réponse',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityAnswersTitle => 'Réponses';
+
+  @override
+  String get writeAnswerHint => 'Écrivez votre réponse ici';
+
+  @override
+  String get noAnswersYet =>
+      'Pas encore de réponse. Soyez le premier à répondre';
+
+  @override
+  String get writePostHint => 'Exemple : les feuilles jaunissent, que faire ?';
+
+  @override
+  String get newPostTitle => 'Publier dans la communauté';
+
+  @override
+  String get newPostSubtitle =>
+      'Une question ou un conseil, avec une photo si vous voulez';
+
+  @override
+  String get publish => 'Publier';
+
+  @override
+  String get publishing => 'Publication…';
+
+  @override
+  String get takePhoto => 'Prendre une photo';
+
+  @override
+  String get choosePhoto => 'Choisir une photo';
+
+  @override
+  String get changePhoto => 'Changer';
+
+  @override
+  String get removePhoto => 'Retirer';
+
+  @override
+  String get preparingPhoto => 'Préparation de la photo…';
+
+  @override
+  String get uploadingPhoto => 'Envoi de la photo…';
+
+  @override
+  String get photoTooBig =>
+      'Photo trop lourde (plus de 5 Mo). Choisissez-en une autre.';
+
+  @override
+  String get photoWrongType =>
+      'Ce fichier n\'est pas une photo (JPG, PNG ou WebP).';
+
+  @override
+  String get uploadFailed => 'La photo n\'a pas été envoyée. Réessayez.';
+
+  @override
+  String get cameraDenied =>
+      'Looz n\'a pas accès à l\'appareil photo. Autorisez-le dans les réglages du téléphone.';
+
+  @override
+  String get galleryDenied =>
+      'Looz n\'a pas accès à vos photos. Autorisez-le dans les réglages du téléphone.';
+
+  @override
+  String get noCamera => 'Pas d\'appareil photo sur cet appareil.';
+
+  @override
+  String get photoUnavailable => 'Photo indisponible';
+
+  @override
+  String get a11yPostPhoto => 'Photo de la publication';
+
+  @override
+  String get deleteAnswerQuestion => 'Supprimer votre réponse ?';
+
+  @override
+  String get deletePostQuestion =>
+      'Supprimer votre question ? Ses réponses seront aussi supprimées.';
+
+  @override
+  String get deleteAction => 'Supprimer';
+
+  @override
+  String get cancelAction => 'Annuler';
+
+  @override
+  String get textEmpty => 'Écrivez d\'abord quelque chose';
+
+  @override
+  String textTooLong(String max) {
+    return 'Texte trop long : $max caractères au maximum';
+  }
+
+  @override
+  String get textBadCharacters => 'N\'utilisez pas les signes < et >';
+
+  @override
+  String get tooFast => 'Doucement, réessayez dans une minute';
+
+  @override
+  String get postGone => 'Cette question n\'existe plus';
+
+  @override
+  String get cantDelete => 'Vous ne pouvez pas supprimer ceci';
+
+  @override
+  String get farmerFallbackName => 'Agriculteur';
+
+  @override
+  String get loading => 'Chargement…';
+
+  @override
+  String get soon => 'Bientôt';
+
+  @override
+  String charCount(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get timeJustNow => 'À l\'instant';
+
+  @override
+  String timeMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'il y a $count min',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'il y a $count h',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'il y a $count jours',
+      one: 'il y a 1 jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get regionSfax => 'Sfax';
+
+  @override
+  String get regionKairouan => 'Kairouan';
+
+  @override
+  String get regionSidiBouzid => 'Sidi Bouzid';
+
+  @override
+  String get regionGafsa => 'Gafsa';
+
+  @override
+  String get regionKasserine => 'Kasserine';
+
+  @override
+  String get regionMahdia => 'Mahdia';
+
+  @override
+  String get regionZaghouan => 'Zaghouan';
 
   @override
   String get askTitle => 'Votre question';

@@ -42,6 +42,12 @@ dependencies:
   intl: any # needed by the code generated from the .arb files
   # Draws the design's icons and symbols (assets/icons, assets/symbols).
   flutter_svg: ^2.3.0
+  # The photo of a community post: the camera or the gallery (Android, iOS,
+  # web), already made smaller (1600 px) while picking.
+  image_picker: ^1.2.4
+  # Then, in Dart (also on web): checks it is a JPEG, PNG or WebP, turns it
+  # upright, removes its hidden data (GPS position...) and saves it as JPEG.
+  image: ^4.12.0
 
 dev_dependencies:
   flutter_test:

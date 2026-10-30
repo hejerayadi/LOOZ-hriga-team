@@ -37,6 +37,7 @@ Future<void> startApp(WidgetTester tester, {Plan plan = Plan.connected}) async {
   usePhoneScreen(tester);
   noAnimations(tester);
   currentPlan.value = plan;
+  useFakeCommunity();
   await tester.pumpWidget(const LoozApp(home: MainShell()));
   await tester.pumpAndSettle();
 }

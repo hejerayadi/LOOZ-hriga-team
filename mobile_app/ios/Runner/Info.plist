@@ -26,6 +26,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- The photo of a community post. iOS shows these in the phone's
+	     language, not the app's: so both languages in one text. -->
+	<key>NSCameraUsageDescription</key>
+	<string>يستخدم لوز الكاميرا لتصوير صورة منشورك. / Looz utilise l'appareil photo pour la photo de votre publication.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>يستخدم لوز صورك لتختار صورة منشورك. / Looz utilise vos photos pour choisir la photo de votre publication.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

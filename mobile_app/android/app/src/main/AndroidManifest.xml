@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Supabase (login, community, photos): the release app needs it too
+         (the debug and profile apps have their own copy of this line).
+         No camera or storage permission: the photos of the community are
+         taken with the phone's camera app and chosen with Android's photo
+         picker (image_picker), which need none. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="looz_mobile"
         android:name="${applicationName}"

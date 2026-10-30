@@ -27,12 +27,20 @@ TECHNICAL = [
     ('Supabase setting', lambda line, s: s.startswith('SUPABASE_') or s == 'YOUR-PROJECT' or ('supabase' in line.lower() and s in ('profiles', 'full_name', 'role', 'id'))),
     ('regular expression (check of a name / phone)', lambda line, s: 'RegExp(' in line),
     ('price of a pack (XX = not decided, same in both languages)', lambda line, s: 'planPrices' in line and s == 'XX'),
+    ('region code (shown with its Arabic / French name)', lambda line, s: re.match(r"\s*'[a-z_]+' => l10n\.region", line)),
+    ('demo picture of the community', lambda line, s: s.startswith('demo:')),
 ]
 
 # Files that only talk to Supabase (no screen): their strings are table and
 # column names, error codes of the server and debug texts, never shown.
-SERVER_FILES = {'data/auth_service.dart', 'data/user_profile.dart'}
-SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart)'
+SERVER_FILES = {
+    'data/auth_service.dart',
+    'data/user_profile.dart',
+    'data/community_service.dart',
+    'data/community_photos.dart',  # file type, image_picker error codes, photo formats
+    'data/community_models.dart',
+}
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart)'
 
 
 def without_comment(line):

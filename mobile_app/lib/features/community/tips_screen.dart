@@ -5,6 +5,7 @@ import '../../core/locale.dart';
 import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
+import '../../shared/widgets/soon_message.dart';
 import '../../shared/widgets/tip_row.dart';
 
 class TipsScreen extends StatelessWidget {
@@ -23,7 +24,8 @@ class TipsScreen extends StatelessWidget {
         ScreenTitle(title: l10n.tipsTitle),
         for (final (i, (icon, text)) in tips.indexed) ...[
           if (i > 0) const SizedBox(height: 14),
-          TipRow(icon: icon, text: text),
+          // Reading aloud does not work yet: "قريبًا".
+          TipRow(icon: icon, text: text, onSpeaker: () => showSoon(context)),
         ],
       ],
     );

@@ -25,6 +25,9 @@ enum AppIcon {
   wifi,
   check,
   logout, // not in the design: "log out" in Profile (same line style)
+  trash, // not in the design: delete your answer in the community
+  plus, // not in the design: "＋ انشر" (publish in the community)
+  image, // not in the design: choose a photo in the gallery
 }
 
 class LoozIcon extends StatelessWidget {

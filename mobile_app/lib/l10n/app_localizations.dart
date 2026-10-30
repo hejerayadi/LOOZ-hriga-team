@@ -266,18 +266,6 @@ abstract class AppLocalizations {
   /// **'أزهار اللوز'**
   String get almondBlossoms;
 
-  /// No description provided for @isThisFlowerHealthy.
-  ///
-  /// In ar, this message translates to:
-  /// **'هل هذه الزهرة سليمة؟'**
-  String get isThisFlowerHealthy;
-
-  /// No description provided for @answers.
-  ///
-  /// In ar, this message translates to:
-  /// **'{count} إجابة'**
-  String answers(String count);
-
   /// No description provided for @verifiedExpert.
   ///
   /// In ar, this message translates to:
@@ -295,6 +283,294 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اسأل سؤالًا'**
   String get askAQuestion;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{لا إجابة بعد} =1{إجابة واحدة} =2{إجابتان} few{{count} إجابات} other{{count} إجابة}}'**
+  String answers(int count);
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجابات'**
+  String get communityAnswersTitle;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب إجابتك هنا'**
+  String get writeAnswerHint;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إجابات بعد. كن أول من يجيب'**
+  String get noAnswersYet;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'مثال: أوراق اللوز صفراء، ماذا أفعل؟'**
+  String get writePostHint;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'انشر في المجتمع'**
+  String get newPostTitle;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'سؤال أو نصيحة، مع صورة إن أردت'**
+  String get newPostSubtitle;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'انشر'**
+  String get publish;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري النشر…'**
+  String get publishing;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقط صورة'**
+  String get takePhoto;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر من الصور'**
+  String get choosePhoto;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير'**
+  String get changePhoto;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة'**
+  String get removePhoto;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري تحضير الصورة…'**
+  String get preparingPhoto;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري رفع الصورة…'**
+  String get uploadingPhoto;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصورة كبيرة جدًا (أكثر من 5 ميغابايت). اختر صورة أخرى.'**
+  String get photoTooBig;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الملف ليس صورة (JPG أو PNG أو WebP).'**
+  String get photoWrongType;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تُرفع الصورة. حاول مرة أخرى.'**
+  String get uploadFailed;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تسمح للوز باستخدام الكاميرا. اسمح بذلك من إعدادات الهاتف.'**
+  String get cameraDenied;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تسمح للوز بالوصول إلى صورك. اسمح بذلك من إعدادات الهاتف.'**
+  String get galleryDenied;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد كاميرا على هذا الجهاز.'**
+  String get noCamera;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر عرض الصورة'**
+  String get photoUnavailable;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة المنشور'**
+  String get a11yPostPhoto;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'هل تريد حذف إجابتك؟'**
+  String get deleteAnswerQuestion;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'هل تريد حذف سؤالك؟ ستُحذف إجاباته أيضًا.'**
+  String get deletePostQuestion;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف'**
+  String get deleteAction;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء'**
+  String get cancelAction;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب شيئًا أولًا'**
+  String get textEmpty;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'النص طويل جدًا: {max} حرف على الأكثر'**
+  String textTooLong(String max);
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تستعمل الرمزين < و >'**
+  String get textBadCharacters;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمهّل قليلًا، حاول بعد دقيقة'**
+  String get tooFast;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا السؤال لم يعد موجودًا'**
+  String get postGone;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكنك حذف هذا'**
+  String get cantDelete;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'فلاح'**
+  String get farmerFallbackName;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري التحميل…'**
+  String get loading;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'قريبًا'**
+  String get soon;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} / {max}'**
+  String charCount(int count, int max);
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'الآن'**
+  String get timeJustNow;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{منذ دقيقة} =2{منذ دقيقتين} few{منذ {count} دقائق} other{منذ {count} دقيقة}}'**
+  String timeMinutesAgo(int count);
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{منذ ساعة} =2{منذ ساعتين} few{منذ {count} ساعات} other{منذ {count} ساعة}}'**
+  String timeHoursAgo(int count);
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{منذ يوم} =2{منذ يومين} few{منذ {count} أيام} many{منذ {count} يومًا} other{منذ {count} يوم}}'**
+  String timeDaysAgo(int count);
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'صفاقس'**
+  String get regionSfax;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'القيروان'**
+  String get regionKairouan;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيدي بوزيد'**
+  String get regionSidiBouzid;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'قفصة'**
+  String get regionGafsa;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'القصرين'**
+  String get regionKasserine;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'المهدية'**
+  String get regionMahdia;
+
+  /// APP-ONLY. Community.
+  ///
+  /// In ar, this message translates to:
+  /// **'زغوان'**
+  String get regionZaghouan;
 
   /// No description provided for @askTitle.
   ///

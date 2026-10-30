@@ -51,6 +51,35 @@ Checked with `test/sign_up_test.dart` (both flows, errors, session, log out, wit
 `test/languages_test.dart` (lines 32 to 36) and screenshots in both languages.
 `test_live/auth_live_test.dart` runs the same flow against the real Supabase.
 
+## Community (connected to Supabase, migration 006)
+
+| # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
+|---|---|---|---|---|---|---|
+| 38 | `community` with the real questions (newest on top like the design, then the tip, "اسأل سؤالًا", the older ones) | `lib/features/community/community_page.dart`, `post_card.dart` | [x] | [x] | [x] | [x] tab "المجتمع", "اسأل خبيرًا" (result) |
+| 39 | `community`: loading (pale card), empty ("اسأل سؤالك الأول"), no internet, "حاول مرة أخرى" | `lib/features/community/community_widgets.dart` | [x] | [x] | [x] | [x] (when it happens) |
+| 40 | A question with its answers, write an answer, delete my answer / question (app's own) | `lib/features/community/post_screen.dart` | [x] | [x] | [x] | [x] a question of the list |
+| 41 | "حذف؟" sheet (app's own) | `lib/features/community/community_widgets.dart` (`confirmDelete`) | [x] | [x] | [x] | [x] 🗑 on my answer / question |
+| 42 | Write a question (app's own) | `lib/features/community/write_post_screen.dart` | [x] | [x] | [x] | [x] Ask "كتابة" |
+| 43 | "قريبًا" message of the buttons that don't work yet (▶, tips speakers) | `lib/shared/widgets/soon_message.dart` | [x] | [x] | [x] | [x] ▶, 🔊 in the tips library |
+
+Checked with `test/community_test.dart` (list, question, write, delete, errors, states, both
+languages, with a fake community), `test/languages_test.dart` and screenshots in both languages.
+`test_live/community_live_test.dart` runs it against the real Supabase (users 01, 02, 03).
+
+## Community photos (Supabase Storage, migration 007)
+
+| # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
+|---|---|---|---|---|---|---|
+| 44 | "＋ انشر" pill next to the title of the community (app's own) | `lib/features/community/community_page.dart`, `community_widgets.dart` (`PublishButton`) | [x] | [x] | [x] | [x] tab "المجتمع" |
+| 45 | "انشر في المجتمع": text + "التقط صورة" / "اختر من الصور" (web: gallery only), "جاري تحضير الصورة…", preview with "تغيير" / "إزالة", "جاري رفع الصورة…" → "جاري النشر…" | `lib/features/community/write_post_screen.dart` | [x] | [x] | [x] | [x] "＋ انشر", Ask "كتابة" |
+| 46 | Photo errors: camera / photos refused, no camera, too big, not a photo, upload failed | `write_post_screen.dart`, `community_widgets.dart` (`CommunityNote`) | [x] | [x] | [x] | [x] (when it happens) |
+| 47 | The photo in the card and on the post's screen, "تعذّر عرض الصورة" | `lib/features/community/post_photo.dart`, `post_card.dart` | [x] | [x] | [x] | [x] the list, a question |
+| 48 | The photo on the whole screen (pinch to zoom, ×) | `lib/features/community/photo_viewer.dart` | [x] | [x] | [x] | [x] tap on a photo |
+
+Checked with `test/community_photo_test.dart` (fake community and fake camera),
+`test/languages_test.dart` and screenshots in both languages.
+`test_live/community_photo_live_test.dart` runs it against the real Supabase (users 01, 02).
+
 ## How each box was checked
 
 - **Built in the new design**: rebuilt from the design's CSS (sizes, colors, fonts, positions).
