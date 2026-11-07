@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
@@ -9,11 +10,15 @@ import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/data/community_photos.dart';
 import 'package:looz_mobile/data/community_service.dart';
+import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/fake_data.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_tab.dart';
+import 'package:looz_mobile/features/premium/demo_card_form.dart';
+import 'package:looz_mobile/features/premium/payment_screen.dart';
 
 import 'fake_auth_service.dart';
 import 'fake_community_service.dart';
+import 'fake_payment_service.dart';
 import 'fake_photo_picker.dart';
 
 /// Tests use a font where every letter is a square: load Cairo instead,
@@ -42,8 +47,9 @@ void noAnimations(WidgetTester tester) {
   addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 }
 
-/// The app keeps the language, plan, tab, user, community, camera and demo
-/// state in global values: put them back after each test.
+/// The app keeps the language, plan, tab, user, community, camera, payment
+/// and demo state in global values: put them back after each test (and
+/// forget what the "phone" remembered, like the language).
 void resetAppState() {
   appLocale.value = const Locale('ar');
   currentPlan.value = Plan.connected;
@@ -53,6 +59,8 @@ void resetAppState() {
   currentUser.value = null;
   communityService = FakeCommunityService();
   photoPicker = FakePhotoPicker();
+  paymentService = FakePaymentService();
+  SharedPreferences.setMockInitialValues({});
 }
 
 /// Uses a fake community (no internet) with 3 questions written in [lang]:
@@ -69,6 +77,14 @@ FakeCommunityService useFakeCommunity([String lang = 'ar']) {
 FakePhotoPicker usePhotoPicker({bool hasCamera = true}) {
   final fake = FakePhotoPicker(hasCamera: hasCamera);
   photoPicker = fake;
+  return fake;
+}
+
+/// Uses fake packs and a fake demo payment (no internet), linked to the fake
+/// login [auth]: returns it, to install a kit, turn the demo off...
+FakePaymentService usePayments([FakeAuthService? auth]) {
+  final fake = FakePaymentService(auth: auth);
+  paymentService = fake;
   return fake;
 }
 
@@ -113,6 +129,67 @@ Future<void> scrollAndTap(WidgetTester tester, Finder finder) async {
   await scrollTo(tester, finder);
   await tester.pumpAndSettle();
   await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
+/// The box under the question [label] of the sign-up screen "معلوماتك".
+Finder signUpField(String label) => find.descendant(
+  of: find.ancestor(of: find.text(label), matching: find.byType(Column)).first,
+  matching: find.byType(TextField),
+);
+
+/// Opens the list of the governorates ("اختر ولايتك") and taps [name].
+Future<void> pickGovernorate(WidgetTester tester, String name) async {
+  final l10n = lookupAppLocalizations(appLocale.value);
+  await scrollAndTap(tester, find.text(l10n.chooseGovernorate).first);
+  await tester.scrollUntilVisible(
+    find.text(name),
+    120,
+    scrollable: find.byType(Scrollable).last,
+  );
+  await tester.tap(find.text(name));
+  await tester.pumpAndSettle();
+}
+
+/// A public test card number that the demo payment accepts, and the one it
+/// always refuses. Only typed in the demo form: never sent anywhere.
+const acceptedTestCard = '4242424242424242';
+const refusedTestCard = '4000000000000002';
+
+/// Types a card in the demo payment form (number, expiry, code, name).
+Future<void> typeDemoCard(
+  WidgetTester tester, {
+  String number = acceptedTestCard,
+  String expiry = '1230',
+  String code = '123',
+  String name = 'Mohamed Ben Salem',
+}) async {
+  final boxes = find.descendant(
+    of: find.byType(DemoCardForm),
+    matching: find.byType(TextField),
+  );
+  await tester.enterText(boxes.at(0), number);
+  await tester.enterText(boxes.at(1), expiry);
+  await tester.enterText(boxes.at(2), code);
+  await tester.enterText(boxes.at(3), name);
+  await tester.pump();
+}
+
+/// "★ تأكيد" on the payment screen, then the ~2 seconds of "جاري التحقق من
+/// الدفع…" ([checking] false: a card the form refuses, nothing is checked).
+Future<void> confirmDemoPayment(
+  WidgetTester tester, {
+  bool checking = true,
+}) async {
+  final l10n = lookupAppLocalizations(appLocale.value);
+  final button = findTextWithSymbol('★ ${l10n.confirm}');
+  await scrollTo(tester, button);
+  await tester.tap(button);
+  await tester.pump();
+  if (checking) {
+    expect(find.text(l10n.checkingPayment), findsOneWidget);
+    await tester.pump(PaymentScreen.checkingTime);
+  }
   await tester.pumpAndSettle();
 }
 

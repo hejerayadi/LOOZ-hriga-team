@@ -293,6 +293,237 @@ class AppLocalizationsFr extends AppLocalizations {
   String get regionZaghouan => 'Zaghouan';
 
   @override
+  String get createAccount => 'Créer un compte';
+
+  @override
+  String get signIn => 'Se connecter';
+
+  @override
+  String get errorNoAccount => 'Aucun compte avec ce numéro.';
+
+  @override
+  String get accountExists => 'Ce numéro a déjà un compte.';
+
+  @override
+  String get welcomeBack => 'Content de vous revoir';
+
+  @override
+  String get infoTitle => 'Vos informations';
+
+  @override
+  String get infoSubtitle => 'Juste quelques questions';
+
+  @override
+  String get roleFarmer => 'Agriculteur';
+
+  @override
+  String get roleExpert => 'Agronome ou conseiller';
+
+  @override
+  String get roleTitle => 'Qui êtes-vous ?';
+
+  @override
+  String get roleSubtitle => 'Choisissez ce qui vous correspond';
+
+  @override
+  String get roleFarmerHint => 'J\'ai un verger d\'amandiers';
+
+  @override
+  String get roleExpertHint => 'Je conseille les agriculteurs';
+
+  @override
+  String get governorate => 'Gouvernorat';
+
+  @override
+  String get chooseGovernorate => 'Choisissez votre gouvernorat';
+
+  @override
+  String get almondTreesOptional => 'Nombre d\'amandiers (facultatif)';
+
+  @override
+  String get areaOptional => 'Surface en hectares (facultatif)';
+
+  @override
+  String get irrigationOptional => 'Arrosage (facultatif)';
+
+  @override
+  String get irrigated => 'Irrigué';
+
+  @override
+  String get rainfed => 'Pluvial';
+
+  @override
+  String get organisationOptional => 'Organisme (facultatif)';
+
+  @override
+  String get numberInvalid => 'Écrivez un nombre valide';
+
+  @override
+  String get expertPendingNote =>
+      'Le badge « ◆ Expert vérifié » apparaîtra après la vérification de votre compte.';
+
+  @override
+  String get packConnectedKit =>
+      'Avec le kit de capteurs LOOZ (installé par nos soins)';
+
+  @override
+  String priceForDays(String price, String period) {
+    return '$price DT / $period';
+  }
+
+  @override
+  String pricePerSensorForDays(String price, String period) {
+    return '$price DT par capteur / $period';
+  }
+
+  @override
+  String daysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jours',
+      one: '1 jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kitSensors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count capteurs',
+      one: '1 capteur',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kitTitle => 'Kit LOOZ';
+
+  @override
+  String get kitRequested =>
+      'Nous vous contacterons pour installer votre kit de capteurs.';
+
+  @override
+  String get kitMeanwhileFree => 'En attendant, vous avez l\'offre gratuite.';
+
+  @override
+  String get demoMode => 'Mode démo';
+
+  @override
+  String get cardNumber => 'Numéro de carte';
+
+  @override
+  String get cardExpiry => 'Expiration';
+
+  @override
+  String get cardCode => 'Code CVV';
+
+  @override
+  String get cardName => 'Nom sur la carte';
+
+  @override
+  String get cardNumberInvalid => '16 chiffres';
+
+  @override
+  String get cardExpiryInvalid => 'Date invalide (MM/AA)';
+
+  @override
+  String get cardCodeInvalid => '3 chiffres';
+
+  @override
+  String get checkingPayment => 'Vérification du paiement…';
+
+  @override
+  String get paidTitle => 'Paiement reçu !';
+
+  @override
+  String paidUntil(String date) {
+    return 'Votre pack est actif jusqu\'au $date';
+  }
+
+  @override
+  String get notPaidTitle => 'Le paiement n\'a pas abouti';
+
+  @override
+  String get notPaidText =>
+      'Vous restez sur le plan gratuit ; vous pourrez payer plus tard depuis « Profil ».';
+
+  @override
+  String get continueFree => 'Continuer gratuitement';
+
+  @override
+  String get paymentNotAvailable =>
+      'Le paiement n\'est pas disponible pour le moment.';
+
+  @override
+  String get kitNotInstalled => 'Le kit LOOZ n\'est pas encore installé.';
+
+  @override
+  String get tooManyPayments =>
+      'Trop d\'essais de paiement. Réessayez dans une heure.';
+
+  @override
+  String get chooseGovernorateFirst => 'Choisissez d\'abord votre gouvernorat.';
+
+  @override
+  String planUntil(String date) {
+    return 'jusqu\'au $date';
+  }
+
+  @override
+  String get regionTunis => 'Tunis';
+
+  @override
+  String get regionAriana => 'Ariana';
+
+  @override
+  String get regionBenArous => 'Ben Arous';
+
+  @override
+  String get regionManouba => 'Manouba';
+
+  @override
+  String get regionNabeul => 'Nabeul';
+
+  @override
+  String get regionBizerte => 'Bizerte';
+
+  @override
+  String get regionBeja => 'Béja';
+
+  @override
+  String get regionJendouba => 'Jendouba';
+
+  @override
+  String get regionKef => 'Le Kef';
+
+  @override
+  String get regionSiliana => 'Siliana';
+
+  @override
+  String get regionSousse => 'Sousse';
+
+  @override
+  String get regionMonastir => 'Monastir';
+
+  @override
+  String get regionGabes => 'Gabès';
+
+  @override
+  String get regionMedenine => 'Médenine';
+
+  @override
+  String get regionTataouine => 'Tataouine';
+
+  @override
+  String get regionTozeur => 'Tozeur';
+
+  @override
+  String get regionKebili => 'Kébili';
+
+  @override
   String get askTitle => 'Votre question';
 
   @override
@@ -552,12 +783,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get askFirstQuestion => 'Posez votre question';
 
   @override
-  String get langArabic => 'العربية';
-
-  @override
-  String get langFrench => 'Français';
-
-  @override
   String get langPillArabic => 'عربي';
 
   @override
@@ -606,12 +831,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get codeResent => 'Nouveau code envoyé';
-
-  @override
-  String get nameTitle => 'Votre nom';
-
-  @override
-  String get nameSubtitle => 'Pour vous présenter à la communauté';
 
   @override
   String get firstName => 'Prénom';
@@ -673,22 +892,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get packPredictions => 'Prévisions d\'arrosage et de récolte';
-
-  @override
-  String get payChoiceTitle => 'Quand payer ?';
-
-  @override
-  String get payChoiceSubtitle => 'Comme vous préférez';
-
-  @override
-  String get payNow => 'Payer maintenant';
-
-  @override
-  String get payLater => 'Payer plus tard';
-
-  @override
-  String get payPendingNote =>
-      'En attendant le paiement, vous avez l\'offre gratuite';
 
   @override
   String get logOut => 'Se déconnecter';

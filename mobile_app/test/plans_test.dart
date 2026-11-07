@@ -3,12 +3,14 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:looz_mobile/app.dart';
+import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/features/camera/camera_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'package:looz_mobile/features/premium/premium_screen.dart';
 import 'package:looz_mobile/shared/widgets/camera_button.dart';
 
+import 'fake_auth_service.dart';
 import 'test_helpers.dart';
 
 void main() {
@@ -85,24 +87,31 @@ void main() {
     expect(find.byType(CameraScreen), findsOneWidget);
   });
 
-  testWidgets('premium screen: free vs Premium, the price, then payment', (
-    tester,
-  ) async {
+  testWidgets('premium screen: free vs Premium, the price, then Essential '
+      'with the demo payment', (tester) async {
     usePhoneScreen(tester);
+    noAnimations(tester);
+    logInTestUser();
+    usePayments(authService as FakeAuthService);
     currentPlan.value = Plan.free;
     await tester.pumpWidget(const LoozApp(home: PremiumScreen()));
+    await tester.pumpAndSettle();
     expect(find.text('مجاني'), findsOneWidget);
     expect(findTextWithSymbol('★ Premium'), findsOneWidget);
     expect(findTextWithSymbol('✓ خريطة البستان'), findsOneWidget);
     expect(find.text('إلغاء في أي وقت'), findsOneWidget);
+    // The price of the smallest pack, from the database.
+    expect(find.textContaining('15 د.ت'), findsOneWidget);
 
-    await tester.tap(findTextWithSymbol('★ ابدأ بريميوم'));
-    await tester.pumpAndSettle();
+    await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
+    await scrollAndTap(tester, find.text('أساسي'));
+    await scrollAndTap(tester, find.text('متابعة'));
     expect(find.byType(PaymentScreen), findsOneWidget);
-    // DEMO payment: "★ تأكيد" turns the plan into Premium.
-    await tester.tap(findTextWithSymbol('★ تأكيد'));
-    await tester.pumpAndSettle();
-    expect(currentPlan.value, Plan.connected);
+    await typeDemoCard(tester);
+    await confirmDemoPayment(tester);
+    expect(find.text('تم الدفع!'), findsOneWidget);
+    expect(currentPlan.value, Plan.essential);
+    await closeApp(tester);
   });
 
   testWidgets('profile: the test switch changes the plan', (tester) async {
@@ -114,9 +123,11 @@ void main() {
     // The switch shows the 3 plans (debug builds only).
     expect(find.text('وضع التجربة: تغيير الخطة'), findsOneWidget);
     expect(find.text('متصل'), findsOneWidget);
-    await tester.ensureVisible(find.text('مجاني'));
+    // "مجاني" is also under "خطتي" (the pack now): the switch is the last one.
+    expect(find.text('مجاني'), findsNWidgets(2));
+    await tester.ensureVisible(find.text('مجاني').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('مجاني'));
+    await tester.tap(find.text('مجاني').last);
     await tester.pumpAndSettle();
     expect(currentPlan.value, Plan.free);
 

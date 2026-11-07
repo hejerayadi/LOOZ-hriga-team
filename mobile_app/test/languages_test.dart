@@ -8,6 +8,7 @@ import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/data/fake_data.dart';
+import 'package:looz_mobile/data/user_profile.dart';
 import 'package:looz_mobile/features/alerts/alert_screen.dart';
 import 'package:looz_mobile/features/alerts/regional_screen.dart';
 import 'package:looz_mobile/features/ask/ask_screen.dart';
@@ -24,12 +25,14 @@ import 'package:looz_mobile/features/community/tips_screen.dart';
 import 'package:looz_mobile/features/community/write_post_screen.dart';
 import 'package:looz_mobile/features/journal/journal_screen.dart';
 import 'package:looz_mobile/features/map/map_screen.dart';
-import 'package:looz_mobile/features/onboarding/language_screen.dart';
-import 'package:looz_mobile/features/onboarding/name_screen.dart';
 import 'package:looz_mobile/features/onboarding/pack_screen.dart';
-import 'package:looz_mobile/features/onboarding/payment_choice_screen.dart';
 import 'package:looz_mobile/features/onboarding/phone_screen.dart';
+import 'package:looz_mobile/features/onboarding/role_screen.dart';
+import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
+import 'package:looz_mobile/features/onboarding/start_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
+import 'package:looz_mobile/features/premium/kit_requested_screen.dart';
+import 'package:looz_mobile/features/premium/payment_result_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'package:looz_mobile/features/premium/premium_screen.dart';
 import 'package:looz_mobile/features/premium/qr_screen.dart';
@@ -57,8 +60,15 @@ final arabic = RegExp('[؀-ۿ]');
 
 /// Every screen of the app: (name, screen, plan, tab, "done" state).
 final screens = <(String, Widget, Plan, AppTab, bool)>[
-  ('language', const LanguageScreen(), Plan.connected, AppTab.home, false),
-  ('phone', const PhoneScreen(), Plan.connected, AppTab.home, false),
+  ('start', const StartScreen(), Plan.connected, AppTab.home, false),
+  ('phone (sign in)', const PhoneScreen(), Plan.connected, AppTab.home, false),
+  (
+    'phone (sign up)',
+    const PhoneScreen(signUp: true),
+    Plan.connected,
+    AppTab.home,
+    false,
+  ),
   (
     'code',
     const CodeScreen(phone: '+21650000001'),
@@ -66,18 +76,57 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
     AppTab.home,
     false,
   ),
-  ('name', const NameScreen(), Plan.free, AppTab.home, false),
-  ('pack', const PackScreen(), Plan.free, AppTab.home, false),
   (
-    'pay now or later',
-    const PaymentChoiceScreen(plan: Plan.essential),
+    'number that has an account',
+    const AccountExistsScreen(),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
+  ('who are you', const RoleScreen(), Plan.free, AppTab.home, false),
+  (
+    'your information (farmer)',
+    const SignUpInfoScreen(role: UserRole.farmer),
     Plan.free,
     AppTab.home,
     false,
   ),
   (
+    'your information (expert)',
+    const SignUpInfoScreen(role: UserRole.expert),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
+  ('pack', const PackScreen(), Plan.free, AppTab.home, false),
+  (
     'payment (sign-up)',
-    const PaymentScreen(plan: Plan.essential, forSignUp: true),
+    const PaymentScreen(plan: Plan.essential, signUp: true),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
+  (
+    'paid',
+    PaymentResultScreen(
+      plan: Plan.essential,
+      paid: true,
+      endsAt: DateTime(2026, 11, 30),
+    ),
+    Plan.essential,
+    AppTab.home,
+    false,
+  ),
+  (
+    'not paid',
+    const PaymentResultScreen(plan: Plan.essential, paid: false),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
+  (
+    'kit requested',
+    const KitRequestedScreen(signUp: true),
     Plan.free,
     AppTab.home,
     false,
@@ -133,7 +182,20 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
   ('alert done', const AlertScreen(), Plan.connected, AppTab.home, true),
   ('regional', const RegionalScreen(), Plan.connected, AppTab.home, false),
   ('premium', const PremiumScreen(), Plan.connected, AppTab.home, false),
-  ('payment', const PaymentScreen(), Plan.connected, AppTab.home, false),
+  (
+    'payment (Premium, Connected)',
+    const PaymentScreen(plan: Plan.connected, sensors: 5),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
+  (
+    'packs (Premium)',
+    const PackScreen(upgrade: true),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
   ('qr', const QrScreen(), Plan.connected, AppTab.home, false),
   ('map', const MapScreen(), Plan.connected, AppTab.home, false),
   ('journal', const JournalScreen(), Plan.connected, AppTab.home, false),
@@ -152,6 +214,7 @@ Future<List<String>> textsOf(
   // whose farmers write in this language.
   logInTestUser(lang);
   useFakeCommunity(lang);
+  usePayments().installKit(5);
   appLocale.value = Locale(lang);
   currentPlan.value = plan;
   currentTab.value = tab;

@@ -1,5 +1,6 @@
 // The texts of the community that depend on the data: the error messages,
 // the regions, "منذ ساعتين", the line under a question...
+import '../../core/governorates.dart';
 import '../../core/locale.dart';
 import '../../core/validators.dart';
 import '../../data/community_models.dart';
@@ -51,17 +52,10 @@ String textProblemMessage(AppLocalizations l10n, TextProblem problem) {
   }
 }
 
-/// The name of a region ("sfax" -> "صفاقس" / "Sfax"); null = unknown.
-String? regionName(AppLocalizations l10n, String? code) => switch (code) {
-  'sfax' => l10n.regionSfax,
-  'kairouan' => l10n.regionKairouan,
-  'sidi_bouzid' => l10n.regionSidiBouzid,
-  'gafsa' => l10n.regionGafsa,
-  'kasserine' => l10n.regionKasserine,
-  'mahdia' => l10n.regionMahdia,
-  'zaghouan' => l10n.regionZaghouan,
-  _ => null,
-};
+/// The name of a region = the governorate of the farmer ("sfax" ->
+/// "صفاقس" / "Sfax", one of the 24); null = unknown.
+String? regionName(AppLocalizations l10n, String? code) =>
+    governorateName(l10n, code);
 
 /// "الآن", "منذ 5 دقائق", "منذ ساعتين", "منذ 3 أيام"...
 String timeAgo(AppLocalizations l10n, DateTime date, {DateTime? now}) {

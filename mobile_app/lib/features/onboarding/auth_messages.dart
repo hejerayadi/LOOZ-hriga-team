@@ -15,6 +15,8 @@ String failureMessage(AppLocalizations l10n, AuthFailure failure) {
   switch (failure) {
     case AuthFailure.noInternet:
       return l10n.errorNoInternet;
+    case AuthFailure.noAccount:
+      return l10n.errorNoAccount;
     case AuthFailure.wrongCode:
       return l10n.errorWrongCode;
     case AuthFailure.tooManyTries:
@@ -49,24 +51,36 @@ String nameProblemMessage(AppLocalizations l10n, NameProblem problem) {
 /// A message card: an icon on a blob and a bold text.
 class AuthNote extends StatelessWidget {
   /// An error (e.g. "wrong code").
-  const AuthNote.failure(AuthFailure this.failure, {super.key}) : info = null;
+  const AuthNote.failure(AuthFailure this.failure, {super.key})
+    : info = null,
+      error = true;
 
   /// A good news (e.g. "a new code was sent").
-  const AuthNote.info(String this.info, {super.key}) : failure = null;
+  const AuthNote.info(String this.info, {super.key})
+    : failure = null,
+      error = false;
+
+  /// Another error, already written (e.g. a payment message).
+  const AuthNote.error(String this.info, {super.key})
+    : failure = null,
+      error = true;
 
   final AuthFailure? failure;
   final String? info;
+  final bool error;
 
   @override
   Widget build(BuildContext context) {
     final failure = this.failure;
     // Like the state cards: no internet = wifi on sky, wait = clock on
-    // yellow, other errors = bug on peach; good news = check on mint.
+    // yellow, other errors = warning on peach; good news = check on mint.
     final (icon, color) = switch (failure) {
+      null when error => (AppIcon.warning, AppColors.peach),
       null => (AppIcon.check, AppColors.mint),
       AuthFailure.noInternet => (AppIcon.wifi, AppColors.sky),
       AuthFailure.tooManyTries => (AppIcon.clock, AppColors.yellow),
-      _ => (AppIcon.bug, AppColors.peach),
+      AuthFailure.noAccount => (AppIcon.user, AppColors.peach),
+      _ => (AppIcon.warning, AppColors.peach),
     };
     final text = failure == null
         ? info!

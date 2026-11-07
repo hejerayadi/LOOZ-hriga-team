@@ -19,7 +19,8 @@ class StatesScreen extends StatelessWidget {
     final states = [
       (AppIcon.clock, l10n.sendLater, AppColors.yellow),
       (AppIcon.wifi, l10n.noInternet, AppColors.sky),
-      (AppIcon.bug, l10n.tryAgain, AppColors.peach),
+      // The design has the bug here; an error is not a pest: warning.
+      (AppIcon.warning, l10n.tryAgain, AppColors.peach),
       (AppIcon.book, l10n.askFirstQuestion, AppColors.mint),
     ];
     Widget card(int i) => Expanded(

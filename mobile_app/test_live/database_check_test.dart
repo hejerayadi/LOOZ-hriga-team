@@ -144,6 +144,35 @@ final sqlFiles = <String, Map<String, Future<bool> Function()>>{
     'function community_photo_uploads_ok()': () =>
         hasFunction('community_photo_uploads_ok'),
   },
+  'migrations/008_signup_profile_payment.sql': {
+    for (final column in ['almond_trees', 'orchard_area_ha', 'irrigation'])
+      'column profiles.$column': () => hasColumn('profiles', column),
+    'table plan_prices': () => hasTable('plan_prices'),
+    'table payments': () => hasTable('payments'),
+    'function confirm_payment()': () =>
+        hasFunction('confirm_payment', {'p_ref': 'x', 'p_amount': 1}),
+  },
+  'migrations/009_demo_payment_kits_roles.sql': {
+    'table app_settings': () => hasTable('app_settings'),
+    'table kit_requests': () => hasTable('kit_requests'),
+    'column plan_prices.per_sensor': () =>
+        hasColumn('plan_prices', 'per_sensor'),
+    'column payments.sensors': () => hasColumn('payments', 'sensors'),
+    'column profiles.organisation': () => hasColumn('profiles', 'organisation'),
+    'function demo_payment()': () =>
+        hasFunction('demo_payment', {'p_plan': 'essential'}),
+    'function request_kit()': () => hasFunction('request_kit'),
+    'function choose_role()': () =>
+        hasFunction('choose_role', {'p_role': 'farmer'}),
+  },
+  // (demo_login_check() can only be called by the Edge Function: "permission
+  // denied" here means it is there.)
+  'migrations/010_demo_login.sql': {
+    'column app_settings.demo_login_enabled': () =>
+        hasColumn('app_settings', 'demo_login_enabled'),
+    'function demo_login_check()': () =>
+        hasFunction('demo_login_check', {'p_phone': '+21600000000'}),
+  },
 };
 
 void main() {

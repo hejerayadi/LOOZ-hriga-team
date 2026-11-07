@@ -1,5 +1,10 @@
 // A fake login system for the tests: the accounts are kept in memory,
 // like the Supabase test numbers (every code is 123456). No internet needed.
+// demoLogin = true: like the demo login (migration 010 + "demo-auth"): no
+// SMS, any 6-digit code, a new number + sign up gets its account at the code.
+// Same rules as Supabase and the database: a sign-in with a number without
+// account creates nothing; the role is chosen only during the sign-up.
+import 'package:looz_mobile/core/governorates.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/validators.dart';
 import 'package:looz_mobile/data/auth_service.dart';
@@ -25,13 +30,19 @@ class FakeAuthService implements AuthService {
   /// test numbers are set up).
   final Set<String> cannotReceive = {};
 
-  /// The methods called, in order (e.g. "sendCode +21650000001").
+  /// The methods called, in order (e.g. "sendCode +21650000001 sign up").
   final List<String> calls = [];
+
+  /// Like app_settings.demo_login_enabled = true.
+  bool demoLogin = false;
+
+  /// The number waiting for its code with the demo login.
+  ({String phone, bool signUp, String language})? _demo;
 
   @override
   bool get hasSession => loggedIn != null;
 
-  /// A user who already finished the sign-up.
+  /// A user who already finished the sign-up (or not: [finished] false).
   UserProfile addUser(
     String phone, {
     String? firstName = 'Mohamed',
@@ -39,6 +50,10 @@ class FakeAuthService implements AuthService {
     String language = 'fr',
     Plan chosenPlan = Plan.free,
     bool finished = true,
+    String? governorate = 'sfax',
+    UserRole role = UserRole.farmer,
+    bool verified = false,
+    PaymentStatus? paymentStatus,
   }) {
     final paid = chosenPlan != Plan.free;
     return accounts[phone] = UserProfile(
@@ -47,8 +62,12 @@ class FakeAuthService implements AuthService {
       firstName: firstName,
       lastName: lastName,
       language: language,
+      role: role,
+      verified: verified,
+      governorate: governorate,
       chosenPlan: chosenPlan,
-      paymentStatus: paid ? PaymentStatus.pending : PaymentStatus.free,
+      paymentStatus:
+          paymentStatus ?? (paid ? PaymentStatus.pending : PaymentStatus.free),
       planChosenAt: finished ? DateTime(2026, 10, 28) : null,
       createdAt: DateTime(2026, 10, 28),
     );
@@ -62,17 +81,24 @@ class FakeAuthService implements AuthService {
     }
   }
 
-  UserProfile get _me {
+  UserProfile get me {
     final phone = loggedIn;
     if (phone == null) throw const AuthError(AuthFailure.sessionExpired);
     return accounts[phone]!;
   }
 
-  UserProfile _save(
+  /// Saves a changed copy of [old].
+  UserProfile save(
     UserProfile old, {
     String? firstName,
     String? lastName,
     String? language,
+    UserRole? role,
+    String? organisation,
+    String? governorate,
+    int? almondTrees,
+    double? orchardAreaHa,
+    Irrigation? irrigation,
     Plan? chosenPlan,
     PaymentStatus? paymentStatus,
     DateTime? planChosenAt,
@@ -83,6 +109,13 @@ class FakeAuthService implements AuthService {
       firstName: firstName ?? old.firstName,
       lastName: lastName ?? old.lastName,
       language: language ?? old.language,
+      role: role ?? old.role,
+      verified: old.verified,
+      organisation: organisation ?? old.organisation,
+      governorate: governorate ?? old.governorate,
+      almondTrees: almondTrees ?? old.almondTrees,
+      orchardAreaHa: orchardAreaHa ?? old.orchardAreaHa,
+      irrigation: irrigation ?? old.irrigation,
       chosenPlan: chosenPlan ?? old.chosenPlan,
       paymentStatus: paymentStatus ?? old.paymentStatus,
       planChosenAt: planChosenAt ?? old.planChosenAt,
@@ -91,19 +124,35 @@ class FakeAuthService implements AuthService {
   }
 
   @override
-  Future<void> sendCode(String phone, {required String language}) async {
-    calls.add('sendCode $phone');
+  Future<void> sendCode(
+    String phone, {
+    required String language,
+    required bool createAccount,
+  }) async {
+    calls.add('sendCode $phone ${createAccount ? 'sign up' : 'sign in'}');
     _maybeFail();
     if (!isValidPhone(phone)) throw const AuthError(AuthFailure.invalidPhone);
+    _demo = null;
+    if (demoLogin) {
+      // No SMS (so any number "receives" it); sign in still needs an account.
+      if (!createAccount && !accounts.containsKey(phone)) {
+        throw const AuthError(AuthFailure.noAccount);
+      }
+      _demo = (phone: phone, signUp: createAccount, language: language);
+      return;
+    }
     if (cannotReceive.contains(phone)) {
       throw const AuthError(AuthFailure.cannotReceiveCode);
     }
-    // Like Supabase: the account (and its profile) is created with the code.
     if (!accounts.containsKey(phone)) {
+      // Like Supabase: sign in never creates an account ("otp_disabled").
+      if (!createAccount) throw const AuthError(AuthFailure.noAccount);
+      // Sign up: the account (and its profile) is created with the code.
       addUser(
         phone,
         firstName: null,
         lastName: null,
+        governorate: null,
         language: language,
         finished: false,
       );
@@ -114,6 +163,24 @@ class FakeAuthService implements AuthService {
   Future<void> verifyCode(String phone, String code) async {
     calls.add('verifyCode $phone');
     _maybeFail();
+    final demo = _demo;
+    if (demoLogin && demo != null && demo.phone == phone) {
+      if (!isValidCode(code)) throw const AuthError(AuthFailure.wrongCode);
+      if (!accounts.containsKey(phone)) {
+        if (!demo.signUp) throw const AuthError(AuthFailure.noAccount);
+        addUser(
+          phone,
+          firstName: null,
+          lastName: null,
+          governorate: null,
+          language: demo.language,
+          finished: false,
+        );
+      }
+      _demo = null;
+      loggedIn = phone;
+      return;
+    }
     if (code != FakeAuthService.code || !accounts.containsKey(phone)) {
       throw const AuthError(AuthFailure.wrongCode);
     }
@@ -124,20 +191,31 @@ class FakeAuthService implements AuthService {
   Future<UserProfile> loadProfile() async {
     calls.add('loadProfile');
     _maybeFail();
-    return _me;
+    return me;
   }
 
   @override
-  Future<UserProfile> saveName(String firstName, String lastName) async {
-    calls.add('saveName');
+  Future<UserProfile> saveSignUpInfo(SignUpInfo info) async {
+    calls.add('saveSignUpInfo ${info.role.name}');
     _maybeFail();
-    if (checkName(firstName) != null || checkName(lastName) != null) {
+    if (checkName(info.firstName) != null || checkName(info.lastName) != null) {
       throw const AuthError(AuthFailure.invalidName);
     }
-    return _save(
-      _me,
-      firstName: cleanName(firstName),
-      lastName: cleanName(lastName),
+    // Like choose_role(): only during the sign-up, never "admin".
+    if (me.hasChosenPlan || info.role == UserRole.admin) {
+      throw const AuthError(AuthFailure.unknown);
+    }
+    assert(governorates.contains(info.governorate));
+    return save(
+      me,
+      firstName: cleanName(info.firstName),
+      lastName: cleanName(info.lastName),
+      role: info.role,
+      organisation: info.organisation,
+      governorate: info.governorate,
+      almondTrees: info.almondTrees,
+      orchardAreaHa: info.orchardAreaHa,
+      irrigation: info.irrigation,
     );
   }
 
@@ -145,15 +223,15 @@ class FakeAuthService implements AuthService {
   Future<UserProfile> saveLanguage(String language) async {
     calls.add('saveLanguage $language');
     _maybeFail();
-    return _save(_me, language: language);
+    return save(me, language: language);
   }
 
   @override
   Future<UserProfile> choosePlan(Plan plan) async {
     calls.add('choosePlan ${plan.name}');
     _maybeFail();
-    return _save(
-      _me,
+    return save(
+      me,
       chosenPlan: plan,
       paymentStatus: plan == Plan.free
           ? PaymentStatus.free
@@ -166,7 +244,7 @@ class FakeAuthService implements AuthService {
   Future<Plan> loadPlan() async {
     calls.add('loadPlan');
     _maybeFail();
-    return plans[_me.phone] ?? Plan.free;
+    return plans[me.phone] ?? Plan.free;
   }
 
   @override

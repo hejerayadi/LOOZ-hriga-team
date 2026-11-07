@@ -300,6 +300,239 @@ class AppLocalizationsAr extends AppLocalizations {
   String get regionZaghouan => 'زغوان';
 
   @override
+  String get createAccount => 'إنشاء حساب';
+
+  @override
+  String get signIn => 'تسجيل الدخول';
+
+  @override
+  String get errorNoAccount => 'لا يوجد حساب بهذا الرقم.';
+
+  @override
+  String get accountExists => 'هذا الرقم لديه حساب بالفعل.';
+
+  @override
+  String get welcomeBack => 'مرحبًا من جديد';
+
+  @override
+  String get infoTitle => 'معلوماتك';
+
+  @override
+  String get infoSubtitle => 'أسئلة قليلة فقط';
+
+  @override
+  String get roleFarmer => 'فلاح';
+
+  @override
+  String get roleExpert => 'مهندس فلاحي أو مرشد';
+
+  @override
+  String get roleTitle => 'من أنت؟';
+
+  @override
+  String get roleSubtitle => 'اختر ما يناسبك';
+
+  @override
+  String get roleFarmerHint => 'عندي بستان لوز';
+
+  @override
+  String get roleExpertHint => 'أنصح الفلاحين في المجتمع';
+
+  @override
+  String get governorate => 'الولاية';
+
+  @override
+  String get chooseGovernorate => 'اختر ولايتك';
+
+  @override
+  String get almondTreesOptional => 'عدد أشجار اللوز (اختياري)';
+
+  @override
+  String get areaOptional => 'المساحة بالهكتار (اختياري)';
+
+  @override
+  String get irrigationOptional => 'السقي (اختياري)';
+
+  @override
+  String get irrigated => 'مسقي';
+
+  @override
+  String get rainfed => 'بعلي';
+
+  @override
+  String get organisationOptional => 'المؤسسة (اختياري)';
+
+  @override
+  String get numberInvalid => 'اكتب رقمًا صحيحًا';
+
+  @override
+  String get expertPendingNote =>
+      'ستظهر شارة «◆ خبير موثّق» بعد أن نتحقق من حسابك.';
+
+  @override
+  String get packConnectedKit => 'مع عُدّة حسّاسات لوز (نركّبها لك)';
+
+  @override
+  String priceForDays(String price, String period) {
+    return '$price د.ت / $period';
+  }
+
+  @override
+  String pricePerSensorForDays(String price, String period) {
+    return '$price د.ت لكل حسّاس / $period';
+  }
+
+  @override
+  String daysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يوم',
+      many: '$count يومًا',
+      few: '$count أيام',
+      two: 'يومان',
+      one: 'يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String kitSensors(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حسّاس',
+      many: '$count حسّاسًا',
+      few: '$count حسّاسات',
+      two: 'حسّاسان',
+      one: 'حسّاس واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get kitTitle => 'عُدّة لوز';
+
+  @override
+  String get kitRequested => 'سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.';
+
+  @override
+  String get kitMeanwhileFree => 'حتى ذلك الوقت، تستعمل الباقة المجانية.';
+
+  @override
+  String get demoMode => 'وضع تجريبي';
+
+  @override
+  String get cardNumber => 'رقم البطاقة';
+
+  @override
+  String get cardExpiry => 'تاريخ الانتهاء';
+
+  @override
+  String get cardCode => 'رمز الأمان';
+
+  @override
+  String get cardName => 'الاسم على البطاقة';
+
+  @override
+  String get cardNumberInvalid => '16 رقمًا';
+
+  @override
+  String get cardExpiryInvalid => 'تاريخ غير صحيح (شهر/سنة)';
+
+  @override
+  String get cardCodeInvalid => '3 أرقام';
+
+  @override
+  String get checkingPayment => 'جاري التحقق من الدفع…';
+
+  @override
+  String get paidTitle => 'تم الدفع!';
+
+  @override
+  String paidUntil(String date) {
+    return 'باقتك مفعّلة حتى $date';
+  }
+
+  @override
+  String get notPaidTitle => 'لم يكتمل الدفع';
+
+  @override
+  String get notPaidText =>
+      'ستبقى على الخطة المجانية، ويمكنك الدفع لاحقًا من «حسابي».';
+
+  @override
+  String get continueFree => 'متابعة مجانًا';
+
+  @override
+  String get paymentNotAvailable => 'الدفع غير متاح الآن.';
+
+  @override
+  String get kitNotInstalled => 'عُدّة لوز لم تُركّب بعد.';
+
+  @override
+  String get tooManyPayments => 'محاولات دفع كثيرة. حاول بعد ساعة.';
+
+  @override
+  String get chooseGovernorateFirst => 'اختر ولايتك أولًا.';
+
+  @override
+  String planUntil(String date) {
+    return 'حتى $date';
+  }
+
+  @override
+  String get regionTunis => 'تونس';
+
+  @override
+  String get regionAriana => 'أريانة';
+
+  @override
+  String get regionBenArous => 'بن عروس';
+
+  @override
+  String get regionManouba => 'منوبة';
+
+  @override
+  String get regionNabeul => 'نابل';
+
+  @override
+  String get regionBizerte => 'بنزرت';
+
+  @override
+  String get regionBeja => 'باجة';
+
+  @override
+  String get regionJendouba => 'جندوبة';
+
+  @override
+  String get regionKef => 'الكاف';
+
+  @override
+  String get regionSiliana => 'سليانة';
+
+  @override
+  String get regionSousse => 'سوسة';
+
+  @override
+  String get regionMonastir => 'المنستير';
+
+  @override
+  String get regionGabes => 'قابس';
+
+  @override
+  String get regionMedenine => 'مدنين';
+
+  @override
+  String get regionTataouine => 'تطاوين';
+
+  @override
+  String get regionTozeur => 'توزر';
+
+  @override
+  String get regionKebili => 'قبلي';
+
+  @override
   String get askTitle => 'اسأل سؤالًا';
 
   @override
@@ -559,12 +792,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get askFirstQuestion => 'اسأل سؤالك الأول';
 
   @override
-  String get langArabic => 'العربية';
-
-  @override
-  String get langFrench => 'Français';
-
-  @override
   String get langPillArabic => 'عربي';
 
   @override
@@ -613,12 +840,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get codeResent => 'أرسلنا رمزًا جديدًا';
-
-  @override
-  String get nameTitle => 'ما اسمك؟';
-
-  @override
-  String get nameSubtitle => 'ليتعرّف عليك المجتمع';
 
   @override
   String get firstName => 'الاسم';
@@ -680,21 +901,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get packPredictions => 'توقّع السقي والحصاد';
-
-  @override
-  String get payChoiceTitle => 'متى تدفع؟';
-
-  @override
-  String get payChoiceSubtitle => 'اختر ما يناسبك';
-
-  @override
-  String get payNow => 'ادفع الآن';
-
-  @override
-  String get payLater => 'ادفع لاحقًا';
-
-  @override
-  String get payPendingNote => 'حتى الدفع، تستعمل الباقة المجانية';
 
   @override
   String get logOut => 'تسجيل الخروج';

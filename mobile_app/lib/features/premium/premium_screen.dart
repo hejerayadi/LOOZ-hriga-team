@@ -1,17 +1,20 @@
-// "LOOZ بريميوم": what the free plan and Premium give, and the price.
+// "LOOZ بريميوم": what the free plan and Premium give, the price (the
+// smallest paid pack, from the database), then the paid packs.
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/plans.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/payment_service.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/orchard_scene.dart';
 import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/symbol_text.dart';
 import '../../shared/widgets/text_link.dart';
-import 'payment_screen.dart';
+import '../onboarding/pack_screen.dart';
+import 'pack_texts.dart';
 
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
@@ -98,19 +101,7 @@ class PremiumScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '${planPrice(Plan.connected)} ${l10n.currency}',
-                      style: AppTextStyles.of(28, FontWeight.w700),
-                    ),
-                    TextSpan(text: ' / ${l10n.month}'),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.of(18),
-              ),
+              const _EntryPrice(),
               Text(
                 l10n.cancelAnytime,
                 textAlign: TextAlign.center,
@@ -121,7 +112,7 @@ class PremiumScreen extends StatelessWidget {
         ),
         ActionButton(
           label: '★ ${l10n.startPremium}',
-          onPressed: () => openScreen(context, const PaymentScreen()),
+          onPressed: () => openScreen(context, const PackScreen(upgrade: true)),
         ),
         TextLink(
           label: l10n.notNow,
@@ -158,6 +149,47 @@ class _PlanColumn extends StatelessWidget {
           for (final line in lines) ...[const SizedBox(height: 10), line],
         ],
       ),
+    );
+  }
+}
+
+/// "15 د.ت / 30 يومًا": the price of Essential, the smallest paid pack.
+class _EntryPrice extends StatefulWidget {
+  const _EntryPrice();
+
+  @override
+  State<_EntryPrice> createState() => _EntryPriceState();
+}
+
+class _EntryPriceState extends State<_EntryPrice> {
+  late final Future<Map<Plan, PackPrice>> _prices = Future.sync(
+    () => paymentService.loadPrices(),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return FutureBuilder(
+      future: _prices,
+      builder: (context, snapshot) {
+        final price = snapshot.data?[Plan.essential];
+        // "…" while the price is read.
+        final amount = price == null ? '…' : dinars(price.millimes);
+        final period = price == null ? l10n.month : l10n.daysCount(price.days);
+        return Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '$amount ${l10n.currency}',
+                style: AppTextStyles.of(28, FontWeight.w700),
+              ),
+              TextSpan(text: ' / $period'),
+            ],
+          ),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.of(18),
+        );
+      },
     );
   }
 }

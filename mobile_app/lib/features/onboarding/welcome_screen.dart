@@ -1,5 +1,5 @@
 // End of the sign-up: "مرحبًا يا <first name>" with a smiling face, then
-// the app.
+// the app. A new expert reads that his badge comes once he is checked.
 import 'package:flutter/material.dart';
 
 import '../../app.dart';
@@ -12,6 +12,7 @@ import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/looz_background.dart';
 import '../../shared/widgets/looz_header.dart';
 import '../../shared/widgets/mood_face.dart';
+import '../../shared/widgets/symbol_text.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -59,6 +60,15 @@ class WelcomeScreen extends StatelessWidget {
                       style: AppTextStyles.subtitle,
                     ),
                   ),
+                  if (currentUser.value case final user?
+                      when user.isExpert && !user.verified) ...[
+                    const SizedBox(height: 18),
+                    SymbolText(
+                      l10n.expertPendingNote,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.of(17, FontWeight.w700),
+                    ),
+                  ],
                   const SizedBox(height: 18 + 24),
                   ActionButton(
                     label: l10n.start,

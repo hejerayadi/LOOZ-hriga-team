@@ -1,14 +1,14 @@
-// LIVE test: the sign-up and the sign-in against the REAL Supabase project,
-// with the test phone numbers of the dashboard (code 123456, no SMS sent).
+// LIVE test: the sign-in against the REAL Supabase project, with the test
+// phone numbers of the dashboard (code 123456, no SMS sent):
 //
-//   +21650000001 = a NEW user (the whole sign-up in the app)
-//   +21650000002 = an EXISTING user (phone, code, then Home directly)
+//   +21650000001 and +21650000002 = EXISTING users ("تسجيل الدخول")
+//
+// The sign-up of NEW users (04, 05) and the demo payment:
+// test_live/signup_payment_live_test.dart.
 //
 // Run it from mobile_app/ (needs internet and the .env file):
-//   flutter test test_live --dart-define-from-file=.env
+//   flutter test test_live/auth_live_test.dart --dart-define-from-file=.env
 //
-// To test +21650000001 as a new user again, delete it first in
-// Supabase > Authentication > Users (its profile is deleted with it).
 // Supabase sends 1 code per number per minute: the test waits when needed.
 import 'dart:convert';
 import 'dart:io';
@@ -22,14 +22,17 @@ import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/core/supabase_config.dart';
 import 'package:looz_mobile/data/auth_service.dart';
+import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/user_profile.dart';
 import 'package:looz_mobile/features/home/home_page.dart';
 import 'package:looz_mobile/features/onboarding/auth_messages.dart';
-import 'package:looz_mobile/features/onboarding/language_screen.dart';
-import 'package:looz_mobile/features/onboarding/name_screen.dart';
 import 'package:looz_mobile/features/onboarding/pack_screen.dart';
-import 'package:looz_mobile/features/onboarding/payment_choice_screen.dart';
 import 'package:looz_mobile/features/onboarding/phone_screen.dart';
+import 'package:looz_mobile/features/onboarding/role_screen.dart';
+import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
+import 'package:looz_mobile/features/onboarding/start_screen.dart';
+import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
+import 'package:looz_mobile/features/premium/payment_screen.dart';
 
 import '../test/test_helpers.dart';
 
@@ -93,16 +96,23 @@ Future<T> serverCall<T>(
 }
 
 /// Asks a code, and waits when Supabase says "1 code per minute".
-Future<void> sendCodeWaiting(AuthService service, String phone) async {
+/// ([createAccount] false = sign in: a number without account is refused.)
+Future<void> sendCodeWaiting(
+  AuthService service,
+  String phone, {
+  bool createAccount = true,
+}) async {
+  Future<void> send() =>
+      service.sendCode(phone, language: 'ar', createAccount: createAccount);
   try {
-    await service.sendCode(phone, language: 'ar');
+    await send();
   } on AuthError catch (error) {
     if (error.failure != AuthFailure.tooManyTries) rethrow;
     final wait = RegExp(r'(\d+) seconds').firstMatch('${error.cause}');
     await Future<void>.delayed(
       Duration(seconds: int.parse(wait?.group(1) ?? '60') + 1),
     );
-    await service.sendCode(phone, language: 'ar');
+    await send();
   }
 }
 
@@ -209,82 +219,64 @@ void main() {
     );
   });
 
-  testWidgets('1. New user $newUserPhone: the whole sign-up in the app', (
+  testWidgets('1. $newUserPhone signs in: the missing step, then Home', (
     tester,
   ) async {
     usePhoneScreen(tester);
     noAnimations(tester);
     final client = (await tester.runAsync(() async => newClient()))!;
     authService = SupabaseAuthService(client);
+    paymentService = DemoPaymentService(client);
     await tester.pumpWidget(const LoozApp());
     await tester.pumpAndSettle();
 
-    // Language, phone, code.
-    step('language');
-    await tapAndWait(tester, find.text('العربية'));
+    // The start screen: "تسجيل الدخول", the phone, the code.
+    expect(find.byType(StartScreen), findsOneWidget);
+    await tapAndWait(tester, find.text('تسجيل الدخول'));
     await typeDigits(tester, '50000001');
-    step('phone typed, asking the code');
+    step('phone typed, asking the code (sign in)');
     await sendCodeOnScreen(tester, 'إرسال الرمز');
     await typeDigits(tester, testCode);
     step('code typed');
     await tester.tap(find.text('تأكيد'));
     await waitFor(tester, [
-      find.byType(NameScreen),
-      find.byType(PackScreen),
       find.byType(HomePage),
+      find.byType(PaymentScreen),
+      find.byType(PackScreen),
+      find.byType(SignUpInfoScreen),
+      find.byType(RoleScreen),
     ]);
-    if (find.byType(NameScreen).evaluate().isEmpty) {
-      fail(
-        '$newUserPhone already has a name: delete it in '
-        'Authentication > Users to test a new user again.',
-      );
+    // Essential chosen at an old sign-up and never paid: its payment is the
+    // missing step. "Back" = the packs: Free this time.
+    if (find.byType(PaymentScreen).evaluate().isNotEmpty) {
+      step('the payment came back: back to the packs, Free');
+      Navigator.of(tester.element(find.byType(PaymentScreen))).pop();
+      await tester.pumpAndSettle();
     }
+    if (find.byType(PackScreen).evaluate().isNotEmpty) {
+      await waitFor(tester, [find.text('15 د.ت / 30 يومًا')]);
+      await scrollAndTap(tester, find.text('مجاني'));
+      await scrollAndTap(tester, find.text('متابعة'));
+      await waitFor(tester, [find.byType(WelcomeScreen)]);
+      await tapAndWait(tester, find.text('ابدأ'));
+    }
+    expect(find.byType(HomePage), findsOneWidget);
 
-    // The name, the pack (Essential), "pay later".
-    step('name screen');
-    await tester.enterText(find.byType(TextField).at(0), 'محمد');
-    await tester.enterText(find.byType(TextField).at(1), 'بن سالم');
-    await tester.tap(find.text('متابعة'));
-    await waitFor(tester, [find.byType(PackScreen)]);
-    step('pack screen');
-    await tapAndWait(tester, find.text('أساسي'));
-    await tapAndWait(tester, find.text('متابعة'));
-    expect(find.byType(PaymentChoiceScreen), findsOneWidget);
-    step('pay later');
-    await tester.tap(find.text('ادفع لاحقًا'));
-    await waitFor(tester, [find.text('مرحبًا يا محمد')]);
-    step('welcome');
-    await tapAndWait(tester, find.text('ابدأ'));
-    expect(find.text('محمد، أشجارك بخير اليوم'), findsOneWidget);
-
-    // What the database saved.
     final row = await serverCall(
       tester,
       'reading the profiles row',
       () => client
           .from('profiles')
-          .select('${UserProfile.columns}, name, role, updated_at')
+          .select('${UserProfile.columns}, name, updated_at')
           .eq('phone', newUserPhone)
           .single(),
     );
-    printRow('profiles row of $newUserPhone (new user):', row);
-    expect(row['first_name'], 'محمد');
-    expect(row['last_name'], 'بن سالم');
-    expect(row['name'], 'محمد بن سالم'); // kept for the dashboard
-    expect(row['language'], 'ar');
-    expect(row['chosen_plan'], 'essential');
-    expect(row['payment_status'], 'pending');
+    printRow('profiles row of $newUserPhone:', row);
     expect(row['plan_chosen_at'], isNotNull);
     expect(row['role'], 'farmer');
-    // Not paid: the free plan.
-    expect(
-      await serverCall(tester, 'user_plan()', () => client.rpc('user_plan')),
-      'free',
-    );
-    expect(currentPlan.value, Plan.free);
+    expect(row['payment_status'], isNot('pending'));
 
-    // The app is closed and opened again: the saved session is used, and
-    // the name is read from the database.
+    // The app is closed and opened again: the saved session is used.
     final saved = jsonEncode(client.auth.currentSession!.toJson());
     final reopened = await serverCall(tester, 'saved session', () async {
       final c = newClient();
@@ -293,20 +285,19 @@ void main() {
     });
     currentUser.value = null;
     authService = SupabaseAuthService(reopened);
+    paymentService = DemoPaymentService(reopened);
     await tester.pumpWidget(const SizedBox());
     step('app opened again');
     await tester.pumpWidget(const LoozApp());
     await waitFor(tester, [find.byType(HomePage)]);
-    expect(find.byType(LanguageScreen), findsNothing);
-    expect(find.text('محمد، أشجارك بخير اليوم'), findsOneWidget);
+    expect(find.byType(StartScreen), findsNothing);
 
-    // Log out in Profile: the session is forgotten.
+    // Log out in Profile: back to the start screen.
     step('log out');
     await tapAndWait(tester, find.text('حسابي').last);
-    expect(find.text('محمد بن سالم'), findsOneWidget);
     expect(find.text('+216 50 000 001'), findsOneWidget);
     await tester.tap(find.text('تسجيل الخروج'));
-    await waitFor(tester, [find.byType(LanguageScreen)]);
+    await waitFor(tester, [find.byType(StartScreen)]);
     expect(reopened.auth.currentSession, isNull);
     expect(currentUser.value, isNull);
 
@@ -317,7 +308,7 @@ void main() {
     });
   }, timeout: _slow);
 
-  testWidgets('2. Existing user $existingUserPhone: phone, code, Home', (
+  testWidgets('2. Existing user $existingUserPhone: sign in, Home', (
     tester,
   ) async {
     usePhoneScreen(tester);
@@ -333,11 +324,18 @@ void main() {
         final service = SupabaseAuthService(c);
         await sendCodeWaiting(service, existingUserPhone);
         await service.verifyCode(existingUserPhone, testCode);
-        var profile = await service.loadProfile();
-        if (!profile.hasName) {
-          profile = await service.saveName('Mohamed', 'Ben Salem');
+        final profile = await service.loadProfile();
+        if (!profile.hasChosenPlan) {
+          await service.saveSignUpInfo(
+            const SignUpInfo(
+              role: UserRole.farmer,
+              firstName: 'Mohamed',
+              lastName: 'Ben Salem',
+              governorate: 'sfax',
+            ),
+          );
+          await service.choosePlan(Plan.free);
         }
-        if (!profile.hasChosenPlan) await service.choosePlan(Plan.free);
         await service.signOut();
         await c.dispose();
       },
@@ -345,10 +343,12 @@ void main() {
 
     final client = (await tester.runAsync(() async => newClient()))!;
     authService = SupabaseAuthService(client);
+    paymentService = DemoPaymentService(client);
     await tester.pumpWidget(const LoozApp());
     await tester.pumpAndSettle();
-    step('language');
-    await tapAndWait(tester, find.text('Français'));
+    step('French, then "Se connecter"');
+    await tapAndWait(tester, find.text('FR'));
+    await tapAndWait(tester, find.text('Se connecter'));
     await typeDigits(tester, '50000002');
     step('phone typed, asking the code');
     await sendCodeOnScreen(tester, 'Envoyer le code');
@@ -357,14 +357,14 @@ void main() {
     await tester.tap(find.text('Confirmer'));
     await waitFor(tester, [
       find.byType(HomePage),
-      find.byType(NameScreen),
+      find.byType(SignUpInfoScreen),
+      find.byType(RoleScreen),
       find.byType(PackScreen),
+      find.byType(PaymentScreen),
     ]);
 
-    // Straight to Home, with the name saved before.
+    // Straight to Home: nothing is asked again.
     expect(find.byType(HomePage), findsOneWidget);
-    expect(find.byType(NameScreen), findsNothing);
-    expect(find.byType(PackScreen), findsNothing);
     expect(find.text('Mohamed, vos arbres vont bien'), findsOneWidget);
 
     final row = await serverCall(
@@ -372,7 +372,7 @@ void main() {
       'reading the profiles row',
       () => client
           .from('profiles')
-          .select('${UserProfile.columns}, name, role, updated_at')
+          .select('${UserProfile.columns}, name, updated_at')
           .eq('phone', existingUserPhone)
           .single(),
     );
@@ -442,9 +442,31 @@ void main() {
     final subscription = await client.from('subscriptions').select('plan');
     expect(subscription, hasLength(1));
 
-    // His own name and language: allowed.
-    final renamed = await service.saveName('محمد', 'بن سالم');
-    expect(renamed.firstName, 'محمد');
+    // The role is chosen during the sign-up only (finished here).
+    await expectLater(
+      client.rpc('choose_role', params: {'p_role': 'expert'}),
+      throwsA(isA<PostgrestException>().having((e) => e.code, 'code', '42501')),
+    );
+    // A payment can never be written by the app (not even "paid").
+    await expectLater(
+      client.from('payments').insert({
+        'user_id': me,
+        'plan': 'connected',
+        'amount_millimes': 1,
+        'period_days': 30,
+        'status': 'paid_demo',
+      }),
+      throwsA(isA<PostgrestException>()),
+    );
+
+    // His own name: allowed.
+    final renamed = await client
+        .from('profiles')
+        .update({'first_name': 'محمد', 'last_name': 'بن سالم'})
+        .eq('id', me)
+        .select('first_name')
+        .single();
+    expect(renamed['first_name'], 'محمد');
 
     // Not logged in: nothing is visible.
     final anonymous = newClient();

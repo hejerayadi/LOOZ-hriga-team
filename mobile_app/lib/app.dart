@@ -15,9 +15,9 @@ import 'shared/widgets/shell.dart';
 
 /// MaterialApp = the app "shell": title, theme, language and first screen.
 /// The first screen: Home when the user is logged in (the session is kept),
-/// otherwise the choice of the language, then the login.
+/// otherwise the start screen ("إنشاء حساب" / "تسجيل الدخول").
 class LoozApp extends StatelessWidget {
-  const LoozApp({super.key, this.home = const StartScreen()});
+  const LoozApp({super.key, this.home = const LaunchScreen()});
 
   /// The first screen (tests can start somewhere else).
   final Widget home;

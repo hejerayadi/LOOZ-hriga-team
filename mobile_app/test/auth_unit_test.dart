@@ -94,6 +94,13 @@ void main() {
           statusCode: '403',
           code: 'otp_expired',
         ): AuthFailure.wrongCode,
+        // Sign in with a number that has no account (checked on the real
+        // Supabase: 422, "Signups not allowed for otp").
+        const AuthApiException(
+          'Signups not allowed for otp',
+          statusCode: '422',
+          code: 'otp_disabled',
+        ): AuthFailure.noAccount,
         const AuthApiException(
           'Unsupported phone provider',
           statusCode: '400',
@@ -198,6 +205,37 @@ void main() {
     });
     expect(fresh.hasName, isFalse);
     expect(fresh.hasChosenPlan, isFalse);
+    expect(fresh.role, UserRole.farmer);
+    expect(fresh.hasSignUpInfo, isFalse);
+
+    // The sign-up information (migrations 008 and 009).
+    final expert = UserProfile.fromRow({
+      'id': 'b7c3',
+      'phone': '+21650000004',
+      'first_name': 'Sami',
+      'last_name': 'Dridi',
+      'language': 'fr',
+      'role': 'expert',
+      'verified': false,
+      'organisation': 'CRDA',
+      'zone': 'sidi_bouzid',
+      'almond_trees': 120,
+      'orchard_area_ha': 2.5,
+      'irrigation': 'rainfed',
+      'chosen_plan': 'essential',
+      'payment_status': 'pending',
+      'plan_chosen_at': '2026-10-28T10:00:00+00:00',
+      'created_at': '2026-10-28T09:59:00+00:00',
+    });
+    expect(expert.isExpert, isTrue);
+    expect(expert.verified, isFalse);
+    expect(expert.organisation, 'CRDA');
+    expect(expert.governorate, 'sidi_bouzid');
+    expect(expert.almondTrees, 120);
+    expect(expert.orchardAreaHa, 2.5);
+    expect(expert.irrigation, Irrigation.rainfed);
+    expect(expert.hasSignUpInfo, isTrue);
+    expect(expert.waitsForPayment, isTrue); // Essential chosen, not paid
     expect(fresh.language, 'fr');
   });
 }

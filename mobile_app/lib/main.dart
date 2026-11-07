@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app.dart';
+import 'core/locale.dart';
 import 'core/supabase_config.dart';
 
 Future<void> main() async {
@@ -12,6 +13,9 @@ Future<void> main() async {
 
   // Dark status bar icons (the pages are light).
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+
+  // The language chosen last time on this phone (Arabic the first time).
+  await loadSavedLanguage();
 
   // The login needs Supabase: without the keys, a help message.
   if (!SupabaseConfig.hasKeys) {

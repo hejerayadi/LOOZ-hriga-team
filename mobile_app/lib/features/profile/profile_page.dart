@@ -9,13 +9,15 @@ import '../../core/plans.dart';
 import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/validators.dart';
+import '../../data/payment_service.dart';
 import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/blob.dart';
 import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/looz_header.dart';
 import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/symbol_text.dart';
-import '../onboarding/language_screen.dart';
+import '../onboarding/start_screen.dart';
+import '../premium/pack_texts.dart';
 import '../premium/premium_screen.dart';
 import '../states/states_screen.dart';
 
@@ -24,7 +26,7 @@ class ProfilePage extends StatelessWidget {
 
   Future<void> _logOut(BuildContext context) async {
     await logOut();
-    if (context.mounted) replaceAllWith(context, const LanguageScreen());
+    if (context.mounted) replaceAllWith(context, const StartScreen());
   }
 
   @override
@@ -79,6 +81,7 @@ class ProfilePage extends StatelessWidget {
         _ProfileRow(
           icon: AppIcon.tree,
           label: l10n.myPlan,
+          subtitle: const _MyPack(),
           end: SymbolText(
             '★',
             style: AppTextStyles.of(19).copyWith(color: AppColors.midGreen),
@@ -116,11 +119,15 @@ class _ProfileRow extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.end,
+    this.subtitle,
   });
 
   final AppIcon icon;
   final String label;
   final VoidCallback? onTap;
+
+  /// A small line under the label (e.g. the pack and its end).
+  final Widget? subtitle;
 
   /// At the end of the row (default: an arrow).
   final Widget? end;
@@ -143,7 +150,16 @@ class _ProfileRow extends StatelessWidget {
               children: [
                 IconBlob(icon: icon),
                 const SizedBox(width: 14),
-                Expanded(child: Text(label, style: AppTextStyles.cardTitle)),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label, style: AppTextStyles.cardTitle),
+                      ?subtitle,
+                    ],
+                  ),
+                ),
                 const SizedBox(width: 14),
                 end ?? const LoozIcon(AppIcon.arrow),
               ],
@@ -217,6 +233,44 @@ class _DevPlanSwitch extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "أساسي · حتى 30/11/2026", or "مجاني": the pack running now.
+class _MyPack extends StatefulWidget {
+  const _MyPack();
+
+  @override
+  State<_MyPack> createState() => _MyPackState();
+}
+
+class _MyPackState extends State<_MyPack> {
+  late final Future<ActivePack?> _pack = Future.sync(
+    () => paymentService.loadActivePack(),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return FutureBuilder(
+      future: _pack,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const SizedBox.shrink();
+        }
+        final pack = snapshot.data;
+        return Text(
+          pack == null
+              ? planName(l10n, Plan.free)
+              : '${planName(l10n, pack.plan)} · '
+                    '${l10n.planUntil(dayText(pack.endsAt))}',
+          style: AppTextStyles.of(
+            14,
+            FontWeight.w600,
+          ).copyWith(color: AppColors.textMuted),
+        );
+      },
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:looz_mobile/app.dart';
+import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/data/fake_data.dart';
 import 'package:looz_mobile/features/alerts/alert_screen.dart';
@@ -19,6 +20,7 @@ import 'package:looz_mobile/features/community/tips_screen.dart';
 import 'package:looz_mobile/features/home/home_page.dart';
 import 'package:looz_mobile/features/journal/journal_screen.dart';
 import 'package:looz_mobile/features/map/map_screen.dart';
+import 'package:looz_mobile/features/onboarding/pack_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'package:looz_mobile/features/premium/premium_screen.dart';
 import 'package:looz_mobile/features/premium/qr_screen.dart';
@@ -30,6 +32,7 @@ import 'package:looz_mobile/shared/widgets/mood_face.dart';
 import 'package:looz_mobile/shared/widgets/speaker_button.dart';
 import 'package:looz_mobile/shared/widgets/tip_row.dart';
 
+import 'fake_auth_service.dart';
 import 'test_helpers.dart';
 
 /// Starts the app on the 5 tabs (Arabic), on a phone screen.
@@ -174,7 +177,12 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('Premium: locked → premium → payment → QR → map', (tester) async {
+  testWidgets('Premium: locked → premium → packs → payment → QR → map', (
+    tester,
+  ) async {
+    // A farmer whose LOOZ kit (5 sensors) is installed.
+    logInTestUser();
+    usePayments(authService as FakeAuthService).installKit(5);
     await startApp(tester, plan: Plan.free);
     await openTab(tester, 'بستاني ★');
     expect(find.text('بستانك في جيبك'), findsOneWidget);
@@ -182,12 +190,19 @@ void main() {
     await tapAndWait(tester, findTextWithSymbol('★ ابدأ بريميوم'));
     expect(find.byType(PremiumScreen), findsOneWidget);
 
-    await tapAndWait(tester, findTextWithSymbol('★ ابدأ بريميوم'));
+    await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
+    expect(find.byType(PackScreen), findsOneWidget);
+    await scrollAndTap(tester, find.text('متصل'));
+    await scrollAndTap(tester, find.text('متابعة'));
     expect(find.byType(PaymentScreen), findsOneWidget);
 
-    await tapAndWait(tester, findTextWithSymbol('★ تأكيد'));
+    // DEMO payment: a test card, "جاري التحقق…", paid.
+    await typeDemoCard(tester);
+    await confirmDemoPayment(tester);
+    expect(find.text('تم الدفع!'), findsOneWidget);
+    expect(currentPlan.value, Plan.connected);
+    await scrollAndTap(tester, find.text('متابعة'));
     expect(find.byType(QrScreen), findsOneWidget);
-    expect(currentPlan.value, Plan.connected); // DEMO: now Premium
 
     await tapAndWait(tester, find.text('فتح الخريطة'));
     expect(find.byType(MapScreen), findsOneWidget);

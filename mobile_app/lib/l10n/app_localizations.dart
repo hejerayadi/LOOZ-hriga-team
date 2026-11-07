@@ -572,6 +572,408 @@ abstract class AppLocalizations {
   /// **'زغوان'**
   String get regionZaghouan;
 
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء حساب'**
+  String get createAccount;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الدخول'**
+  String get signIn;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد حساب بهذا الرقم.'**
+  String get errorNoAccount;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الرقم لديه حساب بالفعل.'**
+  String get accountExists;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرحبًا من جديد'**
+  String get welcomeBack;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'معلوماتك'**
+  String get infoTitle;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'أسئلة قليلة فقط'**
+  String get infoSubtitle;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'فلاح'**
+  String get roleFarmer;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'مهندس فلاحي أو مرشد'**
+  String get roleExpert;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'من أنت؟'**
+  String get roleTitle;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر ما يناسبك'**
+  String get roleSubtitle;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'عندي بستان لوز'**
+  String get roleFarmerHint;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنصح الفلاحين في المجتمع'**
+  String get roleExpertHint;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'الولاية'**
+  String get governorate;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر ولايتك'**
+  String get chooseGovernorate;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد أشجار اللوز (اختياري)'**
+  String get almondTreesOptional;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساحة بالهكتار (اختياري)'**
+  String get areaOptional;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'السقي (اختياري)'**
+  String get irrigationOptional;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسقي'**
+  String get irrigated;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعلي'**
+  String get rainfed;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'المؤسسة (اختياري)'**
+  String get organisationOptional;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب رقمًا صحيحًا'**
+  String get numberInvalid;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستظهر شارة «◆ خبير موثّق» بعد أن نتحقق من حسابك.'**
+  String get expertPendingNote;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'مع عُدّة حسّاسات لوز (نركّبها لك)'**
+  String get packConnectedKit;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'{price} د.ت / {period}'**
+  String priceForDays(String price, String period);
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'{price} د.ت لكل حسّاس / {period}'**
+  String pricePerSensorForDays(String price, String period);
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{يوم} =2{يومان} few{{count} أيام} many{{count} يومًا} other{{count} يوم}}'**
+  String daysCount(int count);
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{حسّاس واحد} =2{حسّاسان} few{{count} حسّاسات} many{{count} حسّاسًا} other{{count} حسّاس}}'**
+  String kitSensors(int count);
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'عُدّة لوز'**
+  String get kitTitle;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.'**
+  String get kitRequested;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى ذلك الوقت، تستعمل الباقة المجانية.'**
+  String get kitMeanwhileFree;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'وضع تجريبي'**
+  String get demoMode;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم البطاقة'**
+  String get cardNumber;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الانتهاء'**
+  String get cardExpiry;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'رمز الأمان'**
+  String get cardCode;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم على البطاقة'**
+  String get cardName;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'16 رقمًا'**
+  String get cardNumberInvalid;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ غير صحيح (شهر/سنة)'**
+  String get cardExpiryInvalid;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'3 أرقام'**
+  String get cardCodeInvalid;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري التحقق من الدفع…'**
+  String get checkingPayment;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الدفع!'**
+  String get paidTitle;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'باقتك مفعّلة حتى {date}'**
+  String paidUntil(String date);
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل الدفع'**
+  String get notPaidTitle;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستبقى على الخطة المجانية، ويمكنك الدفع لاحقًا من «حسابي».'**
+  String get notPaidText;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة مجانًا'**
+  String get continueFree;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع غير متاح الآن.'**
+  String get paymentNotAvailable;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'عُدّة لوز لم تُركّب بعد.'**
+  String get kitNotInstalled;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'محاولات دفع كثيرة. حاول بعد ساعة.'**
+  String get tooManyPayments;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر ولايتك أولًا.'**
+  String get chooseGovernorateFirst;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {date}'**
+  String planUntil(String date);
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'تونس'**
+  String get regionTunis;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'أريانة'**
+  String get regionAriana;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'بن عروس'**
+  String get regionBenArous;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'منوبة'**
+  String get regionManouba;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'نابل'**
+  String get regionNabeul;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'بنزرت'**
+  String get regionBizerte;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'باجة'**
+  String get regionBeja;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'جندوبة'**
+  String get regionJendouba;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكاف'**
+  String get regionKef;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'سليانة'**
+  String get regionSiliana;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'سوسة'**
+  String get regionSousse;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'المنستير'**
+  String get regionMonastir;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'قابس'**
+  String get regionGabes;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدنين'**
+  String get regionMedenine;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'تطاوين'**
+  String get regionTataouine;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'توزر'**
+  String get regionTozeur;
+
+  /// APP-ONLY. Sign up / payment.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبلي'**
+  String get regionKebili;
+
   /// No description provided for @askTitle.
   ///
   /// In ar, this message translates to:
@@ -1070,18 +1472,6 @@ abstract class AppLocalizations {
   /// **'اسأل سؤالك الأول'**
   String get askFirstQuestion;
 
-  /// Language button (same in both languages).
-  ///
-  /// In ar, this message translates to:
-  /// **'العربية'**
-  String get langArabic;
-
-  /// Language button (same in both languages).
-  ///
-  /// In ar, this message translates to:
-  /// **'Français'**
-  String get langFrench;
-
   /// Language switch (same in both languages).
   ///
   /// In ar, this message translates to:
@@ -1177,18 +1567,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أرسلنا رمزًا جديدًا'**
   String get codeResent;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'ما اسمك؟'**
-  String get nameTitle;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'ليتعرّف عليك المجتمع'**
-  String get nameSubtitle;
 
   /// APP-ONLY. Sign up / sign in.
   ///
@@ -1303,36 +1681,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'توقّع السقي والحصاد'**
   String get packPredictions;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'متى تدفع؟'**
-  String get payChoiceTitle;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'اختر ما يناسبك'**
-  String get payChoiceSubtitle;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'ادفع الآن'**
-  String get payNow;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'ادفع لاحقًا'**
-  String get payLater;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'حتى الدفع، تستعمل الباقة المجانية'**
-  String get payPendingNote;
 
   /// APP-ONLY. Sign up / sign in.
   ///

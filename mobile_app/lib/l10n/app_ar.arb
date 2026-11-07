@@ -271,6 +271,310 @@
   "@regionZaghouan": {
     "description": "APP-ONLY. Community."
   },
+  "createAccount": "إنشاء حساب",
+  "@createAccount": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "signIn": "تسجيل الدخول",
+  "@signIn": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "errorNoAccount": "لا يوجد حساب بهذا الرقم.",
+  "@errorNoAccount": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "accountExists": "هذا الرقم لديه حساب بالفعل.",
+  "@accountExists": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "welcomeBack": "مرحبًا من جديد",
+  "@welcomeBack": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "infoTitle": "معلوماتك",
+  "@infoTitle": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "infoSubtitle": "أسئلة قليلة فقط",
+  "@infoSubtitle": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "roleFarmer": "فلاح",
+  "@roleFarmer": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "roleExpert": "مهندس فلاحي أو مرشد",
+  "@roleExpert": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "roleTitle": "من أنت؟",
+  "@roleTitle": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "roleSubtitle": "اختر ما يناسبك",
+  "@roleSubtitle": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "roleFarmerHint": "عندي بستان لوز",
+  "@roleFarmerHint": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "roleExpertHint": "أنصح الفلاحين في المجتمع",
+  "@roleExpertHint": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "governorate": "الولاية",
+  "@governorate": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "chooseGovernorate": "اختر ولايتك",
+  "@chooseGovernorate": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "almondTreesOptional": "عدد أشجار اللوز (اختياري)",
+  "@almondTreesOptional": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "areaOptional": "المساحة بالهكتار (اختياري)",
+  "@areaOptional": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "irrigationOptional": "السقي (اختياري)",
+  "@irrigationOptional": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "irrigated": "مسقي",
+  "@irrigated": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "rainfed": "بعلي",
+  "@rainfed": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "organisationOptional": "المؤسسة (اختياري)",
+  "@organisationOptional": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "numberInvalid": "اكتب رقمًا صحيحًا",
+  "@numberInvalid": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "expertPendingNote": "ستظهر شارة «◆ خبير موثّق» بعد أن نتحقق من حسابك.",
+  "@expertPendingNote": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "packConnectedKit": "مع عُدّة حسّاسات لوز (نركّبها لك)",
+  "@packConnectedKit": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "priceForDays": "{price} د.ت / {period}",
+  "@priceForDays": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "pricePerSensorForDays": "{price} د.ت لكل حسّاس / {period}",
+  "@pricePerSensorForDays": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "daysCount": "{count, plural, =1{يوم} =2{يومان} few{{count} أيام} many{{count} يومًا} other{{count} يوم}}",
+  "@daysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "kitSensors": "{count, plural, =1{حسّاس واحد} =2{حسّاسان} few{{count} حسّاسات} many{{count} حسّاسًا} other{{count} حسّاس}}",
+  "@kitSensors": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "kitTitle": "عُدّة لوز",
+  "@kitTitle": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "kitRequested": "سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.",
+  "@kitRequested": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "kitMeanwhileFree": "حتى ذلك الوقت، تستعمل الباقة المجانية.",
+  "@kitMeanwhileFree": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "demoMode": "وضع تجريبي",
+  "@demoMode": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "cardNumber": "رقم البطاقة",
+  "@cardNumber": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "cardExpiry": "تاريخ الانتهاء",
+  "@cardExpiry": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "cardCode": "رمز الأمان",
+  "@cardCode": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "cardName": "الاسم على البطاقة",
+  "@cardName": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "cardNumberInvalid": "16 رقمًا",
+  "@cardNumberInvalid": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "cardExpiryInvalid": "تاريخ غير صحيح (شهر/سنة)",
+  "@cardExpiryInvalid": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "cardCodeInvalid": "3 أرقام",
+  "@cardCodeInvalid": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "checkingPayment": "جاري التحقق من الدفع…",
+  "@checkingPayment": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "paidTitle": "تم الدفع!",
+  "@paidTitle": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "paidUntil": "باقتك مفعّلة حتى {date}",
+  "@paidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "notPaidTitle": "لم يكتمل الدفع",
+  "@notPaidTitle": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "notPaidText": "ستبقى على الخطة المجانية، ويمكنك الدفع لاحقًا من «حسابي».",
+  "@notPaidText": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "continueFree": "متابعة مجانًا",
+  "@continueFree": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "paymentNotAvailable": "الدفع غير متاح الآن.",
+  "@paymentNotAvailable": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "kitNotInstalled": "عُدّة لوز لم تُركّب بعد.",
+  "@kitNotInstalled": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "tooManyPayments": "محاولات دفع كثيرة. حاول بعد ساعة.",
+  "@tooManyPayments": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "chooseGovernorateFirst": "اختر ولايتك أولًا.",
+  "@chooseGovernorateFirst": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "planUntil": "حتى {date}",
+  "@planUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionTunis": "تونس",
+  "@regionTunis": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionAriana": "أريانة",
+  "@regionAriana": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionBenArous": "بن عروس",
+  "@regionBenArous": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionManouba": "منوبة",
+  "@regionManouba": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionNabeul": "نابل",
+  "@regionNabeul": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionBizerte": "بنزرت",
+  "@regionBizerte": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionBeja": "باجة",
+  "@regionBeja": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionJendouba": "جندوبة",
+  "@regionJendouba": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionKef": "الكاف",
+  "@regionKef": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionSiliana": "سليانة",
+  "@regionSiliana": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionSousse": "سوسة",
+  "@regionSousse": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionMonastir": "المنستير",
+  "@regionMonastir": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionGabes": "قابس",
+  "@regionGabes": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionMedenine": "مدنين",
+  "@regionMedenine": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionTataouine": "تطاوين",
+  "@regionTataouine": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionTozeur": "توزر",
+  "@regionTozeur": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
+  "regionKebili": "قبلي",
+  "@regionKebili": {
+    "description": "APP-ONLY. Sign up / payment."
+  },
   "askTitle": "اسأل سؤالًا",
   "askSubtitle": "اختر الأسهل لك",
   "speak": "تكلّم",
@@ -389,14 +693,6 @@
   "noInternet": "لا يوجد إنترنت",
   "tryAgain": "حاول مرة أخرى",
   "askFirstQuestion": "اسأل سؤالك الأول",
-  "langArabic": "العربية",
-  "@langArabic": {
-    "description": "Language button (same in both languages)."
-  },
-  "langFrench": "Français",
-  "@langFrench": {
-    "description": "Language button (same in both languages)."
-  },
   "langPillArabic": "عربي",
   "@langPillArabic": {
     "description": "Language switch (same in both languages)."
@@ -464,14 +760,6 @@
   },
   "codeResent": "أرسلنا رمزًا جديدًا",
   "@codeResent": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "nameTitle": "ما اسمك؟",
-  "@nameTitle": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "nameSubtitle": "ليتعرّف عليك المجتمع",
-  "@nameSubtitle": {
     "description": "APP-ONLY. Sign up / sign in."
   },
   "firstName": "الاسم",
@@ -558,26 +846,6 @@
   },
   "packPredictions": "توقّع السقي والحصاد",
   "@packPredictions": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "payChoiceTitle": "متى تدفع؟",
-  "@payChoiceTitle": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "payChoiceSubtitle": "اختر ما يناسبك",
-  "@payChoiceSubtitle": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "payNow": "ادفع الآن",
-  "@payNow": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "payLater": "ادفع لاحقًا",
-  "@payLater": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "payPendingNote": "حتى الدفع، تستعمل الباقة المجانية",
-  "@payPendingNote": {
     "description": "APP-ONLY. Sign up / sign in."
   },
   "logOut": "تسجيل الخروج",

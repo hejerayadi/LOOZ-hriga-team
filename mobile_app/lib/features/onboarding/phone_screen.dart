@@ -1,7 +1,9 @@
-// Login, step 1 and 2: the phone number, then the code sent by SMS
-// (Supabase Auth, see lib/data/auth_service.dart).
-// After the code: a new user gives his name and chooses a pack; a user who
-// already finished the sign-up goes straight to Home (see sign_up_flow.dart).
+// Sign up and sign in, step 1 and 2: the phone number, then the code sent
+// by SMS (Supabase Auth, see lib/data/auth_service.dart).
+// Sign in: a number without account is not created ("لا يوجد حساب بهذا
+// الرقم", with a button to sign up). Sign up: a number that already has a
+// finished account is not changed ("هذا الرقم لديه حساب بالفعل", with a
+// button to sign in). After the code: the missing step (sign_up_flow.dart).
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
@@ -21,7 +23,14 @@ import 'sign_up_flow.dart';
 
 /// Step 1: the phone number (8 digits after +216).
 class PhoneScreen extends StatelessWidget {
-  const PhoneScreen({super.key});
+  const PhoneScreen({super.key, this.signUp = false, this.digits = ''});
+
+  /// true = "إنشاء حساب" (the account is created with the code);
+  /// false = "تسجيل الدخول" (only an existing account).
+  final bool signUp;
+
+  /// The number already typed (8 digits), e.g. from the sign-in screen.
+  final String digits;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +41,17 @@ class PhoneScreen extends StatelessWidget {
       action: l10n.sendCode,
       busyAction: l10n.sending,
       length: phoneDigits,
+      initialDigits: digits,
+      // Sign in with a number that has no account: go to the sign-up.
+      failureAction: (failure, digits) => failure == AuthFailure.noAccount
+          ? (
+              l10n.createAccount,
+              () => replaceWith(
+                context,
+                PhoneScreen(signUp: true, digits: digits),
+              ),
+            )
+          : null,
       // "+216 12 345 •••": the digits typed, then dots for the missing ones.
       display: (digits) {
         final slots = digits.padRight(phoneDigits, '•');
@@ -48,8 +68,11 @@ class PhoneScreen extends StatelessWidget {
         await authService.sendCode(
           phone,
           language: appLocale.value.languageCode,
+          createAccount: signUp,
         );
-        if (context.mounted) openScreen(context, CodeScreen(phone: phone));
+        if (context.mounted) {
+          openScreen(context, CodeScreen(phone: phone, signUp: signUp));
+        }
       },
     );
   }
@@ -57,10 +80,13 @@ class PhoneScreen extends StatelessWidget {
 
 /// Step 2: the code of 6 digits sent to [phone].
 class CodeScreen extends StatelessWidget {
-  const CodeScreen({super.key, required this.phone});
+  const CodeScreen({super.key, required this.phone, this.signUp = false});
 
   /// "+21698123456".
   final String phone;
+
+  /// Opened by "إنشاء حساب".
+  final bool signUp;
 
   @override
   Widget build(BuildContext context) {
@@ -72,16 +98,63 @@ class CodeScreen extends StatelessWidget {
       busyAction: l10n.checking,
       length: codeLength,
       // "1 2 • • • •"
-      display: (digits) =>
-          digits.padRight(codeLength, '•').split('').join(' '),
+      display: (digits) => digits.padRight(codeLength, '•').split('').join(' '),
       onDone: (code) async {
         await authService.verifyCode(phone, code);
         final profile = await startSessionAfterLogin();
-        if (context.mounted) openNextStep(context, profile);
+        if (!context.mounted) return;
+        if (signUp && profile.hasChosenPlan && !profile.waitsForPayment) {
+          // A finished account: nothing is changed, the user signs in.
+          replaceAllWith(context, const AccountExistsScreen());
+        } else {
+          // New, or stopped in the middle (Essential not paid yet...): the
+          // missing step.
+          openNextStep(context, profile);
+        }
       },
       onResend: () => authService.sendCode(
         phone,
         language: appLocale.value.languageCode,
+        createAccount: signUp,
+      ),
+    );
+  }
+}
+
+/// "إنشاء حساب" with a number that already has an account: the account is
+/// not changed; "تسجيل الدخول" opens it (the code was right: the user is
+/// already logged in).
+class AccountExistsScreen extends StatelessWidget {
+  const AccountExistsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final system = MediaQuery.paddingOf(context);
+    return Scaffold(
+      body: LoozBackground(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.pageSide(context, shrink: false),
+            system.top + 28,
+            AppSpacing.pageSide(context, shrink: false),
+            system.bottom + 30,
+          ),
+          children: [
+            const LoozHeader(),
+            ScreenTitle(title: l10n.welcomeBack, top: 64),
+            const SizedBox(height: 10),
+            AuthNote.info(l10n.accountExists),
+            const SizedBox(height: 28),
+            ActionButton(
+              label: l10n.signIn,
+              onPressed: () {
+                final profile = currentUser.value;
+                if (profile != null) openNextStep(context, profile);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -98,6 +171,8 @@ class _KeypadScreen extends StatefulWidget {
     required this.display,
     required this.onDone,
     this.onResend,
+    this.initialDigits = '',
+    this.failureAction,
   });
 
   final String title;
@@ -120,12 +195,20 @@ class _KeypadScreen extends StatefulWidget {
   /// "أعد إرسال الرمز" (code screen only).
   final Future<void> Function()? onResend;
 
+  /// The digits already typed when the screen opens.
+  final String initialDigits;
+
+  /// A second button under the message of some errors: its text and what it
+  /// does (null = none).
+  final (String, VoidCallback)? Function(AuthFailure failure, String digits)?
+  failureAction;
+
   @override
   State<_KeypadScreen> createState() => _KeypadScreenState();
 }
 
 class _KeypadScreenState extends State<_KeypadScreen> {
-  String _digits = '';
+  late String _digits = widget.initialDigits;
   bool _busy = false;
   AuthFailure? _failure;
   bool _resent = false;
@@ -147,7 +230,10 @@ class _KeypadScreenState extends State<_KeypadScreen> {
   }
 
   /// Waits for the server; shows the message if it fails.
-  Future<void> _call(Future<void> Function() call, {bool resend = false}) async {
+  Future<void> _call(
+    Future<void> Function() call, {
+    bool resend = false,
+  }) async {
     setState(() {
       _busy = true;
       _failure = null;
@@ -169,6 +255,9 @@ class _KeypadScreenState extends State<_KeypadScreen> {
     final system = MediaQuery.paddingOf(context);
     final complete = _digits.length == widget.length;
     final failure = _failure;
+    final failureAction = failure == null
+        ? null
+        : widget.failureAction?.call(failure, _digits);
     return Scaffold(
       body: LoozBackground(
         child: ListView(
@@ -212,6 +301,10 @@ class _KeypadScreenState extends State<_KeypadScreen> {
               failure != null
                   ? AuthNote.failure(failure)
                   : AuthNote.info(l10n.codeResent),
+            ],
+            if (failureAction case (final label, final onTap)) ...[
+              const SizedBox(height: 12),
+              ActionButton(label: label, secondary: true, onPressed: onTap),
             ],
             const SizedBox(height: 28),
             Directionality(

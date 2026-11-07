@@ -38,12 +38,9 @@ enum Feature {
 /// Screens listen to it, so they update as soon as it changes.
 final ValueNotifier<Plan> currentPlan = ValueNotifier(Plan.free);
 
-/// The price of each pack per month, in Tunisian dinars (د.ت / DT).
-/// "XX" = not decided yet. Change the prices HERE: every screen uses them.
-const planPrices = {Plan.essential: 'XX', Plan.connected: 'XX'};
-
-/// The price of a paid pack ("XX").
-String planPrice(Plan plan) => planPrices[plan] ?? '';
+// The prices of the packs are in the database (table plan_prices: 15 DT /
+// 30 days for Essential, 8 DT per sensor / 30 days for Connected), read by
+// lib/data/payment_service.dart. Change them in Supabase > Table Editor.
 
 /// Can the user (or the given plan) use this feature?
 bool canUse(Feature feature, [Plan? plan]) =>

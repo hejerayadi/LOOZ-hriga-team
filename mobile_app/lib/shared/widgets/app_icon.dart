@@ -28,6 +28,11 @@ enum AppIcon {
   trash, // not in the design: delete your answer in the community
   plus, // not in the design: "＋ انشر" (publish in the community)
   image, // not in the design: choose a photo in the gallery
+  userPlus, // not in the design: "إنشاء حساب" on the start screen
+  logIn, // not in the design: "تسجيل الدخول" on the start screen
+  card, // not in the design: the card number (demo payment)
+  lock, // not in the design: the security code of the card
+  warning, // not in the design: an error (the bug is only for pests)
 }
 
 class LoozIcon extends StatelessWidget {

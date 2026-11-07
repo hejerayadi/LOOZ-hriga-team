@@ -94,3 +94,42 @@ TextProblem? checkText(String text) {
   if (_badTextCharacters.hasMatch(clean)) return TextProblem.badCharacters;
   return null;
 }
+
+// ----- Numbers typed by the farmer -----
+
+/// "١٢٠" (Arabic keyboard) -> "120": the digits the app understands.
+String westernDigits(String text) => String.fromCharCodes([
+  for (final c in text.runes)
+    if (c >= 0x0660 && c <= 0x0669)
+      c -
+          0x0660 +
+          0x30 // ٠ to ٩
+    else if (c >= 0x06F0 && c <= 0x06F9)
+      c -
+          0x06F0 +
+          0x30 // ۰ to ۹ (Persian keyboard)
+    else
+      c,
+]);
+
+// ----- The orchard (sign-up, optional fields) -----
+
+/// The same limits as the database (migration 008).
+const almondTreesMax = 100000;
+const orchardAreaMax = 10000;
+
+/// The number of almond trees typed, or null when it is not a whole number
+/// from 1 to 100000. (An empty box = not given: check isEmpty first.)
+int? parseAlmondTrees(String text) {
+  final value = int.tryParse(westernDigits(text.trim()));
+  return value != null && value >= 1 && value <= almondTreesMax ? value : null;
+}
+
+/// The area in hectares typed ("2,5" or "2.5"), or null when it is not a
+/// number above 0 and up to 10000, with 2 decimals at most.
+double? parseOrchardArea(String text) {
+  final clean = westernDigits(text.trim()).replaceAll(',', '.');
+  if (!RegExp(r'^[0-9]+(\.[0-9]{1,2})?$').hasMatch(clean)) return null;
+  final value = double.parse(clean);
+  return value > 0 && value <= orchardAreaMax ? value : null;
+}

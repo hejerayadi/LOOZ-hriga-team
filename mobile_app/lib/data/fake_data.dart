@@ -64,10 +64,3 @@ const fakeConfidence = 3;
 
 /// How long "جاري النظر…" stays on screen.
 const fakeThinkingTime = Duration(milliseconds: 1400);
-
-// ----- Payment -----
-
-/// The card (the design's example numbers).
-const fakeCardNumber = '•••• •••• •••• 4242';
-const fakeCardExpiry = '12 / 28';
-const fakeCardCode = '•••';

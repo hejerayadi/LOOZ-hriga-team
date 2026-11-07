@@ -403,7 +403,7 @@ class FailureCard extends StatelessWidget {
     final l10n = context.l10n;
     if (failure != CommunityFailure.noInternet) {
       return StateCard(
-        icon: AppIcon.bug,
+        icon: AppIcon.warning,
         text: l10n.tryAgain,
         color: AppColors.peach,
         onTap: onRetry,
@@ -502,7 +502,7 @@ class CommunityNote extends StatelessWidget {
       CommunityFailure.photoTooBig ||
       CommunityFailure.photoWrongType ||
       CommunityFailure.uploadFailed => (AppIcon.image, AppColors.peach),
-      _ => (AppIcon.bug, AppColors.peach),
+      _ => (AppIcon.warning, AppColors.peach),
     };
     return Semantics(
       liveRegion: true,

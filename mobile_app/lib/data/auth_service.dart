@@ -2,10 +2,16 @@
 //
 // The app only uses the publishable ("anon") key: what a user may read or
 // change is decided by the database rules (RLS, migration 005), not here.
+//
+// DEMO LOGIN (migration 010 + Edge Function "demo-auth"): while
+// app_settings.demo_login_enabled = true, any +216 number and any 6-digit
+// code log in, no SMS. The Edge Function makes the session (it alone has the
+// service_role key). Switch off: the normal SMS code of Supabase.
 import 'dart:async';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/governorates.dart';
 import '../core/plans.dart';
 import '../core/validators.dart';
 import 'user_profile.dart';
@@ -14,6 +20,7 @@ import 'user_profile.dart';
 /// (see failureMessage() in lib/features/onboarding/auth_messages.dart).
 enum AuthFailure {
   noInternet,
+  noAccount, // sign in with a number that has no account
   wrongCode, // wrong or expired code (Supabase does not tell which)
   tooManyTries,
   cannotReceiveCode, // e.g. a real number while only test numbers work
@@ -37,15 +44,52 @@ class AuthError implements Exception {
   String toString() => 'AuthError(${failure.name}, $cause)';
 }
 
+/// What the user gives at the step "your information" of the sign-up.
+class SignUpInfo {
+  const SignUpInfo({
+    required this.role,
+    required this.firstName,
+    required this.lastName,
+    required this.governorate,
+    this.almondTrees,
+    this.orchardAreaHa,
+    this.irrigation,
+    this.organisation,
+  });
+
+  /// farmer or expert.
+  final UserRole role;
+  final String firstName;
+  final String lastName;
+
+  /// One of the 24 codes of core/governorates.dart.
+  final String governorate;
+
+  /// Optional.
+  final int? almondTrees;
+  final double? orchardAreaHa;
+  final Irrigation? irrigation;
+
+  /// Experts only, optional.
+  final String? organisation;
+}
+
 /// What the app needs from the login system. The app uses
 /// SupabaseAuthService; the tests use a fake one (no internet needed).
 abstract class AuthService {
   /// true when a user is logged in (also after the app was closed).
   bool get hasSession;
 
-  /// Sends the code by SMS to [phone] ("+21698123456"). Creates the account
-  /// if the number is new, with the [language] chosen on the first screen.
-  Future<void> sendCode(String phone, {required String language});
+  /// Sends the code by SMS to [phone] ("+21698123456").
+  /// Sign up ([createAccount] true): creates the account if the number is
+  /// new, with the [language] chosen on the first screen. Sign in (false):
+  /// a number without account is refused (AuthFailure.noAccount).
+  /// Demo login on: no SMS is sent, and any 6-digit code will work.
+  Future<void> sendCode(
+    String phone, {
+    required String language,
+    required bool createAccount,
+  });
 
   /// Checks the code: the user is logged in after it.
   Future<void> verifyCode(String phone, String code);
@@ -53,7 +97,9 @@ abstract class AuthService {
   /// The profile of the logged-in user.
   Future<UserProfile> loadProfile();
 
-  Future<UserProfile> saveName(String firstName, String lastName);
+  /// Saves the step "your information" of the sign-up (the role can only
+  /// be chosen before the pack).
+  Future<UserProfile> saveSignUpInfo(SignUpInfo info);
 
   Future<UserProfile> saveLanguage(String language);
 
@@ -85,21 +131,79 @@ class SupabaseAuthService implements AuthService {
     return id;
   }
 
+  /// The number waiting for its code when the demo login is on (no SMS was
+  /// sent): its code is checked by the Edge Function.
+  ({String phone, bool signUp, String language})? _demo;
+
   @override
-  Future<void> sendCode(String phone, {required String language}) => _run(() {
+  Future<void> sendCode(
+    String phone, {
+    required String language,
+    required bool createAccount,
+  }) => _run(() async {
     if (!isValidPhone(phone)) throw const AuthError(AuthFailure.invalidPhone);
-    return _client.auth.signInWithOtp(
+    _demo = null;
+    final demo = await _demoAuth({
+      'action': 'start',
+      'phone': phone,
+      'signUp': createAccount,
+    });
+    if (demo?['demo'] == true) {
+      _demo = (phone: phone, signUp: createAccount, language: language);
+      return;
+    }
+    await _client.auth.signInWithOtp(
       phone: phone,
-      shouldCreateUser: true,
-      data: {'language': language},
+      shouldCreateUser: createAccount,
+      data: createAccount ? {'language': language} : null,
     );
   });
 
   @override
   Future<void> verifyCode(String phone, String code) => _run(() async {
     if (!isValidCode(code)) throw const AuthError(AuthFailure.wrongCode);
-    await _client.auth.verifyOTP(phone: phone, token: code, type: OtpType.sms);
+    final demo = _demo;
+    if (demo == null || demo.phone != phone) {
+      await _client.auth.verifyOTP(
+        phone: phone,
+        token: code,
+        type: OtpType.sms,
+      );
+      return;
+    }
+    // Demo login: any code; a new number + sign up = a new account.
+    final answer = await _demoAuth({
+      'action': 'verify',
+      'phone': phone,
+      'code': code,
+      'signUp': demo.signUp,
+      'language': demo.language,
+    });
+    final refreshToken = answer?['refresh_token'];
+    if (refreshToken is! String) throw const AuthError(AuthFailure.unknown);
+    // The session is kept on the phone, like after an SMS code.
+    await _client.auth.setSession(refreshToken);
+    _demo = null;
   });
+
+  /// Calls the Edge Function "demo-auth". null = it is not deployed (then
+  /// the normal SMS code is used). Its errors become AuthErrors.
+  Future<Map<String, dynamic>?> _demoAuth(Map<String, Object?> body) async {
+    final FunctionResponse response;
+    try {
+      response = await _client.functions.invoke(demoAuthFunction, body: body);
+    } on FunctionsFetchException catch (e) {
+      // No answer at all.
+      throw AuthError(AuthFailure.noInternet, e);
+    } on FunctionException catch (e) {
+      if (e.status == 404) return null;
+      throw AuthError(demoLoginFailure(e.details), e);
+    }
+    final data = response.data;
+    if (data is! Map) throw const AuthError(AuthFailure.unknown);
+    if (data['error'] != null) throw AuthError(demoLoginFailure(data));
+    return data.cast<String, dynamic>();
+  }
 
   @override
   Future<UserProfile> loadProfile() => _run(() async {
@@ -113,16 +217,27 @@ class SupabaseAuthService implements AuthService {
   });
 
   @override
-  Future<UserProfile> saveName(String firstName, String lastName) =>
-      _run(() async {
-        if (checkName(firstName) != null || checkName(lastName) != null) {
-          throw const AuthError(AuthFailure.invalidName);
-        }
-        return _update({
-          'first_name': cleanName(firstName),
-          'last_name': cleanName(lastName),
-        });
-      });
+  Future<UserProfile> saveSignUpInfo(SignUpInfo info) => _run(() async {
+    if (checkName(info.firstName) != null || checkName(info.lastName) != null) {
+      throw const AuthError(AuthFailure.invalidName);
+    }
+    if (!governorates.contains(info.governorate)) {
+      throw const AuthError(AuthFailure.unknown);
+    }
+    // The role: the only way to save it (never "admin", never "verified").
+    await _client.rpc(
+      'choose_role',
+      params: {'p_role': info.role.name, 'p_organisation': info.organisation},
+    );
+    return _update({
+      'first_name': cleanName(info.firstName),
+      'last_name': cleanName(info.lastName),
+      'zone': info.governorate,
+      'almond_trees': info.almondTrees,
+      'orchard_area_ha': info.orchardAreaHa,
+      'irrigation': info.irrigation?.name,
+    });
+  });
 
   @override
   Future<UserProfile> saveLanguage(String language) =>
@@ -154,7 +269,7 @@ class SupabaseAuthService implements AuthService {
     }
   }
 
-  Future<UserProfile> _update(Map<String, Object> values) async {
+  Future<UserProfile> _update(Map<String, Object?> values) async {
     final row = await _client
         .from('profiles')
         .update(values)
@@ -177,6 +292,21 @@ class SupabaseAuthService implements AuthService {
   }
 }
 
+/// The Edge Function of the demo login (supabase/functions/demo-auth).
+const demoAuthFunction = 'demo-auth';
+
+/// Turns an answer of "demo-auth" ({"error": "no_account"}...) into an
+/// AuthFailure. "demo_off" (switched off between the two screens),
+/// "not_allowed" (an admin) and "server": unknown ("try again").
+AuthFailure demoLoginFailure(Object? answer) =>
+    switch (answer is Map ? answer['error'] : null) {
+      'no_account' => AuthFailure.noAccount,
+      'too_many' => AuthFailure.tooManyTries,
+      'bad_phone' => AuthFailure.invalidPhone,
+      'bad_code' => AuthFailure.wrongCode,
+      _ => AuthFailure.unknown,
+    };
+
 /// Turns an error of Supabase into an AuthFailure.
 /// Codes: https://supabase.com/docs/guides/auth/debugging/error-codes
 AuthFailure failureOf(Object error) {
@@ -197,6 +327,8 @@ AuthFailure failureOf(Object error) {
   }
   if (error is AuthException) {
     switch (error.code) {
+      case 'otp_disabled': // "Signups not allowed for otp": sign in, no account
+        return AuthFailure.noAccount;
       case 'otp_expired':
         return AuthFailure.wrongCode;
       case 'over_sms_send_rate_limit':

@@ -124,6 +124,121 @@
   "regionKasserine": "Kasserine",
   "regionMahdia": "Mahdia",
   "regionZaghouan": "Zaghouan",
+  "createAccount": "Créer un compte",
+  "signIn": "Se connecter",
+  "errorNoAccount": "Aucun compte avec ce numéro.",
+  "accountExists": "Ce numéro a déjà un compte.",
+  "welcomeBack": "Content de vous revoir",
+  "infoTitle": "Vos informations",
+  "infoSubtitle": "Juste quelques questions",
+  "roleFarmer": "Agriculteur",
+  "roleExpert": "Agronome ou conseiller",
+  "roleTitle": "Qui êtes-vous ?",
+  "roleSubtitle": "Choisissez ce qui vous correspond",
+  "roleFarmerHint": "J'ai un verger d'amandiers",
+  "roleExpertHint": "Je conseille les agriculteurs",
+  "governorate": "Gouvernorat",
+  "chooseGovernorate": "Choisissez votre gouvernorat",
+  "almondTreesOptional": "Nombre d'amandiers (facultatif)",
+  "areaOptional": "Surface en hectares (facultatif)",
+  "irrigationOptional": "Arrosage (facultatif)",
+  "irrigated": "Irrigué",
+  "rainfed": "Pluvial",
+  "organisationOptional": "Organisme (facultatif)",
+  "numberInvalid": "Écrivez un nombre valide",
+  "expertPendingNote": "Le badge « ◆ Expert vérifié » apparaîtra après la vérification de votre compte.",
+  "packConnectedKit": "Avec le kit de capteurs LOOZ (installé par nos soins)",
+  "priceForDays": "{price} DT / {period}",
+  "@priceForDays": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "pricePerSensorForDays": "{price} DT par capteur / {period}",
+  "@pricePerSensorForDays": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "daysCount": "{count, plural, =1{1 jour} other{{count} jours}}",
+  "@daysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kitSensors": "{count, plural, =1{1 capteur} other{{count} capteurs}}",
+  "@kitSensors": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kitTitle": "Kit LOOZ",
+  "kitRequested": "Nous vous contacterons pour installer votre kit de capteurs.",
+  "kitMeanwhileFree": "En attendant, vous avez l'offre gratuite.",
+  "demoMode": "Mode démo",
+  "cardNumber": "Numéro de carte",
+  "cardExpiry": "Expiration",
+  "cardCode": "Code CVV",
+  "cardName": "Nom sur la carte",
+  "cardNumberInvalid": "16 chiffres",
+  "cardExpiryInvalid": "Date invalide (MM/AA)",
+  "cardCodeInvalid": "3 chiffres",
+  "checkingPayment": "Vérification du paiement…",
+  "paidTitle": "Paiement reçu !",
+  "paidUntil": "Votre pack est actif jusqu'au {date}",
+  "@paidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "notPaidTitle": "Le paiement n'a pas abouti",
+  "notPaidText": "Vous restez sur le plan gratuit ; vous pourrez payer plus tard depuis « Profil ».",
+  "continueFree": "Continuer gratuitement",
+  "paymentNotAvailable": "Le paiement n'est pas disponible pour le moment.",
+  "kitNotInstalled": "Le kit LOOZ n'est pas encore installé.",
+  "tooManyPayments": "Trop d'essais de paiement. Réessayez dans une heure.",
+  "chooseGovernorateFirst": "Choisissez d'abord votre gouvernorat.",
+  "planUntil": "jusqu'au {date}",
+  "@planUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "regionTunis": "Tunis",
+  "regionAriana": "Ariana",
+  "regionBenArous": "Ben Arous",
+  "regionManouba": "Manouba",
+  "regionNabeul": "Nabeul",
+  "regionBizerte": "Bizerte",
+  "regionBeja": "Béja",
+  "regionJendouba": "Jendouba",
+  "regionKef": "Le Kef",
+  "regionSiliana": "Siliana",
+  "regionSousse": "Sousse",
+  "regionMonastir": "Monastir",
+  "regionGabes": "Gabès",
+  "regionMedenine": "Médenine",
+  "regionTataouine": "Tataouine",
+  "regionTozeur": "Tozeur",
+  "regionKebili": "Kébili",
   "askTitle": "Votre question",
   "askSubtitle": "Choisissez le plus simple",
   "speak": "Parler",
@@ -207,8 +322,6 @@
   "noInternet": "Pas d'internet",
   "tryAgain": "Réessayer",
   "askFirstQuestion": "Posez votre question",
-  "langArabic": "العربية",
-  "langFrench": "Français",
   "langPillArabic": "عربي",
   "langPillFrench": "FR",
   "premiumName": "★ Premium",
@@ -225,8 +338,6 @@
   "checking": "Vérification…",
   "resendCode": "Renvoyer le code",
   "codeResent": "Nouveau code envoyé",
-  "nameTitle": "Votre nom",
-  "nameSubtitle": "Pour vous présenter à la communauté",
   "firstName": "Prénom",
   "lastName": "Nom",
   "continueLabel": "Continuer",
@@ -246,11 +357,6 @@
   "packPhotoDiagnosis": "Diagnostic des feuilles par photo",
   "packLiveSensors": "Capteurs du verger en direct",
   "packPredictions": "Prévisions d'arrosage et de récolte",
-  "payChoiceTitle": "Quand payer ?",
-  "payChoiceSubtitle": "Comme vous préférez",
-  "payNow": "Payer maintenant",
-  "payLater": "Payer plus tard",
-  "payPendingNote": "En attendant le paiement, vous avez l'offre gratuite",
   "logOut": "Se déconnecter",
   "errorNoInternet": "Pas d'internet. Vérifiez la connexion et réessayez.",
   "errorWrongCode": "Code incorrect ou expiré.",

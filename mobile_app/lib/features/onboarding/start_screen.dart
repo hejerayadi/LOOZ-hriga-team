@@ -1,23 +1,21 @@
-// First screen: the almond blossom photo, a welcome, and the choice of the
-// language (Arabic or French). Then the phone number screen.
+// The first screen when nobody is logged in (the design's "language"
+// screen): the almond blossom photo, the logo and the "عربي | FR" switch
+// (the language is remembered on the phone), a welcome, and two big
+// buttons: "إنشاء حساب" (sign up) and "تسجيل الدخول" (sign in).
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/looz_header.dart';
 import '../../shared/widgets/symbol_text.dart';
 import 'phone_screen.dart';
 
-class LanguageScreen extends StatelessWidget {
-  const LanguageScreen({super.key});
-
-  void _choose(BuildContext context, String languageCode) {
-    setLanguage(languageCode);
-    openScreen(context, const PhoneScreen());
-  }
+class StartScreen extends StatelessWidget {
+  const StartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +48,7 @@ class LanguageScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // The logo and "عربي | FR".
                         const LoozHeader(white: true),
                         const Spacer(),
                         const SizedBox(height: 28),
@@ -90,20 +89,22 @@ class LanguageScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // The language names and arrows are the same in both
-                        // languages (like in the design).
-                        _LanguageButton(
-                          label: l10n.langArabic,
-                          arrow: '←',
+                        // The design's two big buttons (green, then white).
+                        _StartButton(
+                          icon: AppIcon.userPlus,
+                          label: l10n.createAccount,
                           color: AppColors.lightGreen,
-                          onTap: () => _choose(context, 'ar'),
+                          onTap: () => openScreen(
+                            context,
+                            const PhoneScreen(signUp: true),
+                          ),
                         ),
                         const SizedBox(height: 16),
-                        _LanguageButton(
-                          label: l10n.langFrench,
-                          arrow: '→',
+                        _StartButton(
+                          icon: AppIcon.logIn,
+                          label: l10n.signIn,
                           color: AppColors.white,
-                          onTap: () => _choose(context, 'fr'),
+                          onTap: () => openScreen(context, const PhoneScreen()),
                         ),
                         const SizedBox(height: 14),
                       ],
@@ -119,16 +120,17 @@ class LanguageScreen extends StatelessWidget {
   }
 }
 
-class _LanguageButton extends StatelessWidget {
-  const _LanguageButton({
+/// A big pill of the start screen: an icon, the word, an arrow.
+class _StartButton extends StatelessWidget {
+  const _StartButton({
+    required this.icon,
     required this.label,
-    required this.arrow,
     required this.color,
     required this.onTap,
   });
 
+  final AppIcon icon;
   final String label;
-  final String arrow;
   final Color color;
   final VoidCallback onTap;
 
@@ -145,12 +147,17 @@ class _LanguageButton extends StatelessWidget {
           shadows: AppShadows.languageButton,
           highlight: AppHighlights.button,
           highlightColor: AppHighlights.buttonColor,
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Flexible(child: Text(label, style: AppTextStyles.languageButton)),
-              SymbolText(arrow, style: AppTextStyles.languageButton),
+              LoozIcon(icon, size: 28),
+              const SizedBox(width: 14),
+              Expanded(child: Text(label, style: AppTextStyles.languageButton)),
+              // Towards the next screen: ← in Arabic, → in French.
+              SymbolText(
+                Directionality.of(context) == TextDirection.rtl ? '←' : '→',
+                style: AppTextStyles.languageButton,
+              ),
             ],
           ),
         ),

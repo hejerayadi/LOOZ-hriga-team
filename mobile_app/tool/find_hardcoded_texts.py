@@ -13,6 +13,14 @@ from pathlib import Path
 LETTER = re.compile(r'[A-Za-zÀ-ÖØ-öø-ÿ؀-ۿ]')
 STRING = re.compile(r"""(?<![A-Za-z0-9_])r?('(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*")""")
 
+# The 24 governorates: codes saved in the database (profiles.zone), each shown
+# with its Arabic / French name (lib/core/governorates.dart).
+GOVERNORATE_CODES = {
+    'tunis', 'ariana', 'ben_arous', 'manouba', 'nabeul', 'zaghouan', 'bizerte', 'beja',
+    'jendouba', 'kef', 'siliana', 'sousse', 'monastir', 'mahdia', 'sfax', 'kairouan',
+    'kasserine', 'sidi_bouzid', 'gabes', 'medenine', 'tataouine', 'gafsa', 'tozeur', 'kebili',
+}
+
 # Technical strings: (name of the category, test on the line and the text).
 TECHNICAL = [
     ('import / export', lambda line, s: re.match(r'\s*(import|export|part)\s', line) or 'dart.library' in line),
@@ -26,7 +34,8 @@ TECHNICAL = [
     ('web (iframe) code', lambda line, s: s in ('iframe', 'message', 'none', 'window')),
     ('Supabase setting', lambda line, s: s.startswith('SUPABASE_') or s == 'YOUR-PROJECT' or ('supabase' in line.lower() and s in ('profiles', 'full_name', 'role', 'id'))),
     ('regular expression (check of a name / phone)', lambda line, s: 'RegExp(' in line),
-    ('price of a pack (XX = not decided, same in both languages)', lambda line, s: 'planPrices' in line and s == 'XX'),
+    ('governorate code (saved in the database, shown with its name)', lambda line, s: s in GOVERNORATE_CODES),
+    ('key of a setting kept on the phone', lambda line, s: '_savedLanguageKey' in line),
     ('region code (shown with its Arabic / French name)', lambda line, s: re.match(r"\s*'[a-z_]+' => l10n\.region", line)),
     ('demo picture of the community', lambda line, s: s.startswith('demo:')),
 ]
@@ -39,8 +48,9 @@ SERVER_FILES = {
     'data/community_service.dart',
     'data/community_photos.dart',  # file type, image_picker error codes, photo formats
     'data/community_models.dart',
+    'data/payment_service.dart',  # tables, statuses and error codes of migrations 008 / 009
 }
-SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart)'
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart)'
 
 
 def without_comment(line):

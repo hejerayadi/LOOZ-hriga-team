@@ -53,60 +53,68 @@ void main() {
     expect(find.text('صباح الخير'), findsOneWidget);
   });
 
-  testWidgets('Login: language, phone, code, name, pack, welcome, Home', (
-    tester,
-  ) async {
-    usePhoneScreen(tester);
-    // A fake login system (every code is 123456): see sign_up_test.dart.
-    useFakeAuth();
-    await tester.pumpWidget(const LoozApp());
+  testWidgets(
+    'Sign up: start, FR, phone, code, who are you, information, pack, '
+    'welcome, Home',
+    (tester) async {
+      usePhoneScreen(tester);
+      noAnimations(tester);
+      // A fake login system (every code is 123456): see sign_up_test.dart.
+      usePayments(useFakeAuth());
+      await tester.pumpWidget(const LoozApp());
+      await tester.pumpAndSettle();
 
-    // 1. Choose French.
-    await tester.tap(find.text('Français'));
-    await tester.pumpAndSettle();
-    expect(find.text('Votre téléphone'), findsOneWidget);
+      // 1. The start screen: French, then "Créer un compte".
+      await tester.tap(find.text('FR'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Créer un compte'));
+      await tester.pumpAndSettle();
+      expect(find.text('Votre téléphone'), findsOneWidget);
 
-    // 2. The button does nothing until the 8 digits are typed.
-    await tester.tap(find.text('Envoyer le code'));
-    await tester.pumpAndSettle();
-    expect(find.text('Votre téléphone'), findsOneWidget);
-    for (final digit in '12345678'.split('')) {
-      await tester.tap(find.text(digit));
-    }
-    await tester.pump();
-    expect(find.text('+216 12 345 678'), findsOneWidget);
-    await tester.tap(find.text('Envoyer le code'));
-    await tester.pumpAndSettle();
+      // 2. The button does nothing until the 8 digits are typed.
+      await tester.tap(find.text('Envoyer le code'));
+      await tester.pumpAndSettle();
+      expect(find.text('Votre téléphone'), findsOneWidget);
+      for (final digit in '12345678'.split('')) {
+        await tester.tap(find.text(digit));
+      }
+      await tester.pump();
+      expect(find.text('+216 12 345 678'), findsOneWidget);
+      await tester.tap(find.text('Envoyer le code'));
+      await tester.pumpAndSettle();
 
-    // 3. The code (6 digits; the fake login accepts 123456).
-    expect(find.text('Entrez le code'), findsOneWidget);
-    for (final digit in '123456'.split('')) {
-      await tester.tap(find.text(digit));
-    }
-    await tester.pump();
-    expect(find.text('1 2 3 4 5 6'), findsOneWidget);
-    await tester.tap(find.text('Confirmer'));
-    await tester.pumpAndSettle();
+      // 3. The code (6 digits; the fake login accepts 123456).
+      expect(find.text('Entrez le code'), findsOneWidget);
+      for (final digit in '123456'.split('')) {
+        await tester.tap(find.text(digit));
+      }
+      await tester.pump();
+      expect(find.text('1 2 3 4 5 6'), findsOneWidget);
+      await tester.tap(find.text('Confirmer'));
+      await tester.pumpAndSettle();
 
-    // 4. A new number: the name, then the free pack.
-    expect(find.text('Votre nom'), findsOneWidget);
-    await tester.enterText(find.byType(TextField).at(0), 'Mohamed');
-    await tester.enterText(find.byType(TextField).at(1), 'Ben Salem');
-    await tester.tap(find.text('Continuer'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Gratuit'));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Continuer'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Continuer'));
-    await tester.pumpAndSettle();
+      // 4. A new number: who are you (its own screen), the information,
+      // then the free pack.
+      expect(find.text('Qui êtes-vous ?'), findsOneWidget);
+      await tester.tap(find.text('Agriculteur'));
+      await tester.pumpAndSettle();
+      expect(find.text('Vos informations'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).at(0), 'Mohamed');
+      await tester.enterText(find.byType(TextField).at(1), 'Ben Salem');
+      await scrollAndTap(tester, find.text('Choisissez votre gouvernorat'));
+      await tester.tap(find.text('Ariana'));
+      await tester.pumpAndSettle();
+      await scrollAndTap(tester, find.text('Continuer'));
+      await scrollAndTap(tester, find.text('Gratuit'));
+      await scrollAndTap(tester, find.text('Continuer'));
 
-    // 5. Welcome, then the app.
-    expect(find.text('Bienvenue Mohamed'), findsOneWidget);
-    await tester.tap(find.text('Commencer'));
-    await tester.pumpAndSettle();
-    expect(find.text('Bonjour'), findsOneWidget);
-  });
+      // 5. Welcome, then the app.
+      expect(find.text('Bienvenue Mohamed'), findsOneWidget);
+      await tester.tap(find.text('Commencer'));
+      await tester.pumpAndSettle();
+      expect(find.text('Bonjour'), findsOneWidget);
+    },
+  );
 
   testWidgets('Without Supabase keys, a help message is shown', (tester) async {
     await tester.pumpWidget(const MissingKeysApp());
