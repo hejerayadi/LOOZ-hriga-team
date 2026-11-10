@@ -1,6 +1,7 @@
 // "LOOZ بريميوم": what the free plan and Premium give, the price per zone
 // (from the database), then:
-//   - no orchard drawn yet: "ارسم بستانك" (the designer: draw, then pay);
+//   - no orchard built yet (nothing, or a draft): "ارسم بستانك" (the
+//     designer: draw, then the review and the payment, then it is built);
 //   - an orchard: the payment of its bill (a new month, or the extra zones).
 import 'package:flutter/material.dart';
 
@@ -8,6 +9,8 @@ import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/plans.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/auth_service.dart';
+import '../../data/orchard_service.dart';
 import '../../data/payment_service.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/css_box.dart';
@@ -38,8 +41,17 @@ class _PremiumScreenState extends State<PremiumScreen> {
       _error = null;
     });
     try {
+      // Not built yet: the designer (its review pays and builds).
+      if (!(await orchardService.loadDesign()).built) {
+        if (mounted) openScreen(context, const DesignerStartScreen());
+        return;
+      }
       final quote = await paymentService.loadQuote();
       if (mounted) openScreen(context, PaymentScreen(quote: quote));
+    } on AuthError catch (error) {
+      if (mounted) {
+        setState(() => _error = failureMessage(context.l10n, error.failure));
+      }
     } on PaymentError catch (error) {
       if (!mounted) return;
       if (error.failure == PaymentFailure.noDrawing) {

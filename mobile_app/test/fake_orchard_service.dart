@@ -1,11 +1,20 @@
 // A fake of the farmer's orchard for the tests (no internet): the same
 // orchard as supabase/seed/orchard_demo.sql (2.37 ha, zones A-D, one node
-// per zone, the trees in rows), or none, or a draft.
+// per zone, the trees in rows), or none, or a draft of the designer.
+// Like the database: a complete draft is what the bill is made from (see
+// FakePaymentService.orchard), and it is built only once the pack covers
+// it (else the error of PT402).
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:looz_mobile/core/enums.dart';
 import 'package:looz_mobile/data/auth_service.dart';
+import 'package:looz_mobile/data/orchard_design.dart';
 import 'package:looz_mobile/data/orchard_service.dart';
+import 'package:looz_mobile/data/payment_service.dart';
+import 'package:looz_mobile/features/orchard_designer/geometry.dart';
+
+import 'fake_payment_service.dart';
 
 class FakeOrchardService implements OrchardService {
   FakeOrchardService([this.orchard]);
@@ -13,22 +22,129 @@ class FakeOrchardService implements OrchardService {
   /// The orchard of the user (null = none drawn).
   MyOrchard? orchard;
 
+  /// The draft of the designer (null = none).
+  OrchardDesign? design;
+
   /// The next call fails with this error (once).
   AuthFailure? failNext;
 
   /// How many times the orchard was read.
   int loads = 0;
 
-  @override
-  Future<MyOrchard?> loadMyOrchard() async {
-    loads++;
+  /// The calls, e.g. "save zones", "build".
+  final List<String> calls = [];
+
+  /// Not null = building waits for it.
+  Completer<void>? holdBuild;
+
+  void _maybeFail() {
     final failure = failNext;
     if (failure != null) {
       failNext = null;
       throw AuthError(failure);
     }
+  }
+
+  /// The fake bill follows the draft (like orchard_quote()).
+  void _bill() {
+    final payments = paymentService;
+    if (payments is! FakePaymentService) return;
+    final draft = design;
+    if (draft != null && draft.complete) {
+      payments.drawOrchard(draft.zones.length, areaHa: hectares(draft.outline));
+    } else if (!(orchard?.complete ?? false)) {
+      payments.orchard = null;
+    }
+  }
+
+  @override
+  Future<MyOrchard?> loadMyOrchard() async {
+    loads++;
+    _maybeFail();
     return orchard;
   }
+
+  @override
+  Future<DesignState> loadDesign() async {
+    calls.add('load design');
+    _maybeFail();
+    return DesignState(built: orchard?.complete ?? false, draft: design);
+  }
+
+  @override
+  Future<void> saveDesign(OrchardDesign design) async {
+    calls.add('save ${design.step.name}');
+    _maybeFail();
+    this.design = design;
+    orchard ??= const MyOrchard(complete: false);
+    _bill();
+  }
+
+  @override
+  Future<void> discardDesign() async {
+    calls.add('discard');
+    _maybeFail();
+    design = null;
+    if (!(orchard?.complete ?? false)) orchard = null;
+    _bill();
+  }
+
+  @override
+  Future<void> buildOrchard() async {
+    calls.add('build');
+    await holdBuild?.future;
+    _maybeFail();
+    final draft = design;
+    if (draft == null || !draft.complete) {
+      throw const AuthError(AuthFailure.unknown); // PT409: nothing to build
+    }
+    final payments = paymentService;
+    if (payments is FakePaymentService &&
+        payments.quote().kind != QuoteKind.covered) {
+      throw const AuthError(AuthFailure.unknown); // PT402: pay first
+    }
+    orchard = builtFrom(draft);
+    design = null;
+  }
+}
+
+/// The orchard the database builds from a draft (orchard_apply_design):
+/// the zones, one sensor per zone (waiting for the technician), the trees.
+MyOrchard builtFrom(OrchardDesign draft) {
+  final zones = [
+    for (final z in draft.zones)
+      OrchardZone(
+        id: 'zone-${z.letter}',
+        letter: z.letter,
+        name: z.name,
+        type: z.type,
+        color: z.color,
+        treeCount: z.treeCount,
+        boundary: z.boundary,
+      ),
+  ];
+  var number = 0;
+  return MyOrchard(
+    complete: true,
+    areaHa: hectares(draft.outline),
+    outline: draft.outline,
+    zones: zones,
+    nodes: [
+      for (final z in zones)
+        SensorNode(
+          id: 'node-${z.letter}',
+          zoneId: z.id,
+          x: labelPoint(z.boundary).x,
+          z: labelPoint(z.boundary).z,
+          installed: false,
+        ),
+    ],
+    trees: [
+      for (final z in zones)
+        for (final t in layoutTrees(z.boundary, z.treeCount))
+          OrchardTree(number: ++number, x: t.x, z: t.z, zoneId: z.id),
+    ],
+  );
 }
 
 List<OrchardPoint> _points(List<List<double>> xz) => [

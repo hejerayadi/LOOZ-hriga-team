@@ -32,7 +32,15 @@ import 'package:looz_mobile/features/onboarding/role_screen.dart';
 import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
 import 'package:looz_mobile/features/onboarding/start_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
+import 'package:looz_mobile/data/orchard_design.dart';
+import 'package:looz_mobile/data/orchard_service.dart';
+import 'package:looz_mobile/features/orchard_designer/design_session.dart';
 import 'package:looz_mobile/features/orchard_designer/designer_start_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/geometry.dart';
+import 'package:looz_mobile/features/orchard_designer/outline_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/review_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/zone_details_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/zones_screen.dart';
 import 'package:looz_mobile/features/premium/payment_result_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'package:looz_mobile/features/premium/premium_screen.dart';
@@ -58,6 +66,10 @@ const sameInBoth = [
 ];
 
 final latin = RegExp('[A-Za-zÀ-ÖØ-öø-ÿ]');
+
+/// The letter of a zone ("المنطقة A", the 3D's labels): A to T in both
+/// languages, like the database (zones.letter).
+final zoneLetterAlone = RegExp('(?<![A-Za-z])[A-T](?![A-Za-z])');
 
 /// A bill of 4 zones (a new month) and one of 6 zones on a pack of 4.
 final monthQuote = OrchardQuote.fromRow({
@@ -85,6 +97,31 @@ final extraQuote = OrchardQuote.fromRow({
   'ends_at': '2026-12-03T18:00:00Z',
 });
 final arabic = RegExp('[؀-ۿ]');
+
+/// A draft of the designer: the demo outline, 4 automatic zones.
+OrchardDesign designDraft({bool zones = true}) {
+  final outline = demoOutline;
+  final parts = splitByTrees(outline, [160, 210, 120, 190]);
+  return OrchardDesign(
+    step: DesignStep.review,
+    outline: outline,
+    zoneMethod: zones ? ZoneMethod.auto : null,
+    zones: [
+      if (zones)
+        for (final (i, p) in parts.indexed)
+          DesignZone(
+            letter: zoneLetter(i),
+            boundary: p,
+            color: zoneColors[i],
+            treeCount: 100 + 20 * i,
+            type: ZoneType.values[i],
+          ),
+    ],
+  );
+}
+
+DesignSession designSession({bool zones = true}) =>
+    DesignSession(design: designDraft(zones: zones));
 
 /// Every screen of the app: (name, screen, plan, tab, "done" state).
 final screens = <(String, Widget, Plan, AppTab, bool)>[
@@ -159,6 +196,41 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
     'draw your orchard (in the app)',
     const DesignerStartScreen(),
     Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'designer: the outline',
+    OutlineScreen(session: designSession()),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'designer: the zones (how)',
+    ZonesScreen(session: designSession(zones: false)),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'designer: the zones (automatic)',
+    ZonesScreen(session: designSession()),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'designer: the details of the zones',
+    ZoneDetailsScreen(session: designSession()),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'designer: the review',
+    ReviewScreen(session: designSession()),
+    Plan.free,
     AppTab.home,
     false,
   ),
@@ -257,7 +329,9 @@ Future<List<String>> textsOf(
   await tester.pump();
   final texts = [
     for (var text in textsOnScreen())
-      sameInBoth.fold(text, (t, word) => t.replaceAll(word, '')),
+      sameInBoth
+          .fold(text, (t, word) => t.replaceAll(word, ''))
+          .replaceAll(zoneLetterAlone, ''),
   ];
   await closeApp(tester);
   return texts;

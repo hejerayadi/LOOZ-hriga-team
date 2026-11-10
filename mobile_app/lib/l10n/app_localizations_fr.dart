@@ -914,6 +914,240 @@ class AppLocalizationsFr extends AppLocalizations {
   String get nodeWaiting => 'En attente d\'installation';
 
   @override
+  String designerStepOf(int step, int total) {
+    return 'Étape $step sur $total';
+  }
+
+  @override
+  String get next => 'Suivant';
+
+  @override
+  String get back => 'Retour';
+
+  @override
+  String get continueDrawing => 'Continuer le dessin';
+
+  @override
+  String get drawAgain => 'Recommencer';
+
+  @override
+  String get drawAgainQuestion => 'Effacer votre dessin et recommencer ?';
+
+  @override
+  String get eraseAction => 'Effacer';
+
+  @override
+  String get draftSaved =>
+      'Votre dessin est enregistré. Reprenez où vous étiez.';
+
+  @override
+  String get drawWithFinger => 'Au doigt, sur une grille';
+
+  @override
+  String get satelliteMode => 'Sur l\'image satellite';
+
+  @override
+  String get a11yOrchardDrawing => 'Dessin du verger';
+
+  @override
+  String get toolPen => 'Crayon';
+
+  @override
+  String get toolCorners => 'Points';
+
+  @override
+  String get toolUndo => 'Annuler';
+
+  @override
+  String get toolRedo => 'Rétablir';
+
+  @override
+  String get toolErase => 'Effacer';
+
+  @override
+  String get hintPen => 'Tracez le contour avec le doigt';
+
+  @override
+  String get hintCorners => 'Touchez les coins du verger, un par un';
+
+  @override
+  String get hintClose => 'Touchez le premier point pour fermer';
+
+  @override
+  String get hintMove => 'Glissez un point pour le déplacer';
+
+  @override
+  String get problemCrossing => 'Deux côtés se croisent. Déplacez un point.';
+
+  @override
+  String get problemTooSmall => 'Forme trop petite. Dessinez plus grand.';
+
+  @override
+  String get sizeTitle => 'Taille approximative du verger';
+
+  @override
+  String get widthLabel => 'Largeur : d\'ouest en est';
+
+  @override
+  String get lengthLabel => 'Longueur : du nord au sud';
+
+  @override
+  String metres(String value) {
+    return '$value m';
+  }
+
+  @override
+  String hectaresValue(String value) {
+    return '$value ha';
+  }
+
+  @override
+  String sizeInvalid(int min, int max) {
+    return 'Écrivez un nombre de $min à $max';
+  }
+
+  @override
+  String gridSquare(String value) {
+    return 'Carré = $value m';
+  }
+
+  @override
+  String get north => 'Nord';
+
+  @override
+  String get areaLabel => 'Surface';
+
+  @override
+  String get widthShort => 'Largeur';
+
+  @override
+  String get lengthShort => 'Longueur';
+
+  @override
+  String get zonesTitle => 'Divisez votre verger en zones';
+
+  @override
+  String get zonesSubtitle => 'Un capteur dans chaque zone';
+
+  @override
+  String get methodAuto => 'Je donne les zones et les arbres';
+
+  @override
+  String get methodAutoHint => 'Nous divisons selon les arbres';
+
+  @override
+  String get methodDraw => 'Je trace les limites moi-même';
+
+  @override
+  String get methodDrawHint => 'Vous tracez une ligne sur le verger';
+
+  @override
+  String get changeMethod => 'Changer de méthode';
+
+  @override
+  String get zonesHowMany => 'Nombre de zones';
+
+  @override
+  String get fewer => 'Moins';
+
+  @override
+  String get more => 'Plus';
+
+  @override
+  String get treesLabel => 'Arbres';
+
+  @override
+  String get hintCut => 'Tracez une ligne d\'un bord à l\'autre';
+
+  @override
+  String get cutMissed => 'La ligne ne coupe aucune zone.';
+
+  @override
+  String tooManyZones(int max) {
+    return '$max zones au maximum';
+  }
+
+  @override
+  String get zoneTooSmall => 'Une zone est trop petite. Changez les arbres.';
+
+  @override
+  String get zoneDetailsTitle => 'Vos zones';
+
+  @override
+  String get zoneDetailsSubtitle => 'Touchez une zone pour la modifier';
+
+  @override
+  String get zoneNameOptional => 'Nom de la zone (facultatif)';
+
+  @override
+  String get zoneTypeLabel => 'Type';
+
+  @override
+  String get zoneColorLabel => 'Couleur';
+
+  @override
+  String get treesAtLeastOne => 'Au moins 1 arbre';
+
+  @override
+  String get reviewTitle => 'Vérifiez votre verger';
+
+  @override
+  String get reviewSubtitle => 'Puis payez, nous créons votre verger';
+
+  @override
+  String get zonesLabel => 'Zones';
+
+  @override
+  String get sensorsLabel => 'Capteurs';
+
+  @override
+  String sensorsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count capteurs',
+      one: '1 capteur',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get priceLabel => 'Prix';
+
+  @override
+  String areaMinimum(String area, String sensors) {
+    return 'Votre verger fait $area ha : il faut au moins $sensors.';
+  }
+
+  @override
+  String areaMinimumTip(String zones) {
+    return 'Divisez-le en $zones pour le même prix.';
+  }
+
+  @override
+  String get payAndBuild => 'Payer et créer mon verger';
+
+  @override
+  String get buildMyOrchard => 'Créer mon verger';
+
+  @override
+  String get packCovers => 'Votre pack couvre ce verger.';
+
+  @override
+  String get editZones => 'Modifier les zones';
+
+  @override
+  String get orchardTooBig => 'Verger très grand. Contactez-nous.';
+
+  @override
+  String thenPrice(String price) {
+    return 'Puis $price';
+  }
+
+  @override
+  String get buildingOrchard => 'Création de votre verger…';
+
+  @override
   String get logOut => 'Se déconnecter';
 
   @override

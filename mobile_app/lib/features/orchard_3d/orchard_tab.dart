@@ -71,7 +71,10 @@ class _MyOrchardState extends State<_MyOrchard> {
   // (Future.sync: even an error at once arrives in the FutureBuilder.)
   Future<MyOrchard?> _load() => Future.sync(orchardService.loadMyOrchard);
 
-  void _retry() => setState(() => _orchard = _load());
+  // (A block: setState must not get the Future back.)
+  void _retry() => setState(() {
+    _orchard = _load();
+  });
 
   @override
   Widget build(BuildContext context) {

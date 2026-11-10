@@ -26,6 +26,7 @@ import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
 import 'package:looz_mobile/features/onboarding/start_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
 import 'package:looz_mobile/features/orchard_designer/designer_start_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/outline_screen.dart';
 import 'package:looz_mobile/features/premium/demo_card_form.dart';
 import 'package:looz_mobile/features/premium/payment_result_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
@@ -164,7 +165,11 @@ Future<(FakeAuthService, FakePaymentService)> openPremium(
   logInTestUser(lang);
   final auth = authService as FakeAuthService;
   final payments = usePayments(auth);
-  if (zones != null) payments.drawOrchard(zones, areaHa: areaHa);
+  if (zones != null) {
+    payments.drawOrchard(zones, areaHa: areaHa);
+  } else {
+    useOrchard(null); // nothing drawn, nothing built
+  }
   currentPlan.value = plan;
   appLocale.value = Locale(lang);
   await tester.pumpWidget(const LoozApp(home: PremiumScreen()));
@@ -386,10 +391,10 @@ void main() {
     });
 
     testWidgets('Premium at sign-up: saved "pending", then "ارسم بستانك" '
-        '(the designer: phase 3 = "قريبًا"), "متابعة مجانًا" → welcome', (
-      tester,
-    ) async {
+        '("★ ابدأ الرسم" = step 1, the satellite map = "قريبًا"), '
+        '"متابعة مجانًا" → welcome', (tester) async {
       final (auth, payments) = await startApp(tester);
+      useOrchard(null); // a new farmer: no orchard yet
       await logIn(tester, signUp: true, digits: '50000004');
       await fillInfo(tester);
       await scrollAndTap(tester, find.text('بريميوم'));
@@ -406,11 +411,17 @@ void main() {
       expect(find.text('قسّمه إلى مناطق'), findsOneWidget);
       expect(find.text('شاهد السعر وادفع'), findsOneWidget);
       expect(find.text('8 د.ت للمنطقة / 30 يومًا'), findsOneWidget);
-      // The drawing is the next part of the app: "قريبًا" for now.
-      await tapAndWait(tester, findTextWithSymbol('★ ابدأ الرسم'));
-      expect(find.text('قريبًا'), findsOneWidget);
+      // The drawing on a grid: step 1 (no tab bar), back = this screen.
+      await scrollAndTap(tester, findTextWithSymbol('★ ابدأ الرسم'));
+      expect(find.byType(OutlineScreen), findsOneWidget);
+      expect(find.text('الخطوة 1 من 3'), findsOneWidget);
+      expect(find.byType(LoozTabBar), findsNothing);
+      await tapAndWait(tester, find.byKey(const ValueKey('designer-back')));
       expect(find.byType(DesignerStartScreen), findsOneWidget);
-      await tester.pump(const Duration(seconds: 3)); // "قريبًا" goes away
+      // The satellite image is for later: "قريبًا".
+      await scrollAndTap(tester, find.text('على صورة القمر الصناعي'));
+      expect(find.text('قريبًا'), findsNWidgets(2)); // its pill + the message
+      await tester.pump(const Duration(seconds: 3)); // the message goes away
       await tester.pumpAndSettle();
 
       await scrollAndTap(tester, find.text('متابعة مجانًا'));
@@ -745,13 +756,14 @@ void main() {
     });
 
     testWidgets('Premium without an orchard: "ارسم بستانك" ("★ ابدأ الرسم" = '
-        '"قريبًا"), "ليس الآن" goes back', (tester) async {
+        'step 1), "ليس الآن" goes back', (tester) async {
       final (_, payments) = await openPremium(tester, zones: null);
       await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
       expect(find.byType(DesignerStartScreen), findsOneWidget);
       expect(find.byType(LoozTabBar), findsOneWidget); // in the app
-      await tapAndWait(tester, findTextWithSymbol('★ ابدأ الرسم'));
-      expect(find.text('قريبًا'), findsOneWidget);
+      await scrollAndTap(tester, findTextWithSymbol('★ ابدأ الرسم'));
+      expect(find.byType(OutlineScreen), findsOneWidget);
+      await tapAndWait(tester, find.byKey(const ValueKey('designer-back')));
       await scrollAndTap(tester, find.text('ليس الآن'));
       expect(find.byType(PremiumScreen), findsOneWidget);
       expect(payments.calls, isNot(contains(startsWith('pay'))));

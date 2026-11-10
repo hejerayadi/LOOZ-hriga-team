@@ -4,7 +4,9 @@
 //   - at the sign-up ("بريميوم" chosen): right after the pack;
 //   - in the app: Premium "★ ابدأ بريميوم" and "بستاني ★" without an
 //     orchard yet.
-// THE DRAWING ITSELF IS PHASE 3: "★ ابدأ الرسم" says "قريبًا" for now.
+// A draft saved before: "★ أكمل الرسم" (where he stopped) or "ابدأ من
+// جديد". Drawing on a grid with the finger now; on the satellite image
+// later (Phase 5: "قريبًا").
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
@@ -12,6 +14,9 @@ import '../../core/navigation.dart';
 import '../../core/plans.dart';
 import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/auth_service.dart';
+import '../../data/orchard_design.dart';
+import '../../data/orchard_service.dart';
 import '../../data/payment_service.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/app_icon.dart';
@@ -23,8 +28,11 @@ import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/soon_message.dart';
 import '../../shared/widgets/text_link.dart';
+import '../onboarding/auth_messages.dart';
 import '../onboarding/welcome_screen.dart';
 import '../premium/pack_texts.dart';
+import 'design_session.dart';
+import 'designer_widgets.dart';
 
 class DesignerStartScreen extends StatefulWidget {
   const DesignerStartScreen({super.key, this.signUp = false});
@@ -41,7 +49,11 @@ class _DesignerStartScreenState extends State<DesignerStartScreen> {
   late final Future<PackPrice> _price = Future.sync(
     () => paymentService.loadPrice(),
   );
+  // The draft saved before (if any).
+  late Future<DesignState> _state = _loadState();
   bool _busy = false;
+
+  Future<DesignState> _loadState() => Future.sync(orchardService.loadDesign);
 
   /// Sign-up: the free plan for now (Premium can be started later).
   Future<void> _continueFree() async {
@@ -53,6 +65,35 @@ class _DesignerStartScreenState extends State<DesignerStartScreen> {
     }
     if (mounted) replaceAllWith(context, const WelcomeScreen());
   }
+
+  void _open(OrchardDesign design) => openDesigner(
+    context,
+    DesignSession(design: design, signUp: widget.signUp),
+  );
+
+  /// "ابدأ من جديد": the draft is thrown away (after a question).
+  Future<void> _startAgain() async {
+    if (!await confirmErase(context) || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await orchardService.discardDesign();
+      if (mounted) {
+        setState(() {
+          _state = _loadState();
+        });
+        _open(const OrchardDesign());
+      }
+    } on AuthError catch (error) {
+      if (mounted) _showError(error.failure);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _showError(AuthFailure failure) => ScaffoldMessenger.of(context)
+      .showSnackBar(
+        SnackBar(content: Text(failureMessage(context.l10n, failure))),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +163,79 @@ class _DesignerStartScreenState extends State<DesignerStartScreen> {
           );
         },
       ),
+      const SizedBox(height: 16),
+      // How to draw: on a grid now, on the satellite image later.
+      ChoiceCard(
+        icon: AppIcon.pen,
+        title: l10n.drawWithFinger,
+        selected: true,
+        onTap: () {},
+        trailing: const LoozIcon(AppIcon.check, size: 26),
+      ),
+      const SizedBox(height: 10),
+      ChoiceCard(
+        icon: AppIcon.satellite,
+        title: l10n.satelliteMode,
+        onTap: () => showSoon(context),
+        trailing: const SoonPill(),
+      ),
       const SizedBox(height: 20),
-      ActionButton(
-        label: '★ ${l10n.startDrawing}',
-        // The designer is the next part of the app (phase 3).
-        onPressed: _busy ? null : () => showSoon(context),
+      FutureBuilder(
+        future: _state,
+        builder: (context, snapshot) {
+          final state = snapshot.data;
+          final error = snapshot.error;
+          if (error != null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AuthNote.failure(
+                  error is AuthError ? error.failure : AuthFailure.unknown,
+                ),
+                const SizedBox(height: 12),
+                ActionButton(
+                  label: l10n.tryAgain,
+                  onPressed: () => setState(() {
+                    _state = _loadState();
+                  }),
+                ),
+              ],
+            );
+          }
+          final draft = state?.draft;
+          if (state != null && state.built && draft == null) {
+            // Already built (editing it is the next part): its 3D.
+            return ActionButton(
+              label: '★ ${l10n.myOrchard}',
+              onPressed: () => goToTab(context, AppTab.orchard),
+            );
+          }
+          if (draft != null && draft.outline.isNotEmpty) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AuthNote.info(l10n.draftSaved),
+                const SizedBox(height: 12),
+                ActionButton(
+                  label: '★ ${l10n.continueDrawing}',
+                  onPressed: _busy ? null : () => _open(draft),
+                ),
+                const SizedBox(height: 12),
+                ActionButton(
+                  label: l10n.drawAgain,
+                  secondary: true,
+                  onPressed: _busy ? null : _startAgain,
+                ),
+              ],
+            );
+          }
+          return ActionButton(
+            label: '★ ${l10n.startDrawing}',
+            onPressed: state == null || _busy
+                ? null
+                : () => _open(const OrchardDesign()),
+          );
+        },
       ),
       if (widget.signUp) ...[
         const SizedBox(height: 12),

@@ -39,6 +39,8 @@ TECHNICAL = [
     ('region code (shown with its Arabic / French name)', lambda line, s: re.match(r"\s*'[a-z_]+' => l10n\.region", line)),
     ('demo picture of the community', lambda line, s: s.startswith('demo:')),
     ('pack name of the database (migration 011)', lambda line, s: 'planFromName' in line or s in ('paid', 'essential', 'connected')),
+    ('colour code of a zone (#RRGGBB, shown as a colour)', lambda line, s: re.fullmatch(r'#[0-9A-Fa-f]{6}', s) is not None),
+    ('key of a widget (for the tests)', lambda line, s: 'ValueKey(' in line),
 ]
 
 # Files that only talk to Supabase (no screen): their strings are table and
@@ -51,8 +53,9 @@ SERVER_FILES = {
     'data/community_models.dart',
     'data/payment_service.dart',  # tables, statuses and error codes of migrations 008 / 009 / 011
     'data/orchard_service.dart',  # tables and columns of the orchard (migration 011)
+    'data/orchard_design.dart',  # the designer's draft: JSON values of migration 011 ('grid', 'auto', 'draw')
 }
-SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_service.dart)'
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_*.dart)'
 
 
 def without_comment(line):

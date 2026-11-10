@@ -876,6 +876,341 @@
   "@nodeWaiting": {
     "description": "APP-ONLY. Two packs / orchard."
   },
+  "designerStepOf": "الخطوة {step} من {total}",
+  "@designerStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "next": "التالي",
+  "@next": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "back": "رجوع",
+  "@back": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "continueDrawing": "أكمل الرسم",
+  "@continueDrawing": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "drawAgain": "ابدأ من جديد",
+  "@drawAgain": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "drawAgainQuestion": "هل تمسح رسمك وتبدأ من جديد؟",
+  "@drawAgainQuestion": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "eraseAction": "امسح",
+  "@eraseAction": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "draftSaved": "رسمك محفوظ. أكمل من حيث توقّفت.",
+  "@draftSaved": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "drawWithFinger": "بإصبعك، على شبكة",
+  "@drawWithFinger": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "satelliteMode": "على صورة القمر الصناعي",
+  "@satelliteMode": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "a11yOrchardDrawing": "رسم البستان",
+  "@a11yOrchardDrawing": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "toolPen": "قلم",
+  "@toolPen": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "toolCorners": "نقاط",
+  "@toolCorners": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "toolUndo": "تراجع",
+  "@toolUndo": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "toolRedo": "إعادة",
+  "@toolRedo": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "toolErase": "امسح",
+  "@toolErase": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "hintPen": "ارسم حدود بستانك بإصبعك",
+  "@hintPen": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "hintCorners": "اضغط على زوايا بستانك، واحدة بعد واحدة",
+  "@hintCorners": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "hintClose": "اضغط على النقطة الأولى لإغلاق الشكل",
+  "@hintClose": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "hintMove": "اسحب نقطة لتحريكها",
+  "@hintMove": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "problemCrossing": "خطّان يتقاطعان. حرّك نقطة.",
+  "@problemCrossing": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "problemTooSmall": "الشكل صغير جدًا. ارسم أكبر.",
+  "@problemTooSmall": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "sizeTitle": "مقاس بستانك تقريبًا",
+  "@sizeTitle": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "widthLabel": "العرض: من الغرب إلى الشرق",
+  "@widthLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "lengthLabel": "الطول: من الشمال إلى الجنوب",
+  "@lengthLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "metres": "{value} م",
+  "@metres": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "hectaresValue": "{value} هكتار",
+  "@hectaresValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "sizeInvalid": "اكتب رقمًا من {min} إلى {max}",
+  "@sizeInvalid": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "gridSquare": "المربّع = {value} م",
+  "@gridSquare": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "north": "الشمال",
+  "@north": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "areaLabel": "المساحة",
+  "@areaLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "widthShort": "العرض",
+  "@widthShort": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "lengthShort": "الطول",
+  "@lengthShort": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zonesTitle": "قسّم بستانك إلى مناطق",
+  "@zonesTitle": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zonesSubtitle": "في كل منطقة حسّاس واحد",
+  "@zonesSubtitle": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "methodAuto": "أعطي عدد المناطق والأشجار",
+  "@methodAuto": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "methodAutoHint": "نقسّمه لك حسب الأشجار",
+  "@methodAutoHint": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "methodDraw": "أرسم خطوط التقسيم بنفسي",
+  "@methodDraw": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "methodDrawHint": "تسحب خطًا عبر البستان",
+  "@methodDrawHint": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "changeMethod": "غيّر الطريقة",
+  "@changeMethod": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zonesHowMany": "عدد المناطق",
+  "@zonesHowMany": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "fewer": "أقل",
+  "@fewer": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "more": "أكثر",
+  "@more": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "treesLabel": "الأشجار",
+  "@treesLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "hintCut": "اسحب خطًا من طرف إلى طرف",
+  "@hintCut": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "cutMissed": "الخط لم يقسم أي منطقة.",
+  "@cutMissed": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "tooManyZones": "{max} منطقة على الأكثر",
+  "@tooManyZones": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zoneTooSmall": "منطقة صغيرة جدًا. غيّر الأشجار.",
+  "@zoneTooSmall": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zoneDetailsTitle": "تفاصيل المناطق",
+  "@zoneDetailsTitle": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zoneDetailsSubtitle": "اضغط على منطقة لتغييرها",
+  "@zoneDetailsSubtitle": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zoneNameOptional": "اسم المنطقة (اختياري)",
+  "@zoneNameOptional": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zoneTypeLabel": "النوع",
+  "@zoneTypeLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zoneColorLabel": "اللون",
+  "@zoneColorLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "treesAtLeastOne": "شجرة واحدة على الأقل",
+  "@treesAtLeastOne": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "reviewTitle": "راجع بستانك",
+  "@reviewTitle": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "reviewSubtitle": "ثم ادفع، ونبني بستانك",
+  "@reviewSubtitle": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "zonesLabel": "المناطق",
+  "@zonesLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "sensorsLabel": "الحسّاسات",
+  "@sensorsLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "sensorsCount": "{count, plural, =1{حسّاس واحد} =2{حسّاسان} few{{count} حسّاسات} many{{count} حسّاسًا} other{{count} حسّاس}}",
+  "@sensorsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "priceLabel": "السعر",
+  "@priceLabel": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "areaMinimum": "بستانك {area} هكتار: يلزمه {sensors} على الأقل.",
+  "@areaMinimum": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      },
+      "sensors": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "areaMinimumTip": "قسّمه إلى {zones} بنفس السعر.",
+  "@areaMinimumTip": {
+    "placeholders": {
+      "zones": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "payAndBuild": "ادفع وابنِ بستاني",
+  "@payAndBuild": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "buildMyOrchard": "ابنِ بستاني",
+  "@buildMyOrchard": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "packCovers": "باقتك تكفي هذا البستان.",
+  "@packCovers": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "editZones": "عدّل المناطق",
+  "@editZones": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "orchardTooBig": "بستانك كبير جدًا. اتصل بنا.",
+  "@orchardTooBig": {
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "thenPrice": "ثم {price}",
+  "@thenPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Orchard designer."
+  },
+  "buildingOrchard": "جاري بناء بستانك…",
+  "@buildingOrchard": {
+    "description": "APP-ONLY. Orchard designer."
+  },
   "logOut": "تسجيل الخروج",
   "@logOut": {
     "description": "APP-ONLY. Sign up / sign in."

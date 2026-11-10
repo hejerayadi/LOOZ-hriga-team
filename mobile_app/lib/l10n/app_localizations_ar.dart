@@ -925,6 +925,242 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nodeWaiting => 'في انتظار التركيب';
 
   @override
+  String designerStepOf(int step, int total) {
+    return 'الخطوة $step من $total';
+  }
+
+  @override
+  String get next => 'التالي';
+
+  @override
+  String get back => 'رجوع';
+
+  @override
+  String get continueDrawing => 'أكمل الرسم';
+
+  @override
+  String get drawAgain => 'ابدأ من جديد';
+
+  @override
+  String get drawAgainQuestion => 'هل تمسح رسمك وتبدأ من جديد؟';
+
+  @override
+  String get eraseAction => 'امسح';
+
+  @override
+  String get draftSaved => 'رسمك محفوظ. أكمل من حيث توقّفت.';
+
+  @override
+  String get drawWithFinger => 'بإصبعك، على شبكة';
+
+  @override
+  String get satelliteMode => 'على صورة القمر الصناعي';
+
+  @override
+  String get a11yOrchardDrawing => 'رسم البستان';
+
+  @override
+  String get toolPen => 'قلم';
+
+  @override
+  String get toolCorners => 'نقاط';
+
+  @override
+  String get toolUndo => 'تراجع';
+
+  @override
+  String get toolRedo => 'إعادة';
+
+  @override
+  String get toolErase => 'امسح';
+
+  @override
+  String get hintPen => 'ارسم حدود بستانك بإصبعك';
+
+  @override
+  String get hintCorners => 'اضغط على زوايا بستانك، واحدة بعد واحدة';
+
+  @override
+  String get hintClose => 'اضغط على النقطة الأولى لإغلاق الشكل';
+
+  @override
+  String get hintMove => 'اسحب نقطة لتحريكها';
+
+  @override
+  String get problemCrossing => 'خطّان يتقاطعان. حرّك نقطة.';
+
+  @override
+  String get problemTooSmall => 'الشكل صغير جدًا. ارسم أكبر.';
+
+  @override
+  String get sizeTitle => 'مقاس بستانك تقريبًا';
+
+  @override
+  String get widthLabel => 'العرض: من الغرب إلى الشرق';
+
+  @override
+  String get lengthLabel => 'الطول: من الشمال إلى الجنوب';
+
+  @override
+  String metres(String value) {
+    return '$value م';
+  }
+
+  @override
+  String hectaresValue(String value) {
+    return '$value هكتار';
+  }
+
+  @override
+  String sizeInvalid(int min, int max) {
+    return 'اكتب رقمًا من $min إلى $max';
+  }
+
+  @override
+  String gridSquare(String value) {
+    return 'المربّع = $value م';
+  }
+
+  @override
+  String get north => 'الشمال';
+
+  @override
+  String get areaLabel => 'المساحة';
+
+  @override
+  String get widthShort => 'العرض';
+
+  @override
+  String get lengthShort => 'الطول';
+
+  @override
+  String get zonesTitle => 'قسّم بستانك إلى مناطق';
+
+  @override
+  String get zonesSubtitle => 'في كل منطقة حسّاس واحد';
+
+  @override
+  String get methodAuto => 'أعطي عدد المناطق والأشجار';
+
+  @override
+  String get methodAutoHint => 'نقسّمه لك حسب الأشجار';
+
+  @override
+  String get methodDraw => 'أرسم خطوط التقسيم بنفسي';
+
+  @override
+  String get methodDrawHint => 'تسحب خطًا عبر البستان';
+
+  @override
+  String get changeMethod => 'غيّر الطريقة';
+
+  @override
+  String get zonesHowMany => 'عدد المناطق';
+
+  @override
+  String get fewer => 'أقل';
+
+  @override
+  String get more => 'أكثر';
+
+  @override
+  String get treesLabel => 'الأشجار';
+
+  @override
+  String get hintCut => 'اسحب خطًا من طرف إلى طرف';
+
+  @override
+  String get cutMissed => 'الخط لم يقسم أي منطقة.';
+
+  @override
+  String tooManyZones(int max) {
+    return '$max منطقة على الأكثر';
+  }
+
+  @override
+  String get zoneTooSmall => 'منطقة صغيرة جدًا. غيّر الأشجار.';
+
+  @override
+  String get zoneDetailsTitle => 'تفاصيل المناطق';
+
+  @override
+  String get zoneDetailsSubtitle => 'اضغط على منطقة لتغييرها';
+
+  @override
+  String get zoneNameOptional => 'اسم المنطقة (اختياري)';
+
+  @override
+  String get zoneTypeLabel => 'النوع';
+
+  @override
+  String get zoneColorLabel => 'اللون';
+
+  @override
+  String get treesAtLeastOne => 'شجرة واحدة على الأقل';
+
+  @override
+  String get reviewTitle => 'راجع بستانك';
+
+  @override
+  String get reviewSubtitle => 'ثم ادفع، ونبني بستانك';
+
+  @override
+  String get zonesLabel => 'المناطق';
+
+  @override
+  String get sensorsLabel => 'الحسّاسات';
+
+  @override
+  String sensorsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حسّاس',
+      many: '$count حسّاسًا',
+      few: '$count حسّاسات',
+      two: 'حسّاسان',
+      one: 'حسّاس واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get priceLabel => 'السعر';
+
+  @override
+  String areaMinimum(String area, String sensors) {
+    return 'بستانك $area هكتار: يلزمه $sensors على الأقل.';
+  }
+
+  @override
+  String areaMinimumTip(String zones) {
+    return 'قسّمه إلى $zones بنفس السعر.';
+  }
+
+  @override
+  String get payAndBuild => 'ادفع وابنِ بستاني';
+
+  @override
+  String get buildMyOrchard => 'ابنِ بستاني';
+
+  @override
+  String get packCovers => 'باقتك تكفي هذا البستان.';
+
+  @override
+  String get editZones => 'عدّل المناطق';
+
+  @override
+  String get orchardTooBig => 'بستانك كبير جدًا. اتصل بنا.';
+
+  @override
+  String thenPrice(String price) {
+    return 'ثم $price';
+  }
+
+  @override
+  String get buildingOrchard => 'جاري بناء بستانك…';
+
+  @override
   String get logOut => 'تسجيل الخروج';
 
   @override

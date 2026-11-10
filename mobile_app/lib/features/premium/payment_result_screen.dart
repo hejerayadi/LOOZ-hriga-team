@@ -1,7 +1,8 @@
 // After the payment (not in the design: the app's own screen, in its style):
 //   paid: "تم الدفع!" and the end date of the pack, then the sign-up goes
 //         on (welcome), in the app the design's QR screen ("مرحبًا في
-//         بريميوم": scan the box of your orchard);
+//         بريميوم": scan the box of your orchard); paid from the designer:
+//         the orchard is built ("جاري بناء بستانك…"), then the 3D;
 //   not paid: "لم يكتمل الدفع", the user stays on the free plan:
 //         "حاول مرة أخرى" or "متابعة مجانًا".
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
 import '../onboarding/welcome_screen.dart';
+import '../orchard_designer/build_orchard_screen.dart';
 import 'pack_texts.dart';
 import 'qr_screen.dart';
 
@@ -29,10 +31,14 @@ class PaymentResultScreen extends StatefulWidget {
     this.signUp = false,
     this.endsAt,
     this.failure,
+    this.buildOrchard = false,
   });
 
   final bool paid;
   final bool signUp;
+
+  /// true = paid from the designer: the orchard is built next.
+  final bool buildOrchard;
 
   /// The end of the pack (paid).
   final DateTime? endsAt;
@@ -49,7 +55,9 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
 
   /// Paid: the next screen.
   void _continue() {
-    if (widget.signUp) {
+    if (widget.buildOrchard) {
+      replaceWith(context, BuildOrchardScreen(signUp: widget.signUp));
+    } else if (widget.signUp) {
       replaceAllWith(context, const WelcomeScreen());
     } else {
       replaceWith(

@@ -27,13 +27,21 @@ import 'pack_texts.dart';
 import 'payment_result_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key, required this.quote, this.signUp = false});
+  const PaymentScreen({
+    super.key,
+    required this.quote,
+    this.signUp = false,
+    this.buildOrchard = false,
+  });
 
   /// The bill of the orchard (orchard_quote() of the database).
   final OrchardQuote quote;
 
   /// true = during the sign-up (no tab bar: the app is not open yet).
   final bool signUp;
+
+  /// true = from the designer's review: once paid, the orchard is built.
+  final bool buildOrchard;
 
   /// How long "جاري التحقق من الدفع…" stays (at least).
   static const checkingTime = Duration(seconds: 2);
@@ -77,6 +85,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         signUp: widget.signUp,
         endsAt: result?.endsAt,
         failure: failure,
+        buildOrchard: widget.buildOrchard,
       ),
     );
   }

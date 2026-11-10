@@ -44,7 +44,7 @@ Every screen and state of the design (`App.tsx`), its Flutter file, and the chec
 | 33 | "معلوماتك" (no role question any more): first name, last name, governorate; farmer: optional trees / area / irrigation; expert: only the optional organisation (no orchard boxes); errors under the boxes | `lib/features/onboarding/sign_up_info_screen.dart` | [x] | [x] | [x] | [x] "فلاح" / "مهندس فلاحي أو مرشد" (line 55); an expert who stopped before the end |
 | 34 | The list of the 24 governorates (sorted, big rows) | `lib/features/onboarding/sign_up_info_screen.dart` (`chooseGovernorate`), `lib/core/governorates.dart` | [x] | [x] | [x] | [x] the "الولاية" box |
 | 35 | Packs: Free / Premium 8 DT per zone / 30 days (price from the database), "كل منطقة من بستانك فيها حسّاس لوز واحد، نركّبه لك." | `lib/features/onboarding/pack_screen.dart` | [x] | [x] | [x] | [x] "متابعة" (farmer's information), login with no pack yet |
-| 36 | `payment` during the sign-up (no tab bar): "وضع تجريبي", card boxes with icons, errors under them, "جاري التحقق من الدفع…" | `lib/features/premium/payment_screen.dart`, `demo_card_form.dart` | [x] | [x] | [x] | [ ] Phase 3: opened after the drawing (review → pay). Today only in the tests (`languages_test`) |
+| 36 | `payment` during the sign-up (no tab bar): "وضع تجريبي", card boxes with icons, errors under them, "جاري التحقق من الدفع…" | `lib/features/premium/payment_screen.dart`, `demo_card_form.dart` | [x] | [x] | [x] | [x] the designer's review "★ ادفع وابنِ بستاني" (line 66) |
 | 37 | Profile: real name, phone number, "خطتي" with the pack and its end date, "تسجيل الخروج" | `lib/features/profile/profile_page.dart` | [x] | [x] | [x] | [x] tab "حسابي" |
 
 The old "pay now or later" screen (`payment_choice_screen.dart`) and the name screen
@@ -62,7 +62,7 @@ Checked with `test/sign_up_test.dart` (both flows, errors, session, log out, wit
 | 49 | "مرحبًا من جديد": "هذا الرقم لديه حساب بالفعل." + "تسجيل الدخول" (nothing changed) | `lib/features/onboarding/phone_screen.dart` (`AccountExistsScreen`) | [x] | [x] | [x] | [x] "إنشاء حساب" with a number that has an account |
 | 50 | After the payment: "تم الدفع!" + "باقتك مفعّلة حتى …" / "لم يكتمل الدفع" + "حاول مرة أخرى" / "متابعة مجانًا" | `lib/features/premium/payment_result_screen.dart` | [x] | [x] | [x] | [x] "★ تأكيد" |
 | 52 | Welcome of an expert: "ستظهر شارة «◆ خبير موثّق» بعد أن نتحقق من حسابك." | `lib/features/onboarding/welcome_screen.dart` | [x] | [x] | [x] | [x] "متابعة" (expert's information) |
-| 53 | "ارسم بستانك" (start of the orchard designer): 3 steps, the price per zone, "★ ابدأ الرسم" = "قريبًا" (Phase 3), "متابعة مجانًا" (sign-up) / "ليس الآن" (in the app) | `lib/features/orchard_designer/designer_start_screen.dart` | [x] | [x] | [x] | [x] packs: Premium + "متابعة"; login with Premium not paid; Premium "★ ابدأ بريميوم" with nothing drawn; tab "بستاني ★" "★ ابدأ الرسم" |
+| 53 | "ارسم بستانك" (start of the orchard designer): 3 steps, the price per zone, "بإصبعك، على شبكة" / "على صورة القمر الصناعي" ("قريبًا"), "★ ابدأ الرسم" (line 58), a draft: "رسمك محفوظ" + "★ أكمل الرسم" / "ابدأ من جديد", "متابعة مجانًا" (sign-up) / "ليس الآن" (in the app) | `lib/features/orchard_designer/designer_start_screen.dart` | [x] | [x] | [x] | [x] packs: Premium + "متابعة"; login with Premium not paid; Premium "★ ابدأ بريميوم" with nothing drawn; tab "بستاني ★" "★ ابدأ الرسم" |
 | 54 | Payment of Premium from the bill of the database: a month ("32 د.ت / 30 يومًا", "4 مناطق") or the extra zones ("8 د.ت", "6 مناطق · حتى …") → `qr` | `lib/features/premium/payment_screen.dart` | [x] | [x] | [x] | [x] Premium "★ ابدأ بريميوم" / "★ جدّد باقتك" |
 | 55 | "من أنت؟" on its own screen: two big buttons with an icon, "فلاح" (عندي بستان لوز) / "مهندس فلاحي أو مرشد" (أنصح الفلاحين في المجتمع) | `lib/features/onboarding/role_screen.dart` | [x] | [x] | [x] | [x] "تأكيد" (new number), login with no information yet, "back" from "معلوماتك" |
 | 56 | Tab "بستاني ★" with Premium and nothing drawn yet: "ارسم بستانك" + "★ ابدأ الرسم" | `lib/features/orchard_3d/orchard_tab.dart` (`_DrawYourOrchard`) | [x] | [x] | [x] | [x] tab "بستاني ★" |
@@ -78,6 +78,32 @@ Premium, Profile), `test/plans_test.dart` (what each pack can open), `test/payme
 The two packs (migration 011, 9 November 2026): the old lines 51 (kit request), 53 (paid packs from
 Premium) and 54 (Connected payment) were replaced. The kit screen was removed: installation visits
 are made by the database when a paid orchard is built (Phase 3).
+
+## The orchard designer (Phase 3, migration 011)
+
+The designer's steps have no tab bar (drawing needs the whole screen), a back button and
+"الخطوة 1 من 3". Big tools with a word under each icon.
+
+| # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
+|---|---|---|---|---|---|---|
+| 58 | Step 1, the outline: the grid (north, "المربّع = 25 م"), "قلم" / "نقاط" / "تراجع" / "إعادة" / "امسح", the corners (drag to move), "العرض" / "الطول" / the area in hectares | `lib/features/orchard_designer/outline_screen.dart`, `orchard_canvas.dart`, `outline_editor.dart` | [x] | [x] | [x] | [x] "★ ابدأ الرسم", "★ أكمل الرسم" |
+| 59 | Step 1: the problems ("خطّان يتقاطعان. حرّك نقطة.", "الشكل صغير جدًا"), no "التالي" | `outline_screen.dart` | [x] | [x] | [x] | [x] (when it happens) |
+| 60 | The size sheet: "مقاس بستانك تقريبًا", width and length in metres (5 to 3000), "تمّ" | `designer_widgets.dart` (`showSizeSheet`) | [x] | [x] | [x] | [x] the "العرض" / "الطول" boxes |
+| 61 | Step 2, how: "أعطي عدد المناطق والأشجار" / "أرسم خطوط التقسيم بنفسي" | `zones_screen.dart` | [x] | [x] | [x] | [x] step 1 "★ التالي", "غيّر الطريقة" |
+| 62 | Step 2, automatic: "عدد المناطق" − / +, the trees of each zone, the strips drawn | `zones_screen.dart` | [x] | [x] | [x] | [x] "أعطي عدد المناطق والأشجار" |
+| 63 | Step 2, my lines: drag a line (dashed), "تراجع" / "امسح", "4 مناطق", "الخط لم يقسم أي منطقة." | `zones_screen.dart` | [x] | [x] | [x] | [x] "أرسم خطوط التقسيم بنفسي" |
+| 64 | The zones: each zone (colour, letter, name, trees, type) | `zone_details_screen.dart` | [x] | [x] | [x] | [x] step 2 "★ التالي", "★ أكمل الرسم" |
+| 65 | The sheet of a zone: trees, type (6), name (optional, 30 letters), colour (10), "تمّ" | `zone_details_screen.dart` (`_ZoneSheet`) | [x] | [x] | [x] | [x] a tap on a zone |
+| 66 | Step 3, the review: the drawing, area, zones, trees, sensors, the price (from the database); the area minimum in one sentence; "باقتك تكفي هذا البستان." + "★ ابنِ بستاني"; "بستانك كبير جدًا. اتصل بنا." | `review_screen.dart` | [x] | [x] | [x] | [x] the zones "★ التالي", "★ أكمل الرسم" |
+| 67 | "جاري بناء بستانك…" (the database builds the orchard), "حاول مرة أخرى" | `build_orchard_screen.dart` | [x] | [x] | [x] | [x] paid "متابعة", "★ ابنِ بستاني" |
+| 68 | After building: (sign-up) the welcome, then "بستاني ★" in 3D with the new orchard | `welcome_screen.dart` (`openTab`), `orchard_tab.dart` | [x] | [x] | [x] | [x] "جاري بناء بستانك…" |
+| 69 | "هل تمسح رسمك وتبدأ من جديد؟" "امسح" / "إلغاء" | `designer_widgets.dart` (`confirmErase`) | [x] | [x] | [x] | [x] "ابدأ من جديد" |
+
+Checked with `test/geometry_test.dart` (28 tests), `test/designer_test.dart` (24 tests: every step
+with a finger and with a mouse, resume, errors, French, a 360 x 640 phone), `test/languages_test.dart`,
+screenshots of every step in both languages (390 x 844 and 360 x 640), the real app in Chrome with
+a mouse (Arabic with the automatic zones, French with my own lines: new numbers 22 989 005 / 006)
+and `test_live/designer_live_test.dart` (real Supabase, a new number each run).
 
 ## Demo login: any number, any 6-digit code (migration 010 + Edge Function `demo-auth`)
 
@@ -124,7 +150,7 @@ Checked with `test/community_photo_test.dart` (fake community and fake camera),
   the design's screenshot in the same language, element by element (0 element off by 2 px or
   more), and `test/languages_test.dart` checks that no text of the other language is shown.
   The 3D view (line 18) was checked in Chrome with the real orchard of 22 123 456 (real Supabase),
-  in Arabic and in French, with the zone panels.
+  in Arabic and in French, with the zone panels, and with orchards just made by the designer.
 - **Opened from the right button(s)**: `test/navigation_test.dart` taps each button and checks the
   screen that opens (and `test/widget_test.dart` for the login steps).
 

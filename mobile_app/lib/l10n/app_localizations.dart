@@ -1724,6 +1724,420 @@ abstract class AppLocalizations {
   /// **'في انتظار التركيب'**
   String get nodeWaiting;
 
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخطوة {step} من {total}'**
+  String designerStepOf(int step, int total);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'التالي'**
+  String get next;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع'**
+  String get back;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكمل الرسم'**
+  String get continueDrawing;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ من جديد'**
+  String get drawAgain;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'هل تمسح رسمك وتبدأ من جديد؟'**
+  String get drawAgainQuestion;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح'**
+  String get eraseAction;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'رسمك محفوظ. أكمل من حيث توقّفت.'**
+  String get draftSaved;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'بإصبعك، على شبكة'**
+  String get drawWithFinger;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'على صورة القمر الصناعي'**
+  String get satelliteMode;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'رسم البستان'**
+  String get a11yOrchardDrawing;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'قلم'**
+  String get toolPen;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقاط'**
+  String get toolCorners;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'تراجع'**
+  String get toolUndo;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة'**
+  String get toolRedo;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'امسح'**
+  String get toolErase;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارسم حدود بستانك بإصبعك'**
+  String get hintPen;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط على زوايا بستانك، واحدة بعد واحدة'**
+  String get hintCorners;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط على النقطة الأولى لإغلاق الشكل'**
+  String get hintClose;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسحب نقطة لتحريكها'**
+  String get hintMove;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'خطّان يتقاطعان. حرّك نقطة.'**
+  String get problemCrossing;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشكل صغير جدًا. ارسم أكبر.'**
+  String get problemTooSmall;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقاس بستانك تقريبًا'**
+  String get sizeTitle;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'العرض: من الغرب إلى الشرق'**
+  String get widthLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطول: من الشمال إلى الجنوب'**
+  String get lengthLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'{value} م'**
+  String metres(String value);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'{value} هكتار'**
+  String hectaresValue(String value);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب رقمًا من {min} إلى {max}'**
+  String sizeInvalid(int min, int max);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'المربّع = {value} م'**
+  String gridSquare(String value);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشمال'**
+  String get north;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساحة'**
+  String get areaLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'العرض'**
+  String get widthShort;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطول'**
+  String get lengthShort;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'قسّم بستانك إلى مناطق'**
+  String get zonesTitle;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'في كل منطقة حسّاس واحد'**
+  String get zonesSubtitle;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'أعطي عدد المناطق والأشجار'**
+  String get methodAuto;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقسّمه لك حسب الأشجار'**
+  String get methodAutoHint;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسم خطوط التقسيم بنفسي'**
+  String get methodDraw;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسحب خطًا عبر البستان'**
+  String get methodDrawHint;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'غيّر الطريقة'**
+  String get changeMethod;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد المناطق'**
+  String get zonesHowMany;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقل'**
+  String get fewer;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكثر'**
+  String get more;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأشجار'**
+  String get treesLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسحب خطًا من طرف إلى طرف'**
+  String get hintCut;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخط لم يقسم أي منطقة.'**
+  String get cutMissed;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'{max} منطقة على الأكثر'**
+  String tooManyZones(int max);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'منطقة صغيرة جدًا. غيّر الأشجار.'**
+  String get zoneTooSmall;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل المناطق'**
+  String get zoneDetailsTitle;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط على منطقة لتغييرها'**
+  String get zoneDetailsSubtitle;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المنطقة (اختياري)'**
+  String get zoneNameOptional;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع'**
+  String get zoneTypeLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'اللون'**
+  String get zoneColorLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'شجرة واحدة على الأقل'**
+  String get treesAtLeastOne;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'راجع بستانك'**
+  String get reviewTitle;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'ثم ادفع، ونبني بستانك'**
+  String get reviewSubtitle;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'المناطق'**
+  String get zonesLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحسّاسات'**
+  String get sensorsLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{حسّاس واحد} =2{حسّاسان} few{{count} حسّاسات} many{{count} حسّاسًا} other{{count} حسّاس}}'**
+  String sensorsCount(int count);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر'**
+  String get priceLabel;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'بستانك {area} هكتار: يلزمه {sensors} على الأقل.'**
+  String areaMinimum(String area, String sensors);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'قسّمه إلى {zones} بنفس السعر.'**
+  String areaMinimumTip(String zones);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'ادفع وابنِ بستاني'**
+  String get payAndBuild;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابنِ بستاني'**
+  String get buildMyOrchard;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'باقتك تكفي هذا البستان.'**
+  String get packCovers;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدّل المناطق'**
+  String get editZones;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'بستانك كبير جدًا. اتصل بنا.'**
+  String get orchardTooBig;
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'ثم {price}'**
+  String thenPrice(String price);
+
+  /// APP-ONLY. Orchard designer.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاري بناء بستانك…'**
+  String get buildingOrchard;
+
   /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:

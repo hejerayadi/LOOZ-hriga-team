@@ -15,10 +15,13 @@ import '../../shared/widgets/mood_face.dart';
 import '../../shared/widgets/symbol_text.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+  const WelcomeScreen({super.key, this.openTab = AppTab.home});
+
+  /// The tab "ابدأ" opens (the orchard, once it is built at the sign-up).
+  final AppTab openTab;
 
   void _start(BuildContext context) {
-    currentTab.value = AppTab.home;
+    currentTab.value = openTab;
     replaceAllWith(context, const MainShell());
   }
 

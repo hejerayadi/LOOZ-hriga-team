@@ -371,6 +371,154 @@
   "zoneTypeRainfed": "Pluviale",
   "zoneTypeOther": "Autre",
   "nodeWaiting": "En attente d'installation",
+  "designerStepOf": "Étape {step} sur {total}",
+  "@designerStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "next": "Suivant",
+  "back": "Retour",
+  "continueDrawing": "Continuer le dessin",
+  "drawAgain": "Recommencer",
+  "drawAgainQuestion": "Effacer votre dessin et recommencer ?",
+  "eraseAction": "Effacer",
+  "draftSaved": "Votre dessin est enregistré. Reprenez où vous étiez.",
+  "drawWithFinger": "Au doigt, sur une grille",
+  "satelliteMode": "Sur l'image satellite",
+  "a11yOrchardDrawing": "Dessin du verger",
+  "toolPen": "Crayon",
+  "toolCorners": "Points",
+  "toolUndo": "Annuler",
+  "toolRedo": "Rétablir",
+  "toolErase": "Effacer",
+  "hintPen": "Tracez le contour avec le doigt",
+  "hintCorners": "Touchez les coins du verger, un par un",
+  "hintClose": "Touchez le premier point pour fermer",
+  "hintMove": "Glissez un point pour le déplacer",
+  "problemCrossing": "Deux côtés se croisent. Déplacez un point.",
+  "problemTooSmall": "Forme trop petite. Dessinez plus grand.",
+  "sizeTitle": "Taille approximative du verger",
+  "widthLabel": "Largeur : d'ouest en est",
+  "lengthLabel": "Longueur : du nord au sud",
+  "metres": "{value} m",
+  "@metres": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "hectaresValue": "{value} ha",
+  "@hectaresValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sizeInvalid": "Écrivez un nombre de {min} à {max}",
+  "@sizeInvalid": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "gridSquare": "Carré = {value} m",
+  "@gridSquare": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "north": "Nord",
+  "areaLabel": "Surface",
+  "widthShort": "Largeur",
+  "lengthShort": "Longueur",
+  "zonesTitle": "Divisez votre verger en zones",
+  "zonesSubtitle": "Un capteur dans chaque zone",
+  "methodAuto": "Je donne les zones et les arbres",
+  "methodAutoHint": "Nous divisons selon les arbres",
+  "methodDraw": "Je trace les limites moi-même",
+  "methodDrawHint": "Vous tracez une ligne sur le verger",
+  "changeMethod": "Changer de méthode",
+  "zonesHowMany": "Nombre de zones",
+  "fewer": "Moins",
+  "more": "Plus",
+  "treesLabel": "Arbres",
+  "hintCut": "Tracez une ligne d'un bord à l'autre",
+  "cutMissed": "La ligne ne coupe aucune zone.",
+  "tooManyZones": "{max} zones au maximum",
+  "@tooManyZones": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "zoneTooSmall": "Une zone est trop petite. Changez les arbres.",
+  "zoneDetailsTitle": "Vos zones",
+  "zoneDetailsSubtitle": "Touchez une zone pour la modifier",
+  "zoneNameOptional": "Nom de la zone (facultatif)",
+  "zoneTypeLabel": "Type",
+  "zoneColorLabel": "Couleur",
+  "treesAtLeastOne": "Au moins 1 arbre",
+  "reviewTitle": "Vérifiez votre verger",
+  "reviewSubtitle": "Puis payez, nous créons votre verger",
+  "zonesLabel": "Zones",
+  "sensorsLabel": "Capteurs",
+  "sensorsCount": "{count, plural, =1{1 capteur} other{{count} capteurs}}",
+  "@sensorsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "priceLabel": "Prix",
+  "areaMinimum": "Votre verger fait {area} ha : il faut au moins {sensors}.",
+  "@areaMinimum": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      },
+      "sensors": {
+        "type": "String"
+      }
+    }
+  },
+  "areaMinimumTip": "Divisez-le en {zones} pour le même prix.",
+  "@areaMinimumTip": {
+    "placeholders": {
+      "zones": {
+        "type": "String"
+      }
+    }
+  },
+  "payAndBuild": "Payer et créer mon verger",
+  "buildMyOrchard": "Créer mon verger",
+  "packCovers": "Votre pack couvre ce verger.",
+  "editZones": "Modifier les zones",
+  "orchardTooBig": "Verger très grand. Contactez-nous.",
+  "thenPrice": "Puis {price}",
+  "@thenPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "buildingOrchard": "Création de votre verger…",
   "logOut": "Se déconnecter",
   "errorNoInternet": "Pas d'internet. Vérifiez la connexion et réessayez.",
   "errorWrongCode": "Code incorrect ou expiré.",

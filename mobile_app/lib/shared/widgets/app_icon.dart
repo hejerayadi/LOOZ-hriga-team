@@ -33,6 +33,16 @@ enum AppIcon {
   card, // not in the design: the card number (demo payment)
   lock, // not in the design: the security code of the card
   warning, // not in the design: an error (the bug is only for pests)
+  // Not in the design: the orchard designer (same line style).
+  pen, // draw with the finger
+  corners, // tap the corners one by one
+  undo,
+  redo,
+  erase, // start the drawing again
+  ruler, // the size in metres
+  scissors, // the dividing lines
+  satellite, // the map mode (later)
+  minus,
 }
 
 class LoozIcon extends StatelessWidget {

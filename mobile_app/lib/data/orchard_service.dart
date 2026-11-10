@@ -1,8 +1,9 @@
 // The farmer's orchard from Supabase (migration 011): its outline, its
 // zones (one sensor node each), its trees and the latest photo of each tree.
 //
-// READ ONLY: the orchard is written only by the database's functions (the
-// designer, phase 3). Zones, nodes and trees need the paid pack (RLS):
+// The app never writes the tables itself: the designer saves its DRAFT
+// (orchard_save_design), and once paid the database builds the orchard
+// (orchard_apply_design). Zones, nodes and trees need the paid pack (RLS):
 // on the free plan the "بستاني ★" tab shows the locked screen anyway.
 // Archived zones and trees (removed by an edit, kept for their history) are
 // not read here.
@@ -13,6 +14,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/enums.dart';
 import '../core/supabase_config.dart';
 import 'auth_service.dart';
+import 'orchard_design.dart';
 
 /// A corner, in metres (x = east, z = south: the 3D scene's ground).
 class OrchardPoint {
@@ -45,6 +47,9 @@ const _zoneTypeNames = {
 /// The name of a zone type in the database ('young_trees'...).
 String zoneTypeDbName(ZoneType type) =>
     _zoneTypeNames.entries.firstWhere((e) => e.value == type).key;
+
+/// 'young_trees' -> ZoneType.youngTrees (null = unknown).
+ZoneType? zoneTypeFromDbName(String name) => _zoneTypeNames[name];
 
 /// Table "zones": a part of the orchard that differs from the others
 /// (soil, age, watering...), with its own sensor node.
@@ -187,6 +192,20 @@ abstract class OrchardService {
   /// The orchard of the logged-in farmer (null = none, not even a draft).
   /// Errors: AuthError (no internet, session expired...).
   Future<MyOrchard?> loadMyOrchard();
+
+  /// Is the orchard built, and the designer's draft (to go on with it).
+  Future<DesignState> loadDesign();
+
+  /// Saves the draft (after every step of the designer). The first save
+  /// makes the orchard (a draft: nothing billed, nothing in 3D).
+  Future<void> saveDesign(OrchardDesign design);
+
+  /// Throws the draft away ("ابدأ من جديد").
+  Future<void> discardDesign();
+
+  /// Builds the orchard from the draft, once the paid pack covers it:
+  /// its zones, one sensor per zone, the trees in rows.
+  Future<void> buildOrchard();
 }
 
 OrchardService? _orchardService;
@@ -205,10 +224,43 @@ class SupabaseOrchardService implements OrchardService {
   static const page = 1000;
   static const timeout = Duration(seconds: 30);
 
+  /// Building plants all the trees: a little longer.
+  static const buildTimeout = Duration(seconds: 60);
+
   @override
-  Future<MyOrchard?> loadMyOrchard() async {
+  Future<MyOrchard?> loadMyOrchard() => _run(_load);
+
+  @override
+  Future<DesignState> loadDesign() => _run(() async {
+    final row = await _client
+        .from('orchards')
+        .select('status, design')
+        .maybeSingle();
+    return DesignState(
+      built: row?['status'] == 'complete',
+      draft: OrchardDesign.fromJson(row?['design']),
+    );
+  });
+
+  @override
+  Future<void> saveDesign(OrchardDesign design) => _run(
+    () => _client.rpc(
+      'orchard_save_design',
+      params: {'p_design': design.toJson()},
+    ),
+  );
+
+  @override
+  Future<void> discardDesign() =>
+      _run(() => _client.rpc('orchard_discard_design'));
+
+  @override
+  Future<void> buildOrchard() =>
+      _run(() => _client.rpc('orchard_apply_design'), time: buildTimeout);
+
+  Future<T> _run<T>(Future<T> Function() call, {Duration? time}) async {
     try {
-      return await _load().timeout(timeout);
+      return await call().timeout(time ?? timeout);
     } on AuthError {
       rethrow;
     } catch (error) {
