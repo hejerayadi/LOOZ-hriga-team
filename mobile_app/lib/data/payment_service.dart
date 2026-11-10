@@ -1,6 +1,10 @@
-// The packs and their payment (migrations 008 and 009): the prices, the
-// request of the LOOZ sensor kit (Connected), the pack the user has now,
-// and the payment.
+// The paid pack and its payment (migration 011): the price per zone, the
+// bill of the farmer's orchard, the pack he has now, and the payment.
+//
+// The bill (orchard_quote) is made by the database, never by the app:
+// billed zones = the zones of the orchard, at least 1 per 2 ha (an admin
+// setting), 8 DT each for 30 days. More zones than paid = only the extra
+// zones until the end of the period already paid.
 //
 // FOR NOW, A DEMO PAYMENT: no real money and no payment provider. The card
 // typed on the payment screen is only checked there (see
@@ -24,9 +28,8 @@ import 'auth_service.dart';
 enum PaymentFailure {
   noInternet,
   notAvailable, // demo payments turned off by an admin
-  kitNotInstalled, // Connected before the LOOZ kit is installed
+  noDrawing, // no orchard drawn yet: nothing to bill
   tooManyTries, // 10 payments in an hour
-  noGovernorate, // a kit request needs the governorate
   sessionExpired,
   unknown,
 }
@@ -41,16 +44,13 @@ class PaymentError implements Exception {
   String toString() => 'PaymentError(${failure.name}, $cause)';
 }
 
-/// The price of a paid pack (table plan_prices).
+/// The price of the paid pack (table plan_prices).
 class PackPrice {
   const PackPrice({
-    required this.plan,
     required this.millimes,
     required this.days,
-    this.perSensor = false,
+    this.perZone = true,
   });
-
-  final Plan plan;
 
   /// 1 DT = 1000 millimes.
   final int millimes;
@@ -58,102 +58,144 @@ class PackPrice {
   /// One payment = the pack for this many days.
   final int days;
 
-  /// true = the price of ONE sensor of the LOOZ kit (Connected).
-  final bool perSensor;
+  /// true = the price of ONE zone (node) of the orchard.
+  final bool perZone;
 
   static PackPrice fromRow(Map<String, dynamic> row) => PackPrice(
-    plan: Plan.values.byName(row['plan'] as String),
     millimes: (row['price_millimes'] as num).toInt(),
     days: (row['period_days'] as num).toInt(),
-    perSensor: row['per_sensor'] as bool? ?? false,
+    perZone: row['per_node'] as bool? ?? true,
   );
 }
 
-enum KitStatus { requested, contacted, installed, cancelled }
+/// What the farmer pays for his orchard (orchard_quote() of the database).
+enum QuoteKind {
+  /// No paid pack running: the whole month.
+  fresh,
 
-/// A request of the LOOZ sensor kit (table kit_requests).
-class KitRequest {
-  const KitRequest({
-    required this.id,
-    required this.status,
-    required this.createdAt,
-    this.sensors,
+  /// More zones than paid: the extra zones until the end of the period.
+  extraZones,
+
+  /// Nothing to pay now (paying = the next period).
+  covered,
+}
+
+class OrchardQuote {
+  const OrchardQuote({
+    required this.areaHa,
+    required this.zones,
+    required this.billedZones,
+    required this.paidZones,
+    required this.pricePerZone,
+    required this.days,
+    required this.monthlyMillimes,
+    required this.kind,
+    required this.dueNowMillimes,
+    this.endsAt,
   });
 
-  final String id;
-  final KitStatus status;
+  final double areaHa;
 
-  /// Set by an admin when the kit is installed.
-  final int? sensors;
-  final DateTime createdAt;
+  /// The zones of the drawing.
+  final int zones;
 
-  bool get installed => status == KitStatus.installed && (sensors ?? 0) > 0;
+  /// The zones billed (at least 1 per 2 ha of orchard).
+  final int billedZones;
 
-  static const columns = 'id, status, sensors, created_at';
+  /// The zones of the pack running now (0 = none).
+  final int paidZones;
+  final int pricePerZone;
+  final int days;
 
-  static KitRequest fromRow(Map<String, dynamic> row) => KitRequest(
-    id: row['id'] as String,
-    status: switch (row['status']) {
-      'contacted' => KitStatus.contacted,
-      'installed' => KitStatus.installed,
-      'cancelled' => KitStatus.cancelled,
-      _ => KitStatus.requested,
-    },
-    sensors: (row['sensors'] as num?)?.toInt(),
-    createdAt: DateTime.parse(row['created_at'] as String),
-  );
+  /// billedZones x pricePerZone: one whole period.
+  final int monthlyMillimes;
+  final QuoteKind kind;
+
+  /// What a payment now costs: the extra zones, or a whole period.
+  int get payNowMillimes =>
+      kind == QuoteKind.extraZones ? dueNowMillimes : monthlyMillimes;
+  final int dueNowMillimes;
+
+  /// The end of the pack running now (null = none).
+  final DateTime? endsAt;
+
+  static OrchardQuote fromRow(Map<String, dynamic> row) {
+    final ends = row['ends_at'] as String?;
+    return OrchardQuote(
+      areaHa: (row['area_ha'] as num?)?.toDouble() ?? 0,
+      zones: (row['zones'] as num).toInt(),
+      billedZones: (row['billed_nodes'] as num).toInt(),
+      paidZones: (row['paid_nodes'] as num?)?.toInt() ?? 0,
+      pricePerZone: (row['price_per_node'] as num).toInt(),
+      days: (row['period_days'] as num).toInt(),
+      monthlyMillimes: (row['monthly_millimes'] as num).toInt(),
+      kind: switch (row['kind']) {
+        'extra_nodes' => QuoteKind.extraZones,
+        'covered' => QuoteKind.covered,
+        _ => QuoteKind.fresh,
+      },
+      dueNowMillimes: (row['due_now_millimes'] as num).toInt(),
+      endsAt: ends == null ? null : DateTime.parse(ends),
+    );
+  }
 }
 
-/// The paid pack the user has now, and until when.
+/// The paid pack the user has now, until when, and its zones.
 class ActivePack {
-  const ActivePack({required this.plan, required this.endsAt});
+  const ActivePack({required this.endsAt, this.zones});
 
-  final Plan plan;
   final DateTime endsAt;
+
+  /// The zones paid (null = no limit, given by an admin).
+  final int? zones;
 }
 
 /// What a payment gave.
 class PaymentResult {
   const PaymentResult({
     required this.paid,
-    required this.plan,
     required this.millimes,
+    required this.zones,
+    this.extraZones = false,
     this.endsAt,
   });
 
   /// false = not paid (the card was refused).
   final bool paid;
-  final Plan plan;
 
-  /// The amount (Connected: the price x the sensors of the kit).
+  /// The amount paid (or refused).
   final int millimes;
+
+  /// The zones the pack has after this payment.
+  final int zones;
+
+  /// true = extra zones until the end of the period (not a new period).
+  final bool extraZones;
 
   /// The end of the pack (paid only).
   final DateTime? endsAt;
 }
 
-/// What the app needs for the packs. The app uses DemoPaymentService; the
-/// tests use a fake one (no internet needed).
+/// What the app needs for the paid pack. The app uses DemoPaymentService;
+/// the tests use a fake one (no internet needed).
 abstract class PaymentService {
   /// true = the demo payment: the screen says "وضع تجريبي / Mode démo".
   bool get isDemo;
 
-  /// The prices of Essential and Connected.
-  Future<Map<Plan, PackPrice>> loadPrices();
+  /// The price of the paid pack (per zone).
+  Future<PackPrice> loadPrice();
 
-  /// The last request of the LOOZ kit of the user (null = never asked).
-  Future<KitRequest?> loadKit();
-
-  /// Asks for the LOOZ kit (asked twice: the same open request).
-  Future<KitRequest> requestKit();
+  /// The bill of the user's orchard (PaymentFailure.noDrawing: nothing
+  /// drawn yet).
+  Future<OrchardQuote> loadQuote();
 
   /// The paid pack running now (null = the free plan).
   Future<ActivePack?> loadActivePack();
 
-  /// Pays [plan] (Essential, or Connected once the kit is installed).
+  /// Pays the bill of the user's orchard (see loadQuote).
   /// DEMO: [cardAccepted] = what the card form decided (the test card
   /// 4000 0000 0000 0002 is refused). The card itself is never sent.
-  Future<PaymentResult> pay(Plan plan, {required bool cardAccepted});
+  Future<PaymentResult> pay({required bool cardAccepted});
 }
 
 PaymentService? _paymentService;
@@ -174,69 +216,57 @@ class DemoPaymentService implements PaymentService {
   bool get isDemo => true;
 
   @override
-  Future<Map<Plan, PackPrice>> loadPrices() => _run(() async {
-    final rows = await _client
-        .from('plan_prices')
-        .select('plan, price_millimes, period_days, per_sensor');
-    return {
-      for (final row in rows)
-        Plan.values.byName(row['plan'] as String): PackPrice.fromRow(row),
-    };
-  });
-
-  @override
-  Future<KitRequest?> loadKit() => _run(() async {
+  Future<PackPrice> loadPrice() => _run(() async {
     final row = await _client
-        .from('kit_requests')
-        .select(KitRequest.columns)
-        .order('created_at', ascending: false)
-        .limit(1)
-        .maybeSingle();
-    return row == null ? null : KitRequest.fromRow(row);
+        .from('plan_prices')
+        .select('price_millimes, period_days, per_node')
+        .eq('plan', 'paid')
+        .single();
+    return PackPrice.fromRow(row);
   });
 
   @override
-  Future<KitRequest> requestKit() => _run(() async {
-    // The database copies the governorate, trees, area and phone from
-    // the profile: the app sends nothing.
-    final row = await _client.rpc('request_kit');
-    return KitRequest.fromRow(_one(row));
+  Future<OrchardQuote> loadQuote() => _run(() async {
+    return OrchardQuote.fromRow(_one(await _client.rpc('orchard_quote')));
   });
 
   @override
   Future<ActivePack?> loadActivePack() => _run(() async {
     final row = await _client
         .from('subscriptions')
-        .select('plan, status, ends_at')
+        .select('plan, status, ends_at, nodes')
         .maybeSingle();
     final endsAt = row?['ends_at'] as String?;
-    if (row == null || row['status'] != 'active' || endsAt == null) {
+    if (row == null ||
+        row['status'] != 'active' ||
+        endsAt == null ||
+        planFromName(row['plan']) == Plan.free) {
       return null;
     }
     final end = DateTime.parse(endsAt);
-    final plan = Plan.values.byName(row['plan'] as String);
-    if (plan == Plan.free || end.isBefore(DateTime.now())) return null;
-    return ActivePack(plan: plan, endsAt: end);
+    if (end.isBefore(DateTime.now())) return null;
+    return ActivePack(endsAt: end, zones: (row['nodes'] as num?)?.toInt());
   });
 
   @override
-  Future<PaymentResult> pay(Plan plan, {required bool cardAccepted}) =>
-      _run(() async {
-        // Only the pack and "accepted or not": never the card.
-        final row = _one(
-          await _client.rpc(
-            'demo_payment',
-            params: {'p_plan': plan.name, 'p_success': cardAccepted},
-          ),
-        );
-        final paid = row['status'] == 'paid_demo';
-        return PaymentResult(
-          paid: paid,
-          plan: plan,
-          millimes: (row['amount_millimes'] as num).toInt(),
-          endsAt: paid ? (await loadActivePack())?.endsAt : null,
-        );
-      });
+  Future<PaymentResult> pay({required bool cardAccepted}) => _run(() async {
+    // Only the pack and "accepted or not": never the card. The amount and
+    // the zones come from the database's bill.
+    final row = _one(
+      await _client.rpc(
+        'demo_payment',
+        params: {'p_plan': 'paid', 'p_success': cardAccepted},
+      ),
+    );
+    final paid = row['status'] == 'paid_demo';
+    return PaymentResult(
+      paid: paid,
+      millimes: (row['amount_millimes'] as num).toInt(),
+      zones: (row['nodes'] as num?)?.toInt() ?? 0,
+      extraZones: row['kind'] == 'extra_nodes',
+      endsAt: paid ? (await loadActivePack())?.endsAt : null,
+    );
+  });
 
   /// A function that returns one row: an object (or a list of one).
   static Map<String, dynamic> _one(Object? result) => switch (result) {
@@ -263,10 +293,8 @@ PaymentFailure paymentFailureOf(Object error) {
   if (error is PostgrestException) {
     return switch (error.code ?? '') {
       'PT403' => PaymentFailure.notAvailable, // demo payments turned off
-      'PT409' => PaymentFailure.kitNotInstalled,
+      'PT409' => PaymentFailure.noDrawing, // nothing drawn: nothing to bill
       'PT429' => PaymentFailure.tooManyTries,
-      '22023' when error.message.contains('governorate') =>
-        PaymentFailure.noGovernorate,
       final code when code.startsWith('PGRST30') =>
         PaymentFailure.sessionExpired,
       _ => PaymentFailure.unknown,

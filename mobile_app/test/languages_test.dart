@@ -8,6 +8,7 @@ import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/data/fake_data.dart';
+import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/user_profile.dart';
 import 'package:looz_mobile/features/alerts/alert_screen.dart';
 import 'package:looz_mobile/features/alerts/regional_screen.dart';
@@ -31,7 +32,7 @@ import 'package:looz_mobile/features/onboarding/role_screen.dart';
 import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
 import 'package:looz_mobile/features/onboarding/start_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
-import 'package:looz_mobile/features/premium/kit_requested_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/designer_start_screen.dart';
 import 'package:looz_mobile/features/premium/payment_result_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'package:looz_mobile/features/premium/premium_screen.dart';
@@ -39,6 +40,7 @@ import 'package:looz_mobile/features/premium/qr_screen.dart';
 import 'package:looz_mobile/features/states/states_screen.dart';
 
 import 'fake_community_service.dart';
+import 'fake_orchard_service.dart';
 import 'fake_photo_picker.dart';
 import 'test_helpers.dart';
 
@@ -56,23 +58,49 @@ const sameInBoth = [
 ];
 
 final latin = RegExp('[A-Za-zÀ-ÖØ-öø-ÿ]');
+
+/// A bill of 4 zones (a new month) and one of 6 zones on a pack of 4.
+final monthQuote = OrchardQuote.fromRow({
+  'area_ha': 2.37,
+  'zones': 4,
+  'billed_nodes': 4,
+  'paid_nodes': 0,
+  'price_per_node': 8000,
+  'period_days': 30,
+  'monthly_millimes': 32000,
+  'kind': 'new',
+  'due_now_millimes': 32000,
+  'ends_at': null,
+});
+final extraQuote = OrchardQuote.fromRow({
+  'area_ha': 2.37,
+  'zones': 6,
+  'billed_nodes': 6,
+  'paid_nodes': 4,
+  'price_per_node': 8000,
+  'period_days': 30,
+  'monthly_millimes': 48000,
+  'kind': 'extra_nodes',
+  'due_now_millimes': 8000,
+  'ends_at': '2026-12-03T18:00:00Z',
+});
 final arabic = RegExp('[؀-ۿ]');
 
 /// Every screen of the app: (name, screen, plan, tab, "done" state).
 final screens = <(String, Widget, Plan, AppTab, bool)>[
-  ('start', const StartScreen(), Plan.connected, AppTab.home, false),
-  ('phone (sign in)', const PhoneScreen(), Plan.connected, AppTab.home, false),
+  ('start', const StartScreen(), Plan.paid, AppTab.home, false),
+  ('phone (sign in)', const PhoneScreen(), Plan.paid, AppTab.home, false),
   (
     'phone (sign up)',
     const PhoneScreen(signUp: true),
-    Plan.connected,
+    Plan.paid,
     AppTab.home,
     false,
   ),
   (
     'code',
     const CodeScreen(phone: '+21650000001'),
-    Plan.connected,
+    Plan.paid,
     AppTab.home,
     false,
   ),
@@ -101,105 +129,110 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
   ('pack', const PackScreen(), Plan.free, AppTab.home, false),
   (
     'payment (sign-up)',
-    const PaymentScreen(plan: Plan.essential, signUp: true),
+    PaymentScreen(quote: monthQuote, signUp: true),
     Plan.free,
     AppTab.home,
     false,
   ),
   (
     'paid',
-    PaymentResultScreen(
-      plan: Plan.essential,
-      paid: true,
-      endsAt: DateTime(2026, 11, 30),
-    ),
-    Plan.essential,
+    PaymentResultScreen(paid: true, endsAt: DateTime(2026, 11, 30)),
+    Plan.paid,
     AppTab.home,
     false,
   ),
   (
     'not paid',
-    const PaymentResultScreen(plan: Plan.essential, paid: false),
+    const PaymentResultScreen(paid: false),
     Plan.free,
     AppTab.home,
     false,
   ),
   (
-    'kit requested',
-    const KitRequestedScreen(signUp: true),
+    'draw your orchard (sign-up)',
+    const DesignerStartScreen(signUp: true),
     Plan.free,
     AppTab.home,
     false,
   ),
-  ('welcome', const WelcomeScreen(), Plan.connected, AppTab.home, false),
-  ('home', const MainShell(), Plan.connected, AppTab.home, false),
-  ('community', const MainShell(), Plan.connected, AppTab.community, false),
+  (
+    'draw your orchard (in the app)',
+    const DesignerStartScreen(),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  ('welcome', const WelcomeScreen(), Plan.paid, AppTab.home, false),
+  ('home', const MainShell(), Plan.paid, AppTab.home, false),
+  ('community', const MainShell(), Plan.paid, AppTab.community, false),
   ('my orchard (locked)', const MainShell(), Plan.free, AppTab.orchard, false),
-  ('alerts', const MainShell(), Plan.connected, AppTab.alerts, false),
-  ('profile', const MainShell(), Plan.connected, AppTab.profile, false),
+  ('my orchard (3D)', const MainShell(), Plan.paid, AppTab.orchard, false),
+  (
+    'my orchard (none drawn yet)',
+    const MainShell(),
+    Plan.paid,
+    AppTab.orchard,
+    false,
+  ),
+  ('alerts', const MainShell(), Plan.paid, AppTab.alerts, false),
+  ('profile', const MainShell(), Plan.paid, AppTab.profile, false),
   (
     'community question',
     const _SamplePostScreen(),
-    Plan.connected,
+    Plan.paid,
     AppTab.home,
     false,
   ),
-  (
-    'write a question',
-    const WritePostScreen(),
-    Plan.connected,
-    AppTab.home,
-    false,
-  ),
+  ('write a question', const WritePostScreen(), Plan.paid, AppTab.home, false),
   (
     'new post with a photo',
     const _NewPostWithPhoto(),
-    Plan.connected,
+    Plan.paid,
     AppTab.home,
     false,
   ),
   (
     'community post with a photo',
     const _SamplePhotoPostScreen(),
-    Plan.connected,
+    Plan.paid,
     AppTab.home,
     false,
   ),
   (
     'photo on the whole screen',
     PhotoViewer(image: MemoryImage(testPhotoBytes()), label: ''),
-    Plan.connected,
+    Plan.paid,
     AppTab.home,
     false,
   ),
-  ('tips', const TipsScreen(), Plan.connected, AppTab.home, false),
-  ('ask', const AskScreen(), Plan.connected, AppTab.home, false),
-  ('voice', const VoiceScreen(), Plan.connected, AppTab.home, false),
-  ('camera', const CameraScreen(), Plan.connected, AppTab.home, false),
-  ('thinking', const ThinkingScreen(), Plan.connected, AppTab.home, false),
-  ('result', const ResultScreen(), Plan.connected, AppTab.home, false),
-  ('alert', const AlertScreen(), Plan.connected, AppTab.home, false),
-  ('alert done', const AlertScreen(), Plan.connected, AppTab.home, true),
-  ('regional', const RegionalScreen(), Plan.connected, AppTab.home, false),
-  ('premium', const PremiumScreen(), Plan.connected, AppTab.home, false),
+  ('tips', const TipsScreen(), Plan.paid, AppTab.home, false),
+  ('ask', const AskScreen(), Plan.paid, AppTab.home, false),
+  ('voice', const VoiceScreen(), Plan.paid, AppTab.home, false),
+  ('camera', const CameraScreen(), Plan.paid, AppTab.home, false),
+  ('thinking', const ThinkingScreen(), Plan.paid, AppTab.home, false),
+  ('result', const ResultScreen(), Plan.paid, AppTab.home, false),
+  ('alert', const AlertScreen(), Plan.paid, AppTab.home, false),
+  ('alert done', const AlertScreen(), Plan.paid, AppTab.home, true),
+  ('regional', const RegionalScreen(), Plan.paid, AppTab.home, false),
+  ('premium', const PremiumScreen(), Plan.paid, AppTab.home, false),
   (
-    'payment (Premium, Connected)',
-    const PaymentScreen(plan: Plan.connected, sensors: 5),
+    'payment (Premium, a month)',
+    PaymentScreen(quote: monthQuote),
     Plan.free,
     AppTab.home,
     false,
   ),
   (
-    'packs (Premium)',
-    const PackScreen(upgrade: true),
-    Plan.free,
+    'payment (Premium, extra zones)',
+    PaymentScreen(quote: extraQuote),
+    Plan.paid,
     AppTab.home,
     false,
   ),
-  ('qr', const QrScreen(), Plan.connected, AppTab.home, false),
-  ('map', const MapScreen(), Plan.connected, AppTab.home, false),
-  ('journal', const JournalScreen(), Plan.connected, AppTab.home, false),
-  ('states', const StatesScreen(), Plan.connected, AppTab.home, false),
+  ('qr', const QrScreen(), Plan.paid, AppTab.home, false),
+  ('map', const MapScreen(), Plan.paid, AppTab.home, false),
+  ('journal', const JournalScreen(), Plan.paid, AppTab.home, false),
+  ('states', const StatesScreen(), Plan.paid, AppTab.home, false),
 ];
 
 /// The texts of [screen] in [lang], without the words that are the same in
@@ -209,12 +242,13 @@ Future<List<String>> textsOf(
   (String, Widget, Plan, AppTab, bool) screen,
   String lang,
 ) async {
-  final (_, widget, plan, tab, done) = screen;
+  final (name, widget, plan, tab, done) = screen;
   // A farmer whose name is written in this language, and a community
   // whose farmers write in this language.
   logInTestUser(lang);
   useFakeCommunity(lang);
-  usePayments().installKit(5);
+  usePayments().drawOrchard(4, areaHa: 2.37);
+  useOrchard(name.contains('none drawn') ? null : demoOrchard());
   appLocale.value = Locale(lang);
   currentPlan.value = plan;
   currentTab.value = tab;

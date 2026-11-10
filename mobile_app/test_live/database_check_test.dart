@@ -155,13 +155,20 @@ final sqlFiles = <String, Map<String, Future<bool> Function()>>{
   'migrations/009_demo_payment_kits_roles.sql': {
     'table app_settings': () => hasTable('app_settings'),
     'table kit_requests': () => hasTable('kit_requests'),
-    'column plan_prices.per_sensor': () =>
-        hasColumn('plan_prices', 'per_sensor'),
-    'column payments.sensors': () => hasColumn('payments', 'sensors'),
+    // (011 renames per_sensor / sensors to per_node / nodes, and removes
+    // request_kit(): either state means 009 was run.)
+    'column plan_prices.per_sensor (per_node after 011)': () async =>
+        await hasColumn('plan_prices', 'per_sensor') ||
+        await hasColumn('plan_prices', 'per_node'),
+    'column payments.sensors (nodes after 011)': () async =>
+        await hasColumn('payments', 'sensors') ||
+        await hasColumn('payments', 'nodes'),
     'column profiles.organisation': () => hasColumn('profiles', 'organisation'),
     'function demo_payment()': () =>
-        hasFunction('demo_payment', {'p_plan': 'essential'}),
-    'function request_kit()': () => hasFunction('request_kit'),
+        hasFunction('demo_payment', {'p_plan': 'paid'}),
+    'function request_kit() (removed by 011)': () async =>
+        await hasFunction('request_kit') ||
+        await hasColumn('kit_requests', 'orchard_id'),
     'function choose_role()': () =>
         hasFunction('choose_role', {'p_role': 'farmer'}),
   },
@@ -172,6 +179,26 @@ final sqlFiles = <String, Map<String, Future<bool> Function()>>{
         hasColumn('app_settings', 'demo_login_enabled'),
     'function demo_login_check()': () =>
         hasFunction('demo_login_check', {'p_phone': '+21600000000'}),
+  },
+  'migrations/011_two_packs_orchard_designer.sql': {
+    'column plan_prices.per_node': () => hasColumn('plan_prices', 'per_node'),
+    'column payments.kind': () => hasColumn('payments', 'kind'),
+    'column subscriptions.nodes': () => hasColumn('subscriptions', 'nodes'),
+    'column kit_requests.orchard_id': () =>
+        hasColumn('kit_requests', 'orchard_id'),
+    for (final column in ['outline', 'design', 'status', 'confirmed_nodes'])
+      'column orchards.$column': () => hasColumn('orchards', column),
+    for (final column in ['letter', 'zone_type', 'color', 'archived_at'])
+      'column zones.$column': () => hasColumn('zones', column),
+    'column nodes.installed_at': () => hasColumn('nodes', 'installed_at'),
+    'column trees.archived_at': () => hasColumn('trees', 'archived_at'),
+    'function orchard_quote()': () => hasFunction('orchard_quote'),
+    'function orchard_save_design()': () =>
+        hasFunction('orchard_save_design', {'p_design': <String, Object?>{}}),
+    'function orchard_apply_design()': () =>
+        hasFunction('orchard_apply_design'),
+    'function request_kit() removed': () async =>
+        !await hasFunction('request_kit'),
   },
 };
 

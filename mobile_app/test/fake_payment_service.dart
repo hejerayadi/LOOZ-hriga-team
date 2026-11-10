@@ -1,8 +1,9 @@
-// A fake of the packs and the demo payment for the tests (no internet), with
-// the same rules as the database (migration 009): the prices, Connected only
-// once the kit is installed, demo payments that an admin can turn off, the
-// pack for 30 days. Like the app, it never receives a card: only the pack and
-// "accepted or not".
+// A fake of the paid pack and the demo payment for the tests (no internet),
+// with the same rules as the database (migration 011): 8 DT per zone for 30
+// days, billed zones = the zones drawn but at least 1 per 2 ha, extra zones
+// paid only until the end of the period, nothing drawn = nothing to bill,
+// demo payments that an admin can turn off. Like the app, it never
+// receives a card: only "accepted or not".
 import 'dart:async';
 
 import 'package:looz_mobile/core/plans.dart';
@@ -21,19 +22,14 @@ class FakePaymentService implements PaymentService {
   @override
   bool isDemo = true;
 
-  /// Like plan_prices: 15 DT / 30 days, 8 DT per sensor / 30 days.
-  Map<Plan, PackPrice> prices = const {
-    Plan.essential: PackPrice(plan: Plan.essential, millimes: 15000, days: 30),
-    Plan.connected: PackPrice(
-      plan: Plan.connected,
-      millimes: 8000,
-      days: 30,
-      perSensor: true,
-    ),
-  };
+  /// Like plan_prices: 8 DT per zone / 30 days.
+  PackPrice price = const PackPrice(millimes: 8000, days: 30);
 
-  /// The LOOZ kit of the user (null = never asked).
-  KitRequest? kit;
+  /// The orchard of the user: its zones and hectares (null = nothing drawn).
+  ({int zones, double areaHa})? orchard;
+
+  /// Like app_settings.hectares_per_node.
+  double hectaresPerZone = 2;
 
   /// The paid pack running now.
   ActivePack? activePack;
@@ -47,16 +43,12 @@ class FakePaymentService implements PaymentService {
   /// Not null = the payment waits for it.
   Completer<void>? holdPay;
 
-  /// The calls, e.g. "pay essential accepted" (never a card).
+  /// The calls, e.g. "pay accepted" (never a card).
   final List<String> calls = [];
 
-  /// A kit installed by an admin, with [sensors] sensors.
-  void installKit(int sensors) => kit = KitRequest(
-    id: 'kit-1',
-    status: KitStatus.installed,
-    sensors: sensors,
-    createdAt: DateTime(2026, 10, 20),
-  );
+  /// An orchard of [zones] zones on [areaHa] hectares (like the designer).
+  void drawOrchard(int zones, {double areaHa = 1}) =>
+      orchard = (zones: zones, areaHa: areaHa);
 
   void _maybeFail() {
     final failure = failNext;
@@ -67,37 +59,55 @@ class FakePaymentService implements PaymentService {
   }
 
   @override
-  Future<Map<Plan, PackPrice>> loadPrices() async {
-    calls.add('loadPrices');
+  Future<PackPrice> loadPrice() async {
+    calls.add('loadPrice');
     _maybeFail();
-    return prices;
+    return price;
   }
 
-  @override
-  Future<KitRequest?> loadKit() async {
-    calls.add('loadKit');
-    _maybeFail();
-    return kit;
-  }
-
-  @override
-  Future<KitRequest> requestKit() async {
-    calls.add('requestKit');
-    _maybeFail();
-    if (auth?.me.governorate == null) {
-      throw const PaymentError(PaymentFailure.noGovernorate);
-    }
-    final open = kit;
-    if (open != null &&
-        (open.status == KitStatus.requested ||
-            open.status == KitStatus.contacted)) {
-      return open;
-    }
-    return kit = KitRequest(
-      id: 'kit-${calls.length}',
-      status: KitStatus.requested,
-      createdAt: DateTime.now(),
+  /// Like orchard_quote() of the database.
+  OrchardQuote quote() {
+    final drawn = orchard;
+    if (drawn == null) throw const PaymentError(PaymentFailure.noDrawing);
+    final byArea = (drawn.areaHa / hectaresPerZone).ceil();
+    final billed = [drawn.zones, byArea, 1].reduce((a, b) => a > b ? a : b);
+    final running = activePack;
+    final monthly = billed * price.millimes;
+    final paid = running == null ? 0 : running.zones ?? 1000;
+    final kind = running == null
+        ? QuoteKind.fresh
+        : paid >= billed
+        ? QuoteKind.covered
+        : QuoteKind.extraZones;
+    final left = running == null
+        ? 0.0
+        : running.endsAt.difference(DateTime.now()).inSeconds /
+              Duration(days: price.days).inSeconds;
+    final extra = ((billed - paid) * price.millimes * left.clamp(0, 1) / 100)
+        .ceil();
+    return OrchardQuote(
+      areaHa: drawn.areaHa,
+      zones: drawn.zones,
+      billedZones: billed,
+      paidZones: running == null ? 0 : paid,
+      pricePerZone: price.millimes,
+      days: price.days,
+      monthlyMillimes: monthly,
+      kind: kind,
+      dueNowMillimes: switch (kind) {
+        QuoteKind.fresh => monthly,
+        QuoteKind.covered => 0,
+        QuoteKind.extraZones => extra < 1 ? 100 : extra * 100,
+      },
+      endsAt: running?.endsAt,
     );
+  }
+
+  @override
+  Future<OrchardQuote> loadQuote() async {
+    calls.add('loadQuote');
+    _maybeFail();
+    return quote();
   }
 
   @override
@@ -108,50 +118,51 @@ class FakePaymentService implements PaymentService {
   }
 
   @override
-  Future<PaymentResult> pay(Plan plan, {required bool cardAccepted}) async {
-    calls.add('pay ${plan.name} ${cardAccepted ? 'accepted' : 'refused'}');
+  Future<PaymentResult> pay({required bool cardAccepted}) async {
+    calls.add('pay ${cardAccepted ? 'accepted' : 'refused'}');
     await holdPay?.future;
     _maybeFail();
     if (demoOff) throw const PaymentError(PaymentFailure.notAvailable);
-    final price = prices[plan]!;
-    final units = price.perSensor ? kit?.sensors : 1;
-    if (units == null || (price.perSensor && !(kit?.installed ?? false))) {
-      throw const PaymentError(PaymentFailure.kitNotInstalled);
-    }
+    final bill = quote();
+    final extra = bill.kind == QuoteKind.extraZones;
+    final amount = bill.payNowMillimes;
     if (!cardAccepted) {
       return PaymentResult(
         paid: false,
-        plan: plan,
-        millimes: price.millimes * units,
+        millimes: amount,
+        zones: bill.billedZones,
+        extraZones: extra,
       );
     }
-    // Like activate_pack(): the same pack running = 30 days after its end.
+    // Like activate_pack(): a pack running = 30 days after its end;
+    // extra zones: the same end.
     final running = activePack;
-    final from =
-        running != null &&
-            running.plan == plan &&
-            running.endsAt.isAfter(DateTime.now())
-        ? running.endsAt
-        : DateTime.now();
-    final pack = activePack = ActivePack(
-      plan: plan,
-      endsAt: from.add(Duration(days: price.days)),
-    );
+    final DateTime end;
+    if (extra) {
+      end = running!.endsAt;
+    } else {
+      final from = running != null && running.endsAt.isAfter(DateTime.now())
+          ? running.endsAt
+          : DateTime.now();
+      end = from.add(Duration(days: price.days));
+    }
+    activePack = ActivePack(endsAt: end, zones: bill.billedZones);
     final login = auth;
     if (login != null && login.loggedIn != null) {
-      login.plans[login.loggedIn!] = plan;
+      login.plans[login.loggedIn!] = Plan.paid;
       login.save(
         login.me,
-        chosenPlan: plan,
+        chosenPlan: Plan.paid,
         paymentStatus: PaymentStatus.paid,
         planChosenAt: login.me.planChosenAt ?? DateTime.now(),
       );
     }
     return PaymentResult(
       paid: true,
-      plan: plan,
-      millimes: price.millimes * units,
-      endsAt: pack.endsAt,
+      millimes: amount,
+      zones: bill.billedZones,
+      extraZones: extra,
+      endsAt: end,
     );
   }
 }

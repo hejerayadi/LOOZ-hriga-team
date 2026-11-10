@@ -141,7 +141,9 @@ class _ProfileRow extends StatelessWidget {
         child: GestureDetector(
           onTap: onTap,
           child: CssBox(
-            height: 86,
+            // At least 86 (the design); taller when the pack line takes 2
+            // lines on a narrow phone.
+            minHeight: 86,
             color: AppColors.white,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             shadows: AppShadows.card,
@@ -171,18 +173,14 @@ class _ProfileRow extends StatelessWidget {
   }
 }
 
-/// Debug builds only: the 3 plans, to see the locked screens.
+/// Debug builds only: the 2 plans, to see the locked screens.
 class _DevPlanSwitch extends StatelessWidget {
   const _DevPlanSwitch();
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final names = {
-      Plan.free: l10n.free,
-      Plan.essential: l10n.planEssential,
-      Plan.connected: l10n.planConnected,
-    };
+    final names = {Plan.free: l10n.free, Plan.paid: l10n.planPaid};
     return ValueListenableBuilder<Plan>(
       valueListenable: currentPlan,
       builder: (context, plan, _) => CssBox(
@@ -237,7 +235,7 @@ class _DevPlanSwitch extends StatelessWidget {
   }
 }
 
-/// "أساسي · حتى 30/11/2026", or "مجاني": the pack running now.
+/// "بريميوم · 4 مناطق · حتى 3/12/2026", or "مجاني": the pack running now.
 class _MyPack extends StatefulWidget {
   const _MyPack();
 
@@ -260,11 +258,15 @@ class _MyPackState extends State<_MyPack> {
           return const SizedBox.shrink();
         }
         final pack = snapshot.data;
+        final zones = pack?.zones;
         return Text(
           pack == null
               ? planName(l10n, Plan.free)
-              : '${planName(l10n, pack.plan)} · '
-                    '${l10n.planUntil(dayText(pack.endsAt))}',
+              : [
+                  planName(l10n, Plan.paid),
+                  if (zones != null) l10n.zonesCount(zones),
+                  l10n.planUntil(dayText(pack.endsAt)),
+                ].join(' · '),
           style: AppTextStyles.of(
             14,
             FontWeight.w600,

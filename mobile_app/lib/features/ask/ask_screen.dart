@@ -22,7 +22,9 @@ class AskScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    void speak() => openScreen(context, const VoiceScreen());
+    // The voice chat is Premium (free plan: the "locked" screen).
+    void speak() =>
+        openFeature(context, Feature.assistant, const VoiceScreen());
     return ShellPage(
       children: [
         ScreenTitle(title: l10n.askTitle, subtitle: l10n.askSubtitle),

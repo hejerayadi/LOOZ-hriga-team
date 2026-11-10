@@ -1,12 +1,15 @@
 // Tab 3 — My orchard ("بستاني ★"):
-//  - with the right plan: the 3D orchard, in a card under the title,
-//  - without it: the design's "locked" screen (what Premium gives).
+//  - Premium: the farmer's REAL orchard (Supabase) in 3D, in a card under
+//    the title; no orchard built yet: "ارسم بستانك" (the designer);
+//  - free plan: the design's "locked" screen (what Premium gives).
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/plans.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/auth_service.dart';
+import '../../data/orchard_service.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/blob.dart';
@@ -16,6 +19,8 @@ import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/symbol_text.dart';
 import '../../shared/widgets/text_link.dart';
+import '../onboarding/auth_messages.dart';
+import '../orchard_designer/designer_start_screen.dart';
 import '../premium/premium_screen.dart';
 import 'orchard_3d_data.dart';
 import 'orchard_3d_view.dart';
@@ -33,7 +38,7 @@ class OrchardTab extends StatelessWidget {
     return ValueListenableBuilder<Plan>(
       valueListenable: currentPlan,
       builder: (context, plan, _) => canUse(Feature.orchard3d)
-          ? const _Orchard3d()
+          ? const _MyOrchard()
           : const _LockedOrchard(),
     );
   }
@@ -52,34 +57,60 @@ class _Title extends StatelessWidget {
   }
 }
 
-/// The 3D orchard planner (assets/orchard_3d/), in a big white card.
-class _Orchard3d extends StatefulWidget {
-  const _Orchard3d();
+/// Premium: reads the orchard, then shows it (or what is missing).
+class _MyOrchard extends StatefulWidget {
+  const _MyOrchard();
 
   @override
-  State<_Orchard3d> createState() => _Orchard3dState();
+  State<_MyOrchard> createState() => _MyOrchardState();
 }
 
-class _Orchard3dState extends State<_Orchard3d> {
-  // The orchard (zones, nodes, trees) sent to the 3D page. Fake for now.
-  // Live zone data (nodes, readings) only with the "Connecté" plan.
-  // (Made once: a language change only switches the page's texts.)
-  late final String _orchardJson = orchard3dJson(
-    liveData: canUse(Feature.liveZoneData),
-    language: Localizations.localeOf(context).languageCode,
-  );
+class _MyOrchardState extends State<_MyOrchard> {
+  late Future<MyOrchard?> _orchard = _load();
 
-  /// Messages sent by the 3D page (assets/orchard_3d/index.html).
-  void _onMessage(String message) {
-    switch (message) {
-      case 'looz:upgrade': // "ابدأ بريميوم" tapped in the zone panel
-        openScreen(context, const PremiumScreen());
-      case 'looz:buttons:hide':
-        orchardPanelOpen.value = true;
-      case 'looz:buttons:show':
-        orchardPanelOpen.value = false;
-    }
+  // (Future.sync: even an error at once arrives in the FutureBuilder.)
+  Future<MyOrchard?> _load() => Future.sync(orchardService.loadMyOrchard);
+
+  void _retry() => setState(() => _orchard = _load());
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _orchard,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const _OrchardCard(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final error = snapshot.error;
+        if (error != null) {
+          return ShellContent(
+            children: [
+              const _Title(),
+              AuthNote.failure(
+                error is AuthError ? error.failure : AuthFailure.unknown,
+              ),
+              const SizedBox(height: 20),
+              ActionButton(label: context.l10n.tryAgain, onPressed: _retry),
+            ],
+          );
+        }
+        final orchard = snapshot.data;
+        if (orchard == null || !orchard.complete) {
+          return const _DrawYourOrchard();
+        }
+        return _Orchard3d(orchard: orchard);
+      },
+    );
   }
+}
+
+/// The title and a big white card that fills the tab (above the bars).
+class _OrchardCard extends StatelessWidget {
+  const _OrchardCard({required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -105,15 +136,98 @@ class _Orchard3dState extends State<_Orchard3d> {
               borderRadius: BorderRadius.circular(34),
               shadows: AppShadows.card,
               clip: true,
-              child: Orchard3dView(
-                data: _orchardJson,
-                language: Localizations.localeOf(context).languageCode,
-                onMessage: _onMessage,
-              ),
+              child: child,
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The 3D orchard (assets/orchard_3d/), in the big white card.
+class _Orchard3d extends StatefulWidget {
+  const _Orchard3d({required this.orchard});
+
+  final MyOrchard orchard;
+
+  @override
+  State<_Orchard3d> createState() => _Orchard3dState();
+}
+
+class _Orchard3dState extends State<_Orchard3d> {
+  // The orchard sent to the 3D page. (Made once: a language change only
+  // switches the page's texts.)
+  late final String _orchardJson = orchard3dJson(
+    widget.orchard,
+    language: Localizations.localeOf(context).languageCode,
+  );
+
+  /// Messages sent by the 3D page (assets/orchard_3d/index.html).
+  void _onMessage(String message) {
+    switch (message) {
+      case 'looz:upgrade': // "ابدأ بريميوم" tapped in the zone panel
+        openScreen(context, const PremiumScreen());
+      case 'looz:buttons:hide':
+        orchardPanelOpen.value = true;
+      case 'looz:buttons:show':
+        orchardPanelOpen.value = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _OrchardCard(
+      child: Orchard3dView(
+        data: _orchardJson,
+        language: Localizations.localeOf(context).languageCode,
+        onMessage: _onMessage,
+      ),
+    );
+  }
+}
+
+/// Premium, but no orchard built yet: draw it first (the designer).
+class _DrawYourOrchard extends StatelessWidget {
+  const _DrawYourOrchard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ShellContent(
+      children: [
+        const _Title(),
+        CssBox(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(34),
+          shadows: AppShadows.card,
+          clip: true,
+          padding: const EdgeInsets.only(bottom: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const OrchardScene(radius: 0),
+              const SizedBox(height: 10),
+              Text(
+                l10n.designerTitle,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.of(23, FontWeight.w700),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.packZoneNote,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.of(16),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        ActionButton(
+          label: '★ ${l10n.startDrawing}',
+          onPressed: () => openScreen(context, const DesignerStartScreen()),
+        ),
+      ],
     );
   }
 }

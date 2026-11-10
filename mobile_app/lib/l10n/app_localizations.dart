@@ -713,50 +713,14 @@ abstract class AppLocalizations {
   /// APP-ONLY. Sign up / payment.
   ///
   /// In ar, this message translates to:
-  /// **'مع عُدّة حسّاسات لوز (نركّبها لك)'**
-  String get packConnectedKit;
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
   /// **'{price} د.ت / {period}'**
   String priceForDays(String price, String period);
 
   /// APP-ONLY. Sign up / payment.
   ///
   /// In ar, this message translates to:
-  /// **'{price} د.ت لكل حسّاس / {period}'**
-  String pricePerSensorForDays(String price, String period);
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
   /// **'{count, plural, =1{يوم} =2{يومان} few{{count} أيام} many{{count} يومًا} other{{count} يوم}}'**
   String daysCount(int count);
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
-  /// **'{count, plural, =1{حسّاس واحد} =2{حسّاسان} few{{count} حسّاسات} many{{count} حسّاسًا} other{{count} حسّاس}}'**
-  String kitSensors(int count);
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
-  /// **'عُدّة لوز'**
-  String get kitTitle;
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
-  /// **'سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.'**
-  String get kitRequested;
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
-  /// **'حتى ذلك الوقت، تستعمل الباقة المجانية.'**
-  String get kitMeanwhileFree;
 
   /// APP-ONLY. Sign up / payment.
   ///
@@ -851,20 +815,8 @@ abstract class AppLocalizations {
   /// APP-ONLY. Sign up / payment.
   ///
   /// In ar, this message translates to:
-  /// **'عُدّة لوز لم تُركّب بعد.'**
-  String get kitNotInstalled;
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
   /// **'محاولات دفع كثيرة. حاول بعد ساعة.'**
   String get tooManyPayments;
-
-  /// APP-ONLY. Sign up / payment.
-  ///
-  /// In ar, this message translates to:
-  /// **'اختر ولايتك أولًا.'**
-  String get chooseGovernorateFirst;
 
   /// APP-ONLY. Sign up / payment.
   ///
@@ -1502,18 +1454,6 @@ abstract class AppLocalizations {
   /// **'المنطقة {letter}'**
   String zoneName(String letter);
 
-  /// APP-ONLY. Plan name (test switch).
-  ///
-  /// In ar, this message translates to:
-  /// **'أساسي'**
-  String get planEssential;
-
-  /// APP-ONLY. Plan name (test switch).
-  ///
-  /// In ar, this message translates to:
-  /// **'متصل'**
-  String get planConnected;
-
   /// APP-ONLY. Debug builds only.
   ///
   /// In ar, this message translates to:
@@ -1631,12 +1571,6 @@ abstract class AppLocalizations {
   /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'المساعد: {count} أسئلة في اليوم'**
-  String packAssistantLimit(String count);
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
   /// **'تنبيهات منطقتك'**
   String get packRegionalAlerts;
 
@@ -1645,18 +1579,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'كل ما في الباقة المجانية'**
   String get packAllOfFree;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'كل ما في الباقة الأساسية'**
-  String get packAllOfEssential;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
-  /// **'المساعد بلا حدود'**
-  String get packUnlimitedAssistant;
 
   /// APP-ONLY. Sign up / sign in.
   ///
@@ -1673,14 +1595,134 @@ abstract class AppLocalizations {
   /// APP-ONLY. Sign up / sign in.
   ///
   /// In ar, this message translates to:
-  /// **'حسّاسات البستان مباشرة'**
-  String get packLiveSensors;
-
-  /// APP-ONLY. Sign up / sign in.
-  ///
-  /// In ar, this message translates to:
   /// **'توقّع السقي والحصاد'**
   String get packPredictions;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'بريميوم'**
+  String get planPaid;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'{price} د.ت للمنطقة / {period}'**
+  String pricePerZoneForDays(String price, String period);
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'{price} د.ت'**
+  String dinarsAmount(String price);
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{منطقة واحدة} =2{منطقتان} few{{count} مناطق} many{{count} منطقة} other{{count} منطقة}}'**
+  String zonesCount(int count);
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل منطقة من بستانك فيها حسّاس لوز واحد، نركّبه لك.'**
+  String get packZoneNote;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساعد والحديث بالصوت'**
+  String get packVoiceAssistant;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارسم بستانك أولًا.'**
+  String get noDrawingYet;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارسم بستانك'**
+  String get designerTitle;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'ثلاث خطوات بسيطة'**
+  String get designerSubtitle;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارسم حدود بستانك'**
+  String get designerStepOutline;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'قسّمه إلى مناطق'**
+  String get designerStepZones;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'شاهد السعر وادفع'**
+  String get designerStepPay;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ الرسم'**
+  String get startDrawing;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'جدّد باقتك'**
+  String get renewPack;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'أشجار صغيرة'**
+  String get zoneTypeYoungTrees;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'أشجار كبيرة'**
+  String get zoneTypeOldTrees;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'تربة رملية'**
+  String get zoneTypeSandySoil;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسقية'**
+  String get zoneTypeIrrigated;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعلية'**
+  String get zoneTypeRainfed;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'أخرى'**
+  String get zoneTypeOther;
+
+  /// APP-ONLY. Two packs / orchard.
+  ///
+  /// In ar, this message translates to:
+  /// **'في انتظار التركيب'**
+  String get nodeWaiting;
 
   /// APP-ONLY. Sign up / sign in.
   ///

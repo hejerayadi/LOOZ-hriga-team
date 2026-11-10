@@ -147,20 +147,8 @@
   "organisationOptional": "Organisme (facultatif)",
   "numberInvalid": "Écrivez un nombre valide",
   "expertPendingNote": "Le badge « ◆ Expert vérifié » apparaîtra après la vérification de votre compte.",
-  "packConnectedKit": "Avec le kit de capteurs LOOZ (installé par nos soins)",
   "priceForDays": "{price} DT / {period}",
   "@priceForDays": {
-    "placeholders": {
-      "price": {
-        "type": "String"
-      },
-      "period": {
-        "type": "String"
-      }
-    }
-  },
-  "pricePerSensorForDays": "{price} DT par capteur / {period}",
-  "@pricePerSensorForDays": {
     "placeholders": {
       "price": {
         "type": "String"
@@ -178,17 +166,6 @@
       }
     }
   },
-  "kitSensors": "{count, plural, =1{1 capteur} other{{count} capteurs}}",
-  "@kitSensors": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "kitTitle": "Kit LOOZ",
-  "kitRequested": "Nous vous contacterons pour installer votre kit de capteurs.",
-  "kitMeanwhileFree": "En attendant, vous avez l'offre gratuite.",
   "demoMode": "Mode démo",
   "cardNumber": "Numéro de carte",
   "cardExpiry": "Expiration",
@@ -211,9 +188,7 @@
   "notPaidText": "Vous restez sur le plan gratuit ; vous pourrez payer plus tard depuis « Profil ».",
   "continueFree": "Continuer gratuitement",
   "paymentNotAvailable": "Le paiement n'est pas disponible pour le moment.",
-  "kitNotInstalled": "Le kit LOOZ n'est pas encore installé.",
   "tooManyPayments": "Trop d'essais de paiement. Réessayez dans une heure.",
-  "chooseGovernorateFirst": "Choisissez d'abord votre gouvernorat.",
   "planUntil": "jusqu'au {date}",
   "@planUntil": {
     "placeholders": {
@@ -327,8 +302,6 @@
   "premiumName": "★ Premium",
   "appName": "LOOZ",
   "zoneName": "Zone {letter}",
-  "planEssential": "Essentiel",
-  "planConnected": "Connecté",
   "devPlanSwitch": "Mode test : changer d'offre",
   "a11yCamera": "Caméra",
   "a11yReadAloud": "Écouter",
@@ -348,15 +321,56 @@
   "packTitle": "Choisissez votre offre",
   "packSubtitle": "Gratuite ou plus complète",
   "packNoPayment": "Sans paiement",
-  "packAssistantLimit": "Assistant : {count} questions par jour",
   "packRegionalAlerts": "Alertes de votre région",
   "packAllOfFree": "Toute l'offre gratuite",
-  "packAllOfEssential": "Toute l'offre Essentiel",
-  "packUnlimitedAssistant": "Assistant illimité",
   "pack3dOrchard": "Votre verger en 3D",
   "packPhotoDiagnosis": "Diagnostic des feuilles par photo",
-  "packLiveSensors": "Capteurs du verger en direct",
   "packPredictions": "Prévisions d'arrosage et de récolte",
+  "planPaid": "Premium",
+  "pricePerZoneForDays": "{price} DT par zone / {period}",
+  "@pricePerZoneForDays": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "dinarsAmount": "{price} DT",
+  "@dinarsAmount": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "zonesCount": "{count, plural, =1{1 zone} other{{count} zones}}",
+  "@zonesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packZoneNote": "Chaque zone de votre verger a un capteur LOOZ, installé par nos soins.",
+  "packVoiceAssistant": "L'assistant et la discussion vocale",
+  "noDrawingYet": "Dessinez d'abord votre verger.",
+  "designerTitle": "Dessinez votre verger",
+  "designerSubtitle": "Trois étapes simples",
+  "designerStepOutline": "Dessinez le contour de votre verger",
+  "designerStepZones": "Divisez-le en zones",
+  "designerStepPay": "Voyez le prix et payez",
+  "startDrawing": "Commencer le dessin",
+  "renewPack": "Renouveler mon pack",
+  "zoneTypeYoungTrees": "Jeunes arbres",
+  "zoneTypeOldTrees": "Vieux arbres",
+  "zoneTypeSandySoil": "Sol sableux",
+  "zoneTypeIrrigated": "Irriguée",
+  "zoneTypeRainfed": "Pluviale",
+  "zoneTypeOther": "Autre",
+  "nodeWaiting": "En attente d'installation",
   "logOut": "Se déconnecter",
   "errorNoInternet": "Pas d'internet. Vérifiez la connexion et réessayez.",
   "errorWrongCode": "Code incorrect ou expiré.",

@@ -20,7 +20,6 @@ import 'package:looz_mobile/features/community/tips_screen.dart';
 import 'package:looz_mobile/features/home/home_page.dart';
 import 'package:looz_mobile/features/journal/journal_screen.dart';
 import 'package:looz_mobile/features/map/map_screen.dart';
-import 'package:looz_mobile/features/onboarding/pack_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'package:looz_mobile/features/premium/premium_screen.dart';
 import 'package:looz_mobile/features/premium/qr_screen.dart';
@@ -36,7 +35,7 @@ import 'fake_auth_service.dart';
 import 'test_helpers.dart';
 
 /// Starts the app on the 5 tabs (Arabic), on a phone screen.
-Future<void> startApp(WidgetTester tester, {Plan plan = Plan.connected}) async {
+Future<void> startApp(WidgetTester tester, {Plan plan = Plan.paid}) async {
   usePhoneScreen(tester);
   noAnimations(tester);
   currentPlan.value = plan;
@@ -177,12 +176,10 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('Premium: locked → premium → packs → payment → QR → map', (
-    tester,
-  ) async {
-    // A farmer whose LOOZ kit (5 sensors) is installed.
+  testWidgets('Premium: locked → premium → payment → QR → map', (tester) async {
+    // A farmer who drew his orchard (5 zones on 3 ha).
     logInTestUser();
-    usePayments(authService as FakeAuthService).installKit(5);
+    usePayments(authService as FakeAuthService).drawOrchard(5, areaHa: 3);
     await startApp(tester, plan: Plan.free);
     await openTab(tester, 'بستاني ★');
     expect(find.text('بستانك في جيبك'), findsOneWidget);
@@ -191,16 +188,14 @@ void main() {
     expect(find.byType(PremiumScreen), findsOneWidget);
 
     await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
-    expect(find.byType(PackScreen), findsOneWidget);
-    await scrollAndTap(tester, find.text('متصل'));
-    await scrollAndTap(tester, find.text('متابعة'));
     expect(find.byType(PaymentScreen), findsOneWidget);
+    expect(find.text('40 د.ت / 30 يومًا'), findsOneWidget); // 5 zones x 8 DT
 
     // DEMO payment: a test card, "جاري التحقق…", paid.
     await typeDemoCard(tester);
     await confirmDemoPayment(tester);
     expect(find.text('تم الدفع!'), findsOneWidget);
-    expect(currentPlan.value, Plan.connected);
+    expect(currentPlan.value, Plan.paid);
     await scrollAndTap(tester, find.text('متابعة'));
     expect(find.byType(QrScreen), findsOneWidget);
 

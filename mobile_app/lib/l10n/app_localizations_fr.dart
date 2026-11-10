@@ -363,17 +363,8 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le badge « ◆ Expert vérifié » apparaîtra après la vérification de votre compte.';
 
   @override
-  String get packConnectedKit =>
-      'Avec le kit de capteurs LOOZ (installé par nos soins)';
-
-  @override
   String priceForDays(String price, String period) {
     return '$price DT / $period';
-  }
-
-  @override
-  String pricePerSensorForDays(String price, String period) {
-    return '$price DT par capteur / $period';
   }
 
   @override
@@ -386,27 +377,6 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String kitSensors(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count capteurs',
-      one: '1 capteur',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get kitTitle => 'Kit LOOZ';
-
-  @override
-  String get kitRequested =>
-      'Nous vous contacterons pour installer votre kit de capteurs.';
-
-  @override
-  String get kitMeanwhileFree => 'En attendant, vous avez l\'offre gratuite.';
 
   @override
   String get demoMode => 'Mode démo';
@@ -458,14 +428,8 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le paiement n\'est pas disponible pour le moment.';
 
   @override
-  String get kitNotInstalled => 'Le kit LOOZ n\'est pas encore installé.';
-
-  @override
   String get tooManyPayments =>
       'Trop d\'essais de paiement. Réessayez dans une heure.';
-
-  @override
-  String get chooseGovernorateFirst => 'Choisissez d\'abord votre gouvernorat.';
 
   @override
   String planUntil(String date) {
@@ -800,12 +764,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get planEssential => 'Essentiel';
-
-  @override
-  String get planConnected => 'Connecté';
-
-  @override
   String get devPlanSwitch => 'Mode test : changer d\'offre';
 
   @override
@@ -865,21 +823,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get packNoPayment => 'Sans paiement';
 
   @override
-  String packAssistantLimit(String count) {
-    return 'Assistant : $count questions par jour';
-  }
-
-  @override
   String get packRegionalAlerts => 'Alertes de votre région';
 
   @override
   String get packAllOfFree => 'Toute l\'offre gratuite';
-
-  @override
-  String get packAllOfEssential => 'Toute l\'offre Essentiel';
-
-  @override
-  String get packUnlimitedAssistant => 'Assistant illimité';
 
   @override
   String get pack3dOrchard => 'Votre verger en 3D';
@@ -888,10 +835,83 @@ class AppLocalizationsFr extends AppLocalizations {
   String get packPhotoDiagnosis => 'Diagnostic des feuilles par photo';
 
   @override
-  String get packLiveSensors => 'Capteurs du verger en direct';
+  String get packPredictions => 'Prévisions d\'arrosage et de récolte';
 
   @override
-  String get packPredictions => 'Prévisions d\'arrosage et de récolte';
+  String get planPaid => 'Premium';
+
+  @override
+  String pricePerZoneForDays(String price, String period) {
+    return '$price DT par zone / $period';
+  }
+
+  @override
+  String dinarsAmount(String price) {
+    return '$price DT';
+  }
+
+  @override
+  String zonesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count zones',
+      one: '1 zone',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get packZoneNote =>
+      'Chaque zone de votre verger a un capteur LOOZ, installé par nos soins.';
+
+  @override
+  String get packVoiceAssistant => 'L\'assistant et la discussion vocale';
+
+  @override
+  String get noDrawingYet => 'Dessinez d\'abord votre verger.';
+
+  @override
+  String get designerTitle => 'Dessinez votre verger';
+
+  @override
+  String get designerSubtitle => 'Trois étapes simples';
+
+  @override
+  String get designerStepOutline => 'Dessinez le contour de votre verger';
+
+  @override
+  String get designerStepZones => 'Divisez-le en zones';
+
+  @override
+  String get designerStepPay => 'Voyez le prix et payez';
+
+  @override
+  String get startDrawing => 'Commencer le dessin';
+
+  @override
+  String get renewPack => 'Renouveler mon pack';
+
+  @override
+  String get zoneTypeYoungTrees => 'Jeunes arbres';
+
+  @override
+  String get zoneTypeOldTrees => 'Vieux arbres';
+
+  @override
+  String get zoneTypeSandySoil => 'Sol sableux';
+
+  @override
+  String get zoneTypeIrrigated => 'Irriguée';
+
+  @override
+  String get zoneTypeRainfed => 'Pluviale';
+
+  @override
+  String get zoneTypeOther => 'Autre';
+
+  @override
+  String get nodeWaiting => 'En attente d\'installation';
 
   @override
   String get logOut => 'Se déconnecter';

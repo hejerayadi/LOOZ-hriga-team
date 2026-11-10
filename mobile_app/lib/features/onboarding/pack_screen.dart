@@ -1,9 +1,8 @@
-// The choice of the pack, with the prices of the database (plan_prices):
-//   Free (never pays), Essential (15 DT / 30 days: the demo payment),
-//   Connected (8 DT per sensor / 30 days: it needs the LOOZ sensor kit
-//   first: choosing it asks for the kit, the user stays on Free until the
-//   kit is installed; then he pays from Premium / Profile).
-// At the sign-up (farmers only) and from Premium ("upgrade": paid packs).
+// The choice of the pack at the sign-up (farmers only), with the price of
+// the database (plan_prices):
+//   مجاني / Gratuit:   community and regional alerts, never pays;
+//   بريميوم / Premium: 8 DT per zone of the orchard / 30 days. The farmer
+//                      draws his orchard first (the designer), then pays.
 // The cards look like the plan card of the Premium screen: white, and the
 // chosen one pale green with a green border.
 import 'package:flutter/material.dart';
@@ -22,31 +21,21 @@ import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/looz_background.dart';
 import '../../shared/widgets/looz_header.dart';
 import '../../shared/widgets/screen_title.dart';
-import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/symbol_text.dart';
-import '../premium/kit_requested_screen.dart';
+import '../orchard_designer/designer_start_screen.dart';
 import '../premium/pack_texts.dart';
-import '../premium/payment_screen.dart';
 import 'auth_messages.dart';
 import 'welcome_screen.dart';
 
 class PackScreen extends StatefulWidget {
-  const PackScreen({super.key, this.upgrade = false});
-
-  /// false = the sign-up (Free, Essential, Connected); true = from Premium
-  /// or Profile, the app is open (the paid packs only).
-  final bool upgrade;
+  const PackScreen({super.key});
 
   @override
   State<PackScreen> createState() => _PackScreenState();
 }
 
 class _PackScreenState extends State<PackScreen> {
-  Map<Plan, PackPrice>? _prices;
-
-  /// The LOOZ kit of the user (upgrade only: a new user has none).
-  KitRequest? _kit;
-
+  PackPrice? _price;
   Plan? _selected;
   String? _error;
   bool _busy = false;
@@ -60,12 +49,10 @@ class _PackScreenState extends State<PackScreen> {
   Future<void> _load() async {
     try {
       // (Future.sync: even an error at once arrives after initState.)
-      final prices = await Future.sync(() => paymentService.loadPrices());
-      final kit = widget.upgrade ? await paymentService.loadKit() : null;
+      final price = await Future.sync(() => paymentService.loadPrice());
       if (mounted) {
         setState(() {
-          _prices = prices;
-          _kit = kit;
+          _price = price;
           _error = null;
         });
       }
@@ -84,43 +71,17 @@ class _PackScreenState extends State<PackScreen> {
       _error = null;
     });
     try {
-      switch (plan) {
-        case Plan.free:
-          updateUser(await authService.choosePlan(Plan.free));
-          if (mounted) replaceAllWith(context, const WelcomeScreen());
-        case Plan.essential:
-          // Saved as "pending": if the app closes, the payment comes back.
-          if (!widget.upgrade) {
-            updateUser(await authService.choosePlan(Plan.essential));
-          }
-          if (mounted) {
-            openScreen(
-              context,
-              PaymentScreen(plan: Plan.essential, signUp: !widget.upgrade),
-            );
-          }
-        case Plan.connected:
-          final kit = _kit;
-          if (kit != null && kit.installed) {
-            // The kit works: 8 DT x its sensors.
-            openScreen(
-              context,
-              PaymentScreen(plan: Plan.connected, sensors: kit.sensors),
-            );
-          } else {
-            // No kit yet: we install it first. Meanwhile: the free plan.
-            final request = await paymentService.requestKit();
-            if (!widget.upgrade) {
-              updateUser(await authService.choosePlan(Plan.free));
-            }
-            if (!mounted) return;
-            setState(() => _kit = request);
-            final screen = KitRequestedScreen(signUp: !widget.upgrade);
-            widget.upgrade
-                ? openScreen(context, screen)
-                : replaceAllWith(context, screen);
-          }
-      }
+      // Premium is saved as "pending": the farmer has the free plan until he
+      // has drawn his orchard and paid (if the app closes, the designer
+      // comes back at the next login).
+      updateUser(await authService.choosePlan(plan));
+      if (!mounted) return;
+      replaceAllWith(
+        context,
+        plan == Plan.free
+            ? const WelcomeScreen()
+            : const DesignerStartScreen(signUp: true),
+      );
     } catch (error) {
       if (mounted) setState(() => _error = _message(error));
     } finally {
@@ -131,76 +92,9 @@ class _PackScreenState extends State<PackScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final prices = _prices;
+    final price = _price;
     final selected = _selected;
     final error = _error;
-    final kit = _kit;
-    final lines = {
-      Plan.free: [
-        l10n.tabCommunity,
-        l10n.packAssistantLimit('$freeAssistantQuestionsPerDay'),
-        l10n.packRegionalAlerts,
-      ],
-      Plan.essential: [
-        l10n.packAllOfFree,
-        l10n.packUnlimitedAssistant,
-        l10n.pack3dOrchard,
-        l10n.packPhotoDiagnosis,
-      ],
-      Plan.connected: [
-        l10n.packAllOfEssential,
-        l10n.packLiveSensors,
-        l10n.smartAlerts,
-        l10n.packPredictions,
-      ],
-    };
-    String price(Plan plan) {
-      final p = prices?[plan];
-      if (plan == Plan.free) return l10n.packNoPayment;
-      if (p == null) return '…';
-      return kit != null && kit.installed && plan == Plan.connected
-          ? priceText(l10n, p, sensors: kit.sensors)
-          : priceText(l10n, p);
-    }
-
-    final children = [
-      ScreenTitle(title: l10n.packTitle, subtitle: l10n.packSubtitle),
-      for (final plan in Plan.values)
-        if (plan != Plan.free || !widget.upgrade) ...[
-          _PackCard(
-            icon: switch (plan) {
-              Plan.free => AppIcon.people,
-              Plan.essential => AppIcon.leaf,
-              Plan.connected => AppIcon.wifi,
-            },
-            name: planName(l10n, plan),
-            price: price(plan),
-            lines: lines[plan]!,
-            note: plan != Plan.connected
-                ? null
-                : kit != null && kit.installed
-                ? l10n.kitSensors(kit.sensors!)
-                : l10n.packConnectedKit,
-            selected: plan == selected,
-            onTap: _busy ? null : () => setState(() => _selected = plan),
-          ),
-          const SizedBox(height: 12),
-        ],
-      if (error != null) ...[
-        const SizedBox(height: 4),
-        AuthNote.error(error),
-        const SizedBox(height: 12),
-      ],
-      const SizedBox(height: 12),
-      ActionButton(
-        label: _busy ? l10n.saving : l10n.continueLabel,
-        onPressed: selected == null || _busy || prices == null
-            ? (prices == null && error != null ? _load : null)
-            : () => _continue(selected),
-      ),
-    ];
-    // From Premium: inside the app (bars at the bottom).
-    if (widget.upgrade) return ShellPage(children: children);
     final system = MediaQuery.paddingOf(context);
     return Scaffold(
       body: LoozBackground(
@@ -211,7 +105,45 @@ class _PackScreenState extends State<PackScreen> {
             AppSpacing.pageSide(context, shrink: false),
             system.bottom + 30,
           ),
-          children: [const LoozHeader(), ...children],
+          children: [
+            const LoozHeader(),
+            ScreenTitle(title: l10n.packTitle, subtitle: l10n.packSubtitle),
+            _PackCard(
+              icon: AppIcon.people,
+              name: l10n.free,
+              price: l10n.packNoPayment,
+              lines: [l10n.tabCommunity, l10n.packRegionalAlerts],
+              selected: selected == Plan.free,
+              onTap: _busy ? null : () => setState(() => _selected = Plan.free),
+            ),
+            const SizedBox(height: 12),
+            _PackCard(
+              icon: AppIcon.tree,
+              name: l10n.planPaid,
+              price: price == null ? '…' : pricePerZoneText(l10n, price),
+              lines: [
+                l10n.packAllOfFree,
+                l10n.pack3dOrchard,
+                l10n.packPredictions,
+                l10n.packPhotoDiagnosis,
+                l10n.packVoiceAssistant,
+              ],
+              note: l10n.packZoneNote,
+              selected: selected == Plan.paid,
+              onTap: _busy ? null : () => setState(() => _selected = Plan.paid),
+            ),
+            if (error != null) ...[
+              const SizedBox(height: 16),
+              AuthNote.error(error),
+            ],
+            const SizedBox(height: 24),
+            ActionButton(
+              label: _busy ? l10n.saving : l10n.continueLabel,
+              onPressed: selected == null || _busy || price == null
+                  ? (price == null && error != null ? _load : null)
+                  : () => _continue(selected),
+            ),
+          ],
         ),
       ),
     );
@@ -235,7 +167,7 @@ class _PackCard extends StatelessWidget {
   final String price;
   final List<String> lines;
 
-  /// Under the lines (Connected: the LOOZ kit).
+  /// Under the lines (Premium: one sensor per zone).
   final String? note;
   final bool selected;
   final VoidCallback? onTap;

@@ -136,18 +136,20 @@ void main() {
   tearDownAll(() => client.dispose());
   tearDown(resetAppState);
 
+  // (22 123 456 has an account since the demo-login step: it owns the demo
+  // orchard. 22 999 002 never has one: test 3 checks it is still so.)
   test('0. demo-auth is deployed and the demo login is on', () async {
     final signUp = await demoAuth(client, {
       'action': 'start',
-      'phone': '+21622123456',
+      'phone': nobodyPhone,
       'signUp': true,
     });
     final signIn = await demoAuth(client, {
       'action': 'start',
-      'phone': '+21622123456',
+      'phone': nobodyPhone,
       'signUp': false,
     });
-    printRow('demo-auth "start" with +21622123456:', {
+    printRow('demo-auth "start" with $nobodyPhone (no account):', {
       'signUp true': {'status': signUp.$1, 'answer': signUp.$2},
       'signUp false': {'status': signIn.$1, 'answer': signIn.$2},
     });
@@ -180,7 +182,7 @@ void main() {
       await scrollAndTap(tester, find.text('مسقي'));
       await scrollAndTap(tester, find.text('متابعة'));
       await waitFor(tester, [find.byType(PackScreen)]);
-      await waitFor(tester, [find.text('15 د.ت / 30 يومًا')]);
+      await waitFor(tester, [find.text('8 د.ت للمنطقة / 30 يومًا')]);
       step('pack: Free');
       await scrollAndTap(tester, find.text('مجاني'));
       await scrollAndTap(tester, find.text('متابعة'));

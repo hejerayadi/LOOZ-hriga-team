@@ -32,7 +32,7 @@ import 'package:looz_mobile/features/onboarding/role_screen.dart';
 import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
 import 'package:looz_mobile/features/onboarding/start_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
-import 'package:looz_mobile/features/premium/payment_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/designer_start_screen.dart';
 
 import '../test/test_helpers.dart';
 
@@ -241,20 +241,21 @@ void main() {
     await tester.tap(find.text('تأكيد'));
     await waitFor(tester, [
       find.byType(HomePage),
-      find.byType(PaymentScreen),
+      find.byType(DesignerStartScreen),
       find.byType(PackScreen),
       find.byType(SignUpInfoScreen),
       find.byType(RoleScreen),
     ]);
-    // Essential chosen at an old sign-up and never paid: its payment is the
-    // missing step. "Back" = the packs: Free this time.
-    if (find.byType(PaymentScreen).evaluate().isNotEmpty) {
-      step('the payment came back: back to the packs, Free');
-      Navigator.of(tester.element(find.byType(PaymentScreen))).pop();
-      await tester.pumpAndSettle();
+    // Premium chosen at an old sign-up and never paid: drawing the orchard
+    // is the missing step (then the bill). "متابعة مجانًا" this time.
+    if (find.byType(DesignerStartScreen).evaluate().isNotEmpty) {
+      step('"ارسم بستانك" came back: continue for free');
+      await scrollAndTap(tester, find.text('متابعة مجانًا'));
+      await waitFor(tester, [find.byType(WelcomeScreen)]);
+      await tapAndWait(tester, find.text('ابدأ'));
     }
     if (find.byType(PackScreen).evaluate().isNotEmpty) {
-      await waitFor(tester, [find.text('15 د.ت / 30 يومًا')]);
+      await waitFor(tester, [find.text('8 د.ت للمنطقة / 30 يومًا')]);
       await scrollAndTap(tester, find.text('مجاني'));
       await scrollAndTap(tester, find.text('متابعة'));
       await waitFor(tester, [find.byType(WelcomeScreen)]);
@@ -360,7 +361,7 @@ void main() {
       find.byType(SignUpInfoScreen),
       find.byType(RoleScreen),
       find.byType(PackScreen),
-      find.byType(PaymentScreen),
+      find.byType(DesignerStartScreen),
     ]);
 
     // Straight to Home: nothing is asked again.
@@ -407,7 +408,7 @@ void main() {
     // Protected fields: refused.
     for (final change in <Map<String, Object>>[
       {'payment_status': 'paid'},
-      {'chosen_plan': 'connected'},
+      {'chosen_plan': 'paid'},
       {'phone': '+21650000009'},
       {'verified': true},
       {'role': 'admin'},
@@ -436,7 +437,7 @@ void main() {
     // The plan cannot be changed by the user.
     await client
         .from('subscriptions')
-        .update({'plan': 'connected'})
+        .update({'plan': 'paid', 'nodes': 100})
         .eq('user_id', me);
     expect(await client.rpc('user_plan'), 'free');
     final subscription = await client.from('subscriptions').select('plan');
@@ -451,7 +452,7 @@ void main() {
     await expectLater(
       client.from('payments').insert({
         'user_id': me,
-        'plan': 'connected',
+        'plan': 'paid',
         'amount_millimes': 1,
         'period_days': 30,
         'status': 'paid_demo',

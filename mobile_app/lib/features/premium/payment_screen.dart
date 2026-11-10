@@ -1,6 +1,8 @@
-// "الدفع" (the design's payment screen): the pack and its price, the card,
-// then "★ تأكيد" → "جاري التحقق من الدفع…" (about 2 seconds) → paid (with
-// the end date) or not paid (payment_result_screen.dart).
+// "الدفع" (the design's payment screen): Premium and the bill of the
+// orchard (made by the database: its zones x the price of a zone, or only
+// the extra zones until the end of the period), the card, then "★ تأكيد"
+// → "جاري التحقق من الدفع…" (about 2 seconds) → paid (with the end date) or
+// not paid (payment_result_screen.dart).
 //
 // DEMO PAYMENT: no real money. The card fields (demo_card_form.dart) are
 // only checked on the phone, then cleared: they are never saved nor sent.
@@ -25,21 +27,13 @@ import 'pack_texts.dart';
 import 'payment_result_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({
-    super.key,
-    required this.plan,
-    this.signUp = false,
-    this.sensors,
-  });
+  const PaymentScreen({super.key, required this.quote, this.signUp = false});
 
-  /// Essential, or Connected (once the LOOZ kit is installed).
-  final Plan plan;
+  /// The bill of the orchard (orchard_quote() of the database).
+  final OrchardQuote quote;
 
   /// true = during the sign-up (no tab bar: the app is not open yet).
   final bool signUp;
-
-  /// Connected: the sensors of the installed kit (the price is per sensor).
-  final int? sensors;
 
   /// How long "جاري التحقق من الدفع…" stays (at least).
   static const checkingTime = Duration(seconds: 2);
@@ -50,23 +44,7 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   final _card = GlobalKey<DemoCardFormState>();
-  PackPrice? _price;
   bool _checking = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPrice();
-  }
-
-  Future<void> _loadPrice() async {
-    try {
-      final prices = await Future.sync(() => paymentService.loadPrices());
-      if (mounted) setState(() => _price = prices[widget.plan]);
-    } catch (_) {
-      // The price stays "…": the payment itself still works.
-    }
-  }
 
   Future<void> _pay() async {
     final card = _card.currentState;
@@ -79,7 +57,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     PaymentFailure? failure;
     Future<void> payNow() async {
       try {
-        result = await paymentService.pay(widget.plan, cardAccepted: accepted);
+        result = await paymentService.pay(cardAccepted: accepted);
       } catch (error) {
         failure = paymentFailureOf(error);
       }
@@ -95,7 +73,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     openScreen(
       context,
       PaymentResultScreen(
-        plan: widget.plan,
         paid: result?.paid ?? false,
         signUp: widget.signUp,
         endsAt: result?.endsAt,
@@ -110,14 +87,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
       currentPlan.value = await authService.loadPlan();
       updateUser(await authService.loadProfile());
     } catch (_) {
-      currentPlan.value = widget.plan; // read again at the next start
+      currentPlan.value = Plan.paid; // read again at the next start
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final price = _price;
+    final quote = widget.quote;
+    final endsAt = quote.endsAt;
     return ShellPage(
       showBars: !widget.signUp,
       children: [
@@ -136,22 +114,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const IconBlob(icon: AppIcon.user, size: 90, iconSize: 48),
               const SizedBox(height: 16),
               Text(
-                planName(l10n, widget.plan),
+                planName(l10n, Plan.paid),
                 style: AppTextStyles.of(20, FontWeight.w700),
               ),
               Text(
-                price == null
-                    ? '…'
-                    : priceText(l10n, price, sensors: widget.sensors),
+                payNowText(l10n, quote),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.of(26, FontWeight.w700),
               ),
-              // Connected: why this price ("5 حسّاسات").
-              if (widget.sensors case final sensors?)
-                Text(
-                  l10n.kitSensors(sensors),
-                  style: AppTextStyles.of(17, FontWeight.w700),
-                ),
+              // Why this price: "4 مناطق" (and the extra zones: until when).
+              Text(
+                quote.kind == QuoteKind.extraZones && endsAt != null
+                    ? '${l10n.zonesCount(quote.billedZones)} · '
+                          '${l10n.planUntil(dayText(endsAt))}'
+                    : l10n.zonesCount(quote.billedZones),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.of(17, FontWeight.w700),
+              ),
               const SizedBox(height: 20),
               DemoCardForm(key: _card),
             ],

@@ -1,24 +1,20 @@
-// LIVE test: the new start of the app against the REAL Supabase project
-// (migrations 008 and 009), with the test numbers (code 123456, no SMS):
+// LIVE test: the start of the app and the TWO packs against the REAL
+// Supabase project (migration 011), with the test numbers (code 123456):
 //
-//   +21650000004: "تسجيل الدخول" is refused (no account yet), then the whole
-//     sign-up in the app: farmer, Essential, the DEMO payment with the test
-//     card that fails (4000 0000 0000 0002), then a good one: paid, 30 days.
-//   +21650000005: sign-up as a farmer who chooses Connected: a request of
-//     the LOOZ kit, the farmer stays on Free (Connected can't be paid
-//     before the kit is installed).
+//   +21650000004: paid Essential before migration 011 → Premium now, with
+//     1 zone and the same end date; nothing drawn yet: "ارسم بستانك".
+//   +21650000005: had asked the LOOZ kit (the old Connected) → Free, the
+//     request cancelled with a note; Premium → "ارسم بستانك" (nothing to
+//     pay without a drawing).
+//   The rules: nobody gives himself a pack, zones, an orchard or a price.
 //
-// The card is only typed in the demo form of the app: it is never sent to
-// Supabase (the test checks that no payment row holds it).
-//
+// The real demo payment of a drawn orchard: test_live/orchard_live_test.dart.
 // Run it from mobile_app/ (needs internet and the .env file):
 //   flutter test test_live/signup_payment_live_test.dart --dart-define-from-file=.env
 //
-// Run again: 04 and 05 have an account then, and the test checks "هذا
-// الرقم لديه حساب بالفعل" instead (or, if 04 stopped before paying, it
-// goes on with the payment). To test them as NEW users again, delete
-// them in Supabase > Authentication > Users (their profile, payments user
-// and kit request go with them).
+// Numbers with no account (deleted in Supabase > Authentication > Users):
+// the sign-up is done in the app (farmer, Premium → "ارسم بستانك", then
+// "متابعة مجانًا").
 @Timeout(Duration(minutes: 6))
 library;
 
@@ -34,6 +30,7 @@ import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/core/supabase_config.dart';
 import 'package:looz_mobile/data/auth_service.dart';
+import 'package:looz_mobile/data/orchard_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/features/home/home_page.dart';
 import 'package:looz_mobile/features/onboarding/pack_screen.dart';
@@ -42,9 +39,11 @@ import 'package:looz_mobile/features/onboarding/role_screen.dart';
 import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
 import 'package:looz_mobile/features/onboarding/start_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
-import 'package:looz_mobile/features/premium/kit_requested_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/designer_start_screen.dart';
+import 'package:looz_mobile/features/premium/pack_texts.dart';
 import 'package:looz_mobile/features/premium/payment_result_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
+import 'package:looz_mobile/features/premium/premium_screen.dart';
 
 import '../test/test_helpers.dart';
 import 'auth_live_test.dart'
@@ -76,13 +75,15 @@ Future<SupabaseClient> logIn(String phone) async {
   return client;
 }
 
-/// The app, on the start screen, with a new client.
+/// The app, on the start screen, with a new client (login, packs and the
+/// orchard all read the real Supabase).
 Future<SupabaseClient> openApp(WidgetTester tester) async {
   usePhoneScreen(tester);
   noAnimations(tester);
   final client = (await tester.runAsync(() async => newClient()))!;
   authService = SupabaseAuthService(client);
   paymentService = DemoPaymentService(client);
+  orchardService = SupabaseOrchardService(client);
   await tester.pumpWidget(const LoozApp());
   await tester.pumpAndSettle();
   expect(find.byType(StartScreen), findsOneWidget);
@@ -105,6 +106,7 @@ Future<void> enterCode(WidgetTester tester) async {
     find.byType(SignUpInfoScreen),
     find.byType(AccountExistsScreen),
     find.byType(PackScreen),
+    find.byType(DesignerStartScreen),
     find.byType(PaymentScreen),
     find.byType(HomePage),
   ]);
@@ -115,7 +117,7 @@ Future<void> enterCode(WidgetTester tester) async {
   }
 }
 
-/// The step "معلوماتك" of a farmer.
+/// The step "معلوماتك" of a farmer, then the packs.
 Future<void> fillInfo(
   WidgetTester tester, {
   required String first,
@@ -140,7 +142,36 @@ Future<void> fillInfo(
   await scrollTo(tester, find.text('متابعة'));
   await tester.tap(find.text('متابعة'));
   await waitFor(tester, [find.byType(PackScreen)]);
-  await waitFor(tester, [find.text('15 د.ت / 30 يومًا')]);
+  await waitFor(tester, [find.text('8 د.ت للمنطقة / 30 يومًا')]);
+}
+
+/// A new account (no account when the test started): the sign-up in the
+/// app, Premium chosen → "ارسم بستانك" → "متابعة مجانًا" → Home.
+Future<void> signUpPremiumThenFree(
+  WidgetTester tester, {
+  required String first,
+  required String governorate,
+}) async {
+  if (find.byType(SignUpInfoScreen).evaluate().isNotEmpty) {
+    await fillInfo(
+      tester,
+      first: first,
+      last: 'Test',
+      governorate: governorate,
+    );
+  }
+  if (find.byType(PackScreen).evaluate().isNotEmpty) {
+    step('pack: Premium');
+    await scrollAndTap(tester, find.text('بريميوم'));
+    await scrollTo(tester, find.text('متابعة'));
+    await tester.tap(find.text('متابعة'));
+  }
+  await waitFor(tester, [find.byType(DesignerStartScreen)]);
+  step('"ارسم بستانك" (the designer: phase 3), then free for now');
+  await scrollAndTap(tester, find.text('متابعة مجانًا'));
+  await waitFor(tester, [find.byType(WelcomeScreen)]);
+  await tapAndWait(tester, find.text('ابدأ'));
+  await waitFor(tester, [find.byType(HomePage)]);
 }
 
 /// "★ تأكيد" with a card in the demo form, then the result of the server.
@@ -171,6 +202,16 @@ Future<void> closeTheApp(WidgetTester tester, SupabaseClient client) async {
     await client.auth.signOut();
     await client.dispose();
   });
+}
+
+/// The error code of a call (null = it worked).
+Future<String?> codeOf(Future<Object?> Function() call) async {
+  try {
+    await call();
+    return null;
+  } on PostgrestException catch (e) {
+    return e.code;
+  }
 }
 
 void main() {
@@ -206,87 +247,40 @@ void main() {
   });
   tearDown(resetAppState);
 
-  testWidgets('1. $phone04: sign-up in the app, Essential, demo payment '
-      'refused, then paid for 30 days', (tester) async {
+  testWidgets('1. $phone04 (paid Essential before 011): Premium now, 1 zone, '
+      'the same end date; nothing drawn: "ارسم بستانك"', (tester) async {
     final client = await openApp(tester);
-
     if (isNew[phone04]!) {
-      // "تسجيل الدخول" with a number that has no account: refused.
-      step('sign in without account');
+      await signUpWithPhone(tester, '50000004');
+      await signUpPremiumThenFree(
+        tester,
+        first: 'منير',
+        governorate: 'سيدي بوزيد',
+      );
+    } else {
+      step('sign in');
       await tapAndWait(tester, find.text('تسجيل الدخول'));
       await typeDigits(tester, '50000004');
-      await tester.tap(find.text('إرسال الرمز'));
-      await waitFor(tester, [find.text('لا يوجد حساب بهذا الرقم.')]);
-      expect(find.byType(CodeScreen), findsNothing);
-      // "إنشاء حساب" keeps the number.
-      await tapAndWait(tester, find.text('إنشاء حساب'));
-      expect(find.text('+216 50 000 004'), findsOneWidget);
       await sendCodeOnScreen(tester, 'إرسال الرمز');
       await enterCode(tester);
-    } else {
-      await signUpWithPhone(tester, '50000004');
     }
+    expect(find.byType(HomePage), findsOneWidget);
 
-    if (find.byType(AccountExistsScreen).evaluate().isNotEmpty) {
-      // An earlier run made the account: nothing is changed.
-      step('04 already has an account: "هذا الرقم لديه حساب بالفعل"');
-      expect(find.text('هذا الرقم لديه حساب بالفعل.'), findsOneWidget);
-      await tester.tap(find.text('تسجيل الدخول'));
-      await waitFor(tester, [find.byType(HomePage)]);
-    } else {
-      if (find.byType(PaymentScreen).evaluate().isNotEmpty) {
-        // An earlier run stopped before paying: the missing step again.
-        step('04 stopped before paying: back to the payment');
-      }
-      if (find.byType(SignUpInfoScreen).evaluate().isNotEmpty) {
-        await fillInfo(
-          tester,
-          first: 'منير',
-          last: 'الحامدي',
-          governorate: 'سيدي بوزيد',
-          trees: '120',
-          area: '2,5',
-        );
-      }
-      if (find.byType(PackScreen).evaluate().isNotEmpty) {
-        step('pack: Essential');
-        await scrollAndTap(tester, find.text('أساسي'));
-        await scrollTo(tester, find.text('متابعة'));
-        await tester.tap(find.text('متابعة'));
-        await waitFor(tester, [find.byType(PaymentScreen)]);
-      }
-      expect(find.text('وضع تجريبي'), findsOneWidget);
-      await waitFor(tester, [find.text('15 د.ت / 30 يومًا')]);
-
-      step('the test card that always fails');
-      await payWithCard(tester, refusedTestCard);
-      expect(find.text('لم يكتمل الدفع'), findsOneWidget);
-      await tapAndWait(tester, find.text('حاول مرة أخرى'));
-
-      step('a good card');
-      await payWithCard(tester, acceptedTestCard);
-      expect(find.text('تم الدفع!'), findsOneWidget);
-      final end = DateTime.now().add(const Duration(days: 30));
-      expect(
-        find.text('باقتك مفعّلة حتى ${end.day}/${end.month}/${end.year}'),
-        findsOneWidget,
-      );
-      await tapAndWait(tester, find.text('متابعة'));
-      expect(find.byType(WelcomeScreen), findsOneWidget);
-      await tapAndWait(tester, find.text('ابدأ'));
-      expect(find.byType(HomePage), findsOneWidget);
-    }
-
-    // What the database saved.
+    // What the database has now.
     final profile = await serverCall(
       tester,
       'profile of 04',
       () => client
           .from('profiles')
-          .select(
-            'first_name, last_name, role, zone, almond_trees, '
-            'orchard_area_ha, irrigation, chosen_plan, payment_status',
-          )
+          .select('chosen_plan, payment_status')
+          .single(),
+    );
+    final subscription = await serverCall(
+      tester,
+      'subscription of 04',
+      () => client
+          .from('subscriptions')
+          .select('plan, status, ends_at, nodes')
           .single(),
     );
     final payments = await serverCall(
@@ -294,141 +288,125 @@ void main() {
       'payments of 04',
       () => client
           .from('payments')
-          .select()
-          .order('created_at', ascending: true), // (newest first by default)
-    );
-    final subscription = await serverCall(
-      tester,
-      'subscription of 04',
-      () =>
-          client.from('subscriptions').select('plan, status, ends_at').single(),
+          .select('plan, status, amount_millimes, nodes, kind, provider')
+          .order('created_at', ascending: true),
     );
     final plan = await serverCall(
       tester,
       'user_plan()',
       () => client.rpc('user_plan'),
     );
-    printRow('profile of $phone04:', profile);
-    printRow('payments of $phone04:', {'rows': payments});
-    printRow('subscription of $phone04:', {
-      ...subscription,
+    final quote = await serverCall(
+      tester,
+      'orchard_quote()',
+      () => codeOf(() => client.rpc('orchard_quote')),
+    );
+    printRow('$phone04 now:', {
+      'profile': profile,
+      'subscription': subscription,
+      'payments': payments,
       'user_plan()': plan,
+      'orchard_quote() error': quote,
     });
-
-    expect(profile['role'], 'farmer');
-    expect(profile['zone'], 'sidi_bouzid');
-    expect(profile['payment_status'], 'paid');
-    expect(profile['chosen_plan'], 'essential');
-    final statuses = [for (final p in payments) p['status']];
-    expect(statuses, containsAllInOrder(['failed_demo', 'paid_demo']));
-    for (final p in payments) {
-      expect(p['provider'], 'demo');
-      expect(p['amount_millimes'], 15000);
+    if (!isNew[phone04]!) {
+      // Essential (paid on 31/10) became Premium with 1 zone.
+      expect(profile['chosen_plan'], 'paid');
+      expect(profile['payment_status'], 'paid');
+      expect(subscription['plan'], 'paid');
+      expect(subscription['nodes'], 1);
+      final running = daysTo(subscription['ends_at'] as String) > 0;
+      expect(plan, running ? 'paid' : 'free');
+      expect(currentPlan.value, running ? Plan.paid : Plan.free);
+      // Its old payments keep their pack name (history), never a card.
+      expect(payments.map((p) => p['plan']), everyElement('essential'));
+      expect(jsonEncode(payments), isNot(contains('4242')));
     }
-    // The card never reached the database.
-    final saved = jsonEncode(payments);
-    expect(saved, isNot(contains('4242')));
-    expect(saved, isNot(contains('4000000000000002')));
-    expect(plan, 'essential');
-    expect(subscription['plan'], 'essential');
-    // 30 days from the payment (also true when a later run only reads it).
-    final paid = payments.lastWhere((p) => p['status'] == 'paid_demo');
-    final days =
-        DateTime.parse(subscription['ends_at'] as String)
-            .difference(DateTime.parse(paid['paid_at'] as String))
-            .inMinutes /
-        (60 * 24);
-    expect(days, closeTo(30, 0.01));
-    expect(daysTo(subscription['ends_at'] as String), greaterThan(0)); // active
-    expect(currentPlan.value, Plan.essential);
+    // Nothing drawn yet: nothing to bill.
+    expect(quote, 'PT409');
 
+    if (currentPlan.value == Plan.paid) {
+      step('"بستاني ★": no orchard yet → "ارسم بستانك"');
+      // No pumpAndSettle while the orchard loads (the spinner would push the
+      // fake clock past the 30 s time limit).
+      await tester.tap(findTextWithSymbol('بستاني ★'));
+      await tester.pump();
+      await waitFor(tester, [findTextWithSymbol('★ ابدأ الرسم')]);
+      expect(find.text('ارسم بستانك'), findsOneWidget);
+      await tapAndWait(tester, findTextWithSymbol('★ ابدأ الرسم'));
+      expect(find.byType(DesignerStartScreen), findsOneWidget);
+      await waitFor(tester, [find.text('8 د.ت للمنطقة / 30 يومًا')]);
+
+      step('Profile: my pack');
+      Navigator.of(tester.element(find.byType(DesignerStartScreen))).pop();
+      await tester.pumpAndSettle();
+      await tapAndWait(tester, find.text('حسابي').last);
+      final end = dayText(DateTime.parse(subscription['ends_at'] as String));
+      await waitFor(tester, [find.text('بريميوم · منطقة واحدة · حتى $end')]);
+    }
     await closeTheApp(tester, client);
   }, timeout: _slow);
 
-  testWidgets('2. $phone05: Connected = a request of the LOOZ kit, the '
-      'farmer stays on Free', (tester) async {
+  testWidgets('2. $phone05 (had asked the LOOZ kit): Free, the request '
+      'cancelled with a note; Premium → "ارسم بستانك"', (tester) async {
     final client = await openApp(tester);
-    await signUpWithPhone(tester, '50000005');
-
-    if (find.byType(AccountExistsScreen).evaluate().isNotEmpty) {
-      step('05 already has an account: "هذا الرقم لديه حساب بالفعل"');
-      await tester.tap(find.text('تسجيل الدخول'));
-      await waitFor(tester, [find.byType(HomePage)]);
-    } else {
-      if (find.byType(SignUpInfoScreen).evaluate().isNotEmpty) {
-        await fillInfo(
-          tester,
-          first: 'سنية',
-          last: 'الزغلامي',
-          governorate: 'القيروان',
-          trees: '300',
-          area: '4',
-        );
-      }
-      step('pack: Connected');
-      await waitFor(tester, [find.text('8 د.ت لكل حسّاس / 30 يومًا')]);
-      await scrollAndTap(tester, find.text('متصل'));
-      await scrollTo(tester, find.text('متابعة'));
-      await tester.tap(find.text('متابعة'));
-      await waitFor(tester, [find.byType(KitRequestedScreen)]);
-      expect(
-        find.text('سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.'),
-        findsOneWidget,
+    if (isNew[phone05]!) {
+      await signUpWithPhone(tester, '50000005');
+      await signUpPremiumThenFree(
+        tester,
+        first: 'سنية',
+        governorate: 'القيروان',
       );
-      await tapAndWait(tester, find.text('متابعة'));
-      expect(find.byType(WelcomeScreen), findsOneWidget);
-      await tapAndWait(tester, find.text('ابدأ'));
-      expect(find.byType(HomePage), findsOneWidget);
+    } else {
+      step('sign in');
+      await tapAndWait(tester, find.text('تسجيل الدخول'));
+      await typeDigits(tester, '50000005');
+      await sendCodeOnScreen(tester, 'إرسال الرمز');
+      await enterCode(tester);
     }
+    expect(find.byType(HomePage), findsOneWidget);
 
-    final kit = await serverCall(
+    final kits = await serverCall(
       tester,
-      'kit request of 05',
+      'kit requests of 05',
       () => client
           .from('kit_requests')
-          .select(
-            'phone, governorate, almond_trees, orchard_area_ha, status, sensors',
-          )
-          .order('created_at', ascending: false)
-          .limit(1)
-          .single(),
-    );
-    final profile = await serverCall(
-      tester,
-      'profile of 05',
-      () => client
-          .from('profiles')
-          .select('chosen_plan, payment_status, plan_chosen_at')
-          .single(),
+          .select('status, admin_note, nodes, orchard_id')
+          .order('created_at', ascending: true),
     );
     final plan = await serverCall(
       tester,
       'user_plan()',
       () => client.rpc('user_plan'),
     );
-    printRow('kit request of $phone05:', kit);
-    printRow('profile of $phone05:', {...profile, 'user_plan()': plan});
-    expect(kit['phone'], phone05); // copied by the database
-    expect(kit['governorate'], 'kairouan');
-    expect(kit['almond_trees'], 300);
-    expect(kit['status'], 'new');
-    expect(kit['sensors'], isNull);
-    expect(profile['chosen_plan'], 'free');
-    expect(profile['plan_chosen_at'], isNotNull);
-    expect(plan, 'free');
-
-    // Connected can't be paid before the kit is installed.
-    final refused = await serverCall(tester, 'paying Connected (05)', () async {
+    final pay = await serverCall(tester, 'paying without a drawing', () async {
       try {
-        await DemoPaymentService(client)
-            .pay(Plan.connected, cardAccepted: true);
+        await DemoPaymentService(client).pay(cardAccepted: true);
         return null;
       } on PaymentError catch (e) {
         return e.failure;
       }
     });
-    expect(refused, PaymentFailure.kitNotInstalled);
+    printRow('$phone05 now:', {
+      'kit requests': kits,
+      'user_plan()': plan,
+      'pay without a drawing': pay?.name,
+    });
+    expect(plan, 'free');
+    if (!isNew[phone05]!) {
+      expect(kits.first['status'], 'cancelled');
+      expect(kits.first['admin_note'], contains('Migration 011'));
+    }
+    expect(pay, PaymentFailure.noDrawing);
 
+    step('"بستاني ★" locked → Premium → "★ ابدأ بريميوم" → "ارسم بستانك"');
+    await tapAndWait(tester, findTextWithSymbol('بستاني ★'));
+    expect(find.text('بستانك في جيبك'), findsOneWidget);
+    await tapAndWait(tester, findTextWithSymbol('★ ابدأ بريميوم'));
+    expect(find.byType(PremiumScreen), findsOneWidget);
+    await waitFor(tester, [find.text('8 د.ت للمنطقة / 30 يومًا')]);
+    await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
+    await waitFor(tester, [find.byType(DesignerStartScreen)]);
+    expect(find.text('ارسم بستانك'), findsOneWidget);
     await closeTheApp(tester, client);
   }, timeout: _slow);
 
@@ -447,33 +425,40 @@ void main() {
     results['turn demo payments off (rows changed)'] = off.length;
     expect(off, isEmpty);
     expect(settings['demo_payments_enabled'], isTrue);
+    expect(settings['hectares_per_node'], 2);
 
-    // Prices: read, never changed.
+    // The price: read, never changed.
     final prices = await client
         .from('plan_prices')
-        .select('plan, price_millimes, per_sensor');
+        .select('plan, price_millimes, period_days, per_node');
     final cheaper = await client
         .from('plan_prices')
         .update({'price_millimes': 1000})
-        .eq('plan', 'essential')
+        .eq('plan', 'paid')
+        .select();
+    final nodes = await client
+        .from('subscriptions')
+        .update({'nodes': 100, 'plan': 'paid'})
+        .eq('user_id', me)
         .select();
     results['prices'] = prices;
-    results['change a price (rows changed)'] = cheaper.length;
+    results['change the price (rows changed)'] = cheaper.length;
+    results['give himself 100 zones (rows changed)'] = nodes.length;
+    expect(prices, [
+      {
+        'plan': 'paid',
+        'price_millimes': 8000,
+        'period_days': 30,
+        'per_node': true,
+      },
+    ]);
     expect(cheaper, isEmpty);
-
-    Future<String?> codeOf(Future<Object?> Function() call) async {
-      try {
-        await call();
-        return null;
-      } on PostgrestException catch (e) {
-        return e.code;
-      }
-    }
+    expect(nodes, isEmpty);
 
     results['insert a "paid" payment'] = await codeOf(
       () => client.from('payments').insert({
         'user_id': me,
-        'plan': 'connected',
+        'plan': 'paid',
         'amount_millimes': 1,
         'period_days': 365,
         'status': 'paid_demo',
@@ -482,18 +467,38 @@ void main() {
     results['activate_pack() (give himself a pack)'] = await codeOf(
       () => client.rpc(
         'activate_pack',
-        params: {'p_user': me, 'p_plan': 'connected', 'p_days': 365},
+        params: {'p_user': me, 'p_plan': 'paid', 'p_days': 365, 'p_nodes': 100},
       ),
+    );
+    results['set_pack_nodes()'] = await codeOf(
+      () =>
+          client.rpc('set_pack_nodes', params: {'p_user': me, 'p_nodes': 100}),
     );
     results['confirm_payment()'] = await codeOf(
       () =>
           client.rpc('confirm_payment', params: {'p_ref': 'x', 'p_amount': 1}),
     );
+    results['orchard_apply_design_for() (build without paying)'] = await codeOf(
+      () => client.rpc(
+        'orchard_apply_design_for',
+        params: {'p_user': me, 'p_check': false},
+      ),
+    );
+    results['orchard_quote_for() (another bill)'] = await codeOf(
+      () => client.rpc('orchard_quote_for', params: {'p_user': me}),
+    );
+    results['write an orchard directly'] = await codeOf(
+      () => client.from('orchards').insert({
+        'farmer_id': me,
+        'name': 'x',
+        'status': 'complete',
+      }),
+    );
     results['write a kit request himself'] = await codeOf(
       () => client.from('kit_requests').insert({
         'user_id': me,
         'status': 'installed',
-        'sensors': 50,
+        'nodes': 50,
       }),
     );
     results['become expert after the sign-up'] = await codeOf(
@@ -502,48 +507,52 @@ void main() {
     results['demo payment of "free"'] = await codeOf(
       () => client.rpc('demo_payment', params: {'p_plan': 'free'}),
     );
+    results['demo payment without a drawing'] = await codeOf(
+      () => client.rpc('demo_payment', params: {'p_plan': 'paid'}),
+    );
+    results['request_kit() (removed)'] = await codeOf(
+      () => client.rpc('request_kit'),
+    );
     final others = await client
         .from('payments')
         .select('id')
         .neq('user_id', me);
-    results["payments of others visible"] = others.length;
+    final otherOrchards = await client.from('orchards').select('id');
+    results['payments of others visible'] = others.length;
+    results['orchards visible'] = otherOrchards.length;
     printRow('Refused (as they should be):', results);
 
     expect(results['insert a "paid" payment'], isNotNull);
     expect(results['activate_pack() (give himself a pack)'], '42501');
+    expect(results['set_pack_nodes()'], '42501');
     expect(results['confirm_payment()'], '42501');
+    expect(
+      results['orchard_apply_design_for() (build without paying)'],
+      '42501',
+    );
+    expect(results['orchard_quote_for() (another bill)'], '42501');
+    expect(results['write an orchard directly'], '42501');
     expect(results['write a kit request himself'], isNotNull);
     expect(results['become expert after the sign-up'], '42501');
     expect(results['demo payment of "free"'], '22023');
+    expect(results['demo payment without a drawing'], 'PT409');
+    expect(results['request_kit() (removed)'], isNotNull);
     expect(others, isEmpty);
+    expect(otherOrchards, isEmpty); // 04 has none; others' are not visible
 
     await client.auth.signOut();
     await client.dispose();
   }, timeout: _slow);
 
-  testWidgets('4. $phone04 signs in again: Home and its pack; sign up with it: '
-      '"already has an account"', (tester) async {
+  testWidgets('4. Sign up with $phone04 again: "already has an account"', (
+    tester,
+  ) async {
     final client = await openApp(tester);
-    step('sign in');
-    await tapAndWait(tester, find.text('تسجيل الدخول'));
-    await typeDigits(tester, '50000004');
-    await sendCodeOnScreen(tester, 'إرسال الرمز');
-    await enterCode(tester);
-    expect(find.byType(HomePage), findsOneWidget);
-
-    step('Profile: my pack');
-    await tapAndWait(tester, find.text('حسابي').last);
-    await waitFor(tester, [find.textContaining('أساسي · حتى')]);
-
-    step('log out, then "إنشاء حساب" with the same number');
-    await tester.tap(find.text('تسجيل الخروج'));
-    await waitFor(tester, [find.byType(StartScreen)]);
     await signUpWithPhone(tester, '50000004');
     expect(find.text('هذا الرقم لديه حساب بالفعل.'), findsOneWidget);
     await tester.tap(find.text('تسجيل الدخول'));
     await waitFor(tester, [find.byType(HomePage)]);
     expect(currentUser.value?.phone, phone04);
-
     await closeTheApp(tester, client);
   }, timeout: _slow);
 }

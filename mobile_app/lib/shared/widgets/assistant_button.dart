@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../core/locale.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/navigation.dart';
+import '../../core/plans.dart';
 import '../../features/ask/voice_screen.dart';
 import 'app_icon.dart';
 import 'assistant_orb.dart';
@@ -20,7 +21,9 @@ class AssistantButton extends StatelessWidget {
     return Semantics(
       button: true,
       child: GestureDetector(
-        onTap: () => openScreen(context, const VoiceScreen()),
+        // Premium (free plan: the "locked" screen of "بستاني ★").
+        onTap: () =>
+            openFeature(context, Feature.assistant, const VoiceScreen()),
         child: Container(
           width: compact ? AppSizes.roundButton : null,
           height: AppSizes.assistantBarHeight,

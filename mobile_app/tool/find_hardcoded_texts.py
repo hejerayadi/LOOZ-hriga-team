@@ -38,6 +38,7 @@ TECHNICAL = [
     ('key of a setting kept on the phone', lambda line, s: '_savedLanguageKey' in line),
     ('region code (shown with its Arabic / French name)', lambda line, s: re.match(r"\s*'[a-z_]+' => l10n\.region", line)),
     ('demo picture of the community', lambda line, s: s.startswith('demo:')),
+    ('pack name of the database (migration 011)', lambda line, s: 'planFromName' in line or s in ('paid', 'essential', 'connected')),
 ]
 
 # Files that only talk to Supabase (no screen): their strings are table and
@@ -48,9 +49,10 @@ SERVER_FILES = {
     'data/community_service.dart',
     'data/community_photos.dart',  # file type, image_picker error codes, photo formats
     'data/community_models.dart',
-    'data/payment_service.dart',  # tables, statuses and error codes of migrations 008 / 009
+    'data/payment_service.dart',  # tables, statuses and error codes of migrations 008 / 009 / 011
+    'data/orchard_service.dart',  # tables and columns of the orchard (migration 011)
 }
-SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart)'
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_service.dart)'
 
 
 def without_comment(line):

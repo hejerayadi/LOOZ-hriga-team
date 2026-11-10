@@ -1,5 +1,7 @@
-// "LOOZ بريميوم": what the free plan and Premium give, the price (the
-// smallest paid pack, from the database), then the paid packs.
+// "LOOZ بريميوم": what the free plan and Premium give, the price per zone
+// (from the database), then:
+//   - no orchard drawn yet: "ارسم بستانك" (the designer: draw, then pay);
+//   - an orchard: the payment of its bill (a new month, or the extra zones).
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
@@ -13,17 +15,51 @@ import '../../shared/widgets/orchard_scene.dart';
 import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/symbol_text.dart';
 import '../../shared/widgets/text_link.dart';
-import '../onboarding/pack_screen.dart';
+import '../onboarding/auth_messages.dart';
+import '../orchard_designer/designer_start_screen.dart';
 import 'pack_texts.dart';
+import 'payment_screen.dart';
 
-class PremiumScreen extends StatelessWidget {
+class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
+
+  @override
+  State<PremiumScreen> createState() => _PremiumScreenState();
+}
+
+class _PremiumScreenState extends State<PremiumScreen> {
+  bool _busy = false;
+  String? _error;
+
+  /// The bill of the orchard decides the next screen.
+  Future<void> _start() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final quote = await paymentService.loadQuote();
+      if (mounted) openScreen(context, PaymentScreen(quote: quote));
+    } on PaymentError catch (error) {
+      if (!mounted) return;
+      if (error.failure == PaymentFailure.noDrawing) {
+        openScreen(context, const DesignerStartScreen());
+      } else {
+        setState(
+          () => _error = paymentFailureMessage(context.l10n, error.failure),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final text = AppTextStyles.of(16);
     final bold = AppTextStyles.of(16, FontWeight.w700);
+    final error = _error;
     return ShellPage(
       children: [
         // The drawing with a gold star and the title.
@@ -77,7 +113,7 @@ class PremiumScreen extends StatelessWidget {
                     title: Text(l10n.free, style: bold),
                     lines: [
                       SymbolText('✓ ${l10n.tabCommunity}', style: text),
-                      SymbolText('✓ ${l10n.assistant}', style: text),
+                      SymbolText('✓ ${l10n.packRegionalAlerts}', style: text),
                     ],
                   ),
                 ),
@@ -89,6 +125,7 @@ class PremiumScreen extends StatelessWidget {
                     lines: [
                       SymbolText('✓ ${l10n.orchardMap}', style: text),
                       SymbolText('✓ ${l10n.smartAlerts}', style: text),
+                      SymbolText('✓ ${l10n.assistant}', style: text),
                     ],
                   ),
                 ),
@@ -96,12 +133,18 @@ class PremiumScreen extends StatelessWidget {
             ),
           ),
         ),
-        // The price.
+        // The price of one zone.
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              const _EntryPrice(),
+              const _ZonePrice(),
+              const SizedBox(height: 4),
+              Text(
+                l10n.packZoneNote,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.of(14.4),
+              ),
               Text(
                 l10n.cancelAnytime,
                 textAlign: TextAlign.center,
@@ -110,9 +153,15 @@ class PremiumScreen extends StatelessWidget {
             ],
           ),
         ),
+        if (error != null) ...[
+          AuthNote.error(error),
+          const SizedBox(height: 12),
+        ],
         ActionButton(
-          label: '★ ${l10n.startPremium}',
-          onPressed: () => openScreen(context, const PackScreen(upgrade: true)),
+          label: _busy
+              ? l10n.saving
+              : '★ ${currentPlan.value == Plan.paid ? l10n.renewPack : l10n.startPremium}',
+          onPressed: _busy ? null : _start,
         ),
         TextLink(
           label: l10n.notNow,
@@ -153,41 +202,31 @@ class _PlanColumn extends StatelessWidget {
   }
 }
 
-/// "15 د.ت / 30 يومًا": the price of Essential, the smallest paid pack.
-class _EntryPrice extends StatefulWidget {
-  const _EntryPrice();
+/// "8 د.ت للمنطقة / 30 يومًا": the price of one zone, from the database.
+class _ZonePrice extends StatefulWidget {
+  const _ZonePrice();
 
   @override
-  State<_EntryPrice> createState() => _EntryPriceState();
+  State<_ZonePrice> createState() => _ZonePriceState();
 }
 
-class _EntryPriceState extends State<_EntryPrice> {
-  late final Future<Map<Plan, PackPrice>> _prices = Future.sync(
-    () => paymentService.loadPrices(),
+class _ZonePriceState extends State<_ZonePrice> {
+  late final Future<PackPrice> _price = Future.sync(
+    () => paymentService.loadPrice(),
   );
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return FutureBuilder(
-      future: _prices,
+      future: _price,
       builder: (context, snapshot) {
-        final price = snapshot.data?[Plan.essential];
+        final price = snapshot.data;
         // "…" while the price is read.
-        final amount = price == null ? '…' : dinars(price.millimes);
-        final period = price == null ? l10n.month : l10n.daysCount(price.days);
-        return Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: '$amount ${l10n.currency}',
-                style: AppTextStyles.of(28, FontWeight.w700),
-              ),
-              TextSpan(text: ' / $period'),
-            ],
-          ),
+        return Text(
+          price == null ? '…' : pricePerZoneText(l10n, price),
           textAlign: TextAlign.center,
-          style: AppTextStyles.of(18),
+          style: AppTextStyles.of(24, FontWeight.w700),
         );
       },
     );

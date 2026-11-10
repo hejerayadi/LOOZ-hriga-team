@@ -1,7 +1,7 @@
 // After the payment (not in the design: the app's own screen, in its style):
 //   paid: "تم الدفع!" and the end date of the pack, then the sign-up goes
-//         on (welcome), Connected shows the design's QR screen, Essential
-//         goes back to Home;
+//         on (welcome), in the app the design's QR screen ("مرحبًا في
+//         بريميوم": scan the box of your orchard);
 //   not paid: "لم يكتمل الدفع", the user stays on the free plan:
 //         "حاول مرة أخرى" or "متابعة مجانًا".
 import 'package:flutter/material.dart';
@@ -25,14 +25,12 @@ import 'qr_screen.dart';
 class PaymentResultScreen extends StatefulWidget {
   const PaymentResultScreen({
     super.key,
-    required this.plan,
     required this.paid,
     this.signUp = false,
     this.endsAt,
     this.failure,
   });
 
-  final Plan plan;
   final bool paid;
   final bool signUp;
 
@@ -53,13 +51,11 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
   void _continue() {
     if (widget.signUp) {
       replaceAllWith(context, const WelcomeScreen());
-    } else if (widget.plan == Plan.connected) {
+    } else {
       replaceWith(
         context,
         const QrScreen(),
       ); // the design's "مرحبًا في بريميوم"
-    } else {
-      goToTab(context, AppTab.home);
     }
   }
 
@@ -106,7 +102,7 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  planName(l10n, widget.plan),
+                  planName(l10n, Plan.paid),
                   style: AppTextStyles.of(22, FontWeight.w700),
                 ),
                 const SizedBox(height: 8),

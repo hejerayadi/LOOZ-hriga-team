@@ -179,14 +179,14 @@ void main() {
       'first_name': 'محمد',
       'last_name': 'بن سالم',
       'language': 'ar',
-      'chosen_plan': 'essential',
+      'chosen_plan': 'paid',
       'payment_status': 'pending',
       'plan_chosen_at': '2026-10-28T10:00:00+00:00',
       'created_at': '2026-10-28T09:59:00+00:00',
     });
     expect(profile.fullName, 'محمد بن سالم');
     expect(profile.initial, 'م');
-    expect(profile.chosenPlan, Plan.essential);
+    expect(profile.chosenPlan, Plan.paid);
     expect(profile.paymentStatus, PaymentStatus.pending);
     expect(profile.hasName, isTrue);
     expect(profile.hasChosenPlan, isTrue);
@@ -222,6 +222,7 @@ void main() {
       'almond_trees': 120,
       'orchard_area_ha': 2.5,
       'irrigation': 'rainfed',
+      // An old name of migration 004: Premium too.
       'chosen_plan': 'essential',
       'payment_status': 'pending',
       'plan_chosen_at': '2026-10-28T10:00:00+00:00',

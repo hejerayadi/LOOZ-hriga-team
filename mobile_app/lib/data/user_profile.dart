@@ -110,10 +110,7 @@ class UserProfile {
       irrigation: Irrigation.values
           .where((i) => i.name == row['irrigation'])
           .firstOrNull,
-      chosenPlan: Plan.values.firstWhere(
-        (p) => p.name == row['chosen_plan'],
-        orElse: () => Plan.free,
-      ),
+      chosenPlan: planFromName(row['chosen_plan']),
       paymentStatus: PaymentStatus.values.firstWhere(
         (s) => s.name == row['payment_status'],
         orElse: () => PaymentStatus.free,

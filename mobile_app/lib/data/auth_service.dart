@@ -252,11 +252,7 @@ class SupabaseAuthService implements AuthService {
 
   @override
   Future<Plan> loadPlan() => _run(() async {
-    final name = await _client.rpc('user_plan');
-    return Plan.values.firstWhere(
-      (p) => p.name == name,
-      orElse: () => Plan.free,
-    );
+    return planFromName(await _client.rpc('user_plan'));
   });
 
   @override

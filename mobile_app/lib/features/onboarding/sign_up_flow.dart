@@ -3,8 +3,8 @@
 // Sign up: start → phone → code → who are you (farmer or expert) → your
 // information (only the boxes of that person), then
 //   farmer: the pack: Free → welcome → Home
-//                     Essential → payment (DEMO) → paid / not paid → welcome
-//                     Connected → request of the LOOZ kit (stays Free) → welcome
+//                     Premium → "ارسم بستانك" (the designer: draw, then the
+//                     price and the DEMO payment) → welcome
 //   expert: welcome → Home (the Free features: no pack, no payment)
 // Sign in: start → phone → code → Home.
 // Stopped in the middle (e.g. closed the app on the pack screen): the next
@@ -23,7 +23,7 @@ import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/looz_background.dart';
 import '../../shared/widgets/looz_header.dart';
 import '../../shared/widgets/looz_logo.dart';
-import '../premium/payment_screen.dart';
+import '../orchard_designer/designer_start_screen.dart';
 import 'auth_messages.dart';
 import 'pack_screen.dart';
 import 'role_screen.dart';
@@ -42,13 +42,9 @@ void openNextStep(BuildContext context, UserProfile profile) {
     } else {
       replaceAllWith(context, const PackScreen());
     }
-  } else if (profile.waitsForPayment && profile.chosenPlan == Plan.essential) {
-    // Essential chosen, not paid: the payment (back = the packs, Free too).
-    replaceAllWith(context, const PackScreen());
-    openScreen(
-      context,
-      const PaymentScreen(plan: Plan.essential, signUp: true),
-    );
+  } else if (profile.waitsForPayment && profile.chosenPlan == Plan.paid) {
+    // Premium chosen, not paid yet: the designer (it ends with the payment).
+    replaceAllWith(context, const DesignerStartScreen(signUp: true));
   } else {
     currentTab.value = AppTab.home;
     replaceAllWith(context, const MainShell());

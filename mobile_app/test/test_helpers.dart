@@ -12,12 +12,14 @@ import 'package:looz_mobile/data/community_photos.dart';
 import 'package:looz_mobile/data/community_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/fake_data.dart';
+import 'package:looz_mobile/data/orchard_service.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_tab.dart';
 import 'package:looz_mobile/features/premium/demo_card_form.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 
 import 'fake_auth_service.dart';
 import 'fake_community_service.dart';
+import 'fake_orchard_service.dart';
 import 'fake_payment_service.dart';
 import 'fake_photo_picker.dart';
 
@@ -47,12 +49,13 @@ void noAnimations(WidgetTester tester) {
   addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 }
 
-/// The app keeps the language, plan, tab, user, community, camera, payment
-/// and demo state in global values: put them back after each test (and
-/// forget what the "phone" remembered, like the language).
+/// The app keeps the language, plan, tab, user, community, camera, payment,
+/// orchard and demo state in global values: put them back after each test
+/// (and forget what the "phone" remembered, like the language). By default
+/// the user has Premium and the demo orchard (fake_orchard_service.dart).
 void resetAppState() {
   appLocale.value = const Locale('ar');
-  currentPlan.value = Plan.connected;
+  currentPlan.value = Plan.paid;
   currentTab.value = AppTab.home;
   orchardPanelOpen.value = false;
   fakeTreeWatered.value = false;
@@ -60,7 +63,16 @@ void resetAppState() {
   communityService = FakeCommunityService();
   photoPicker = FakePhotoPicker();
   paymentService = FakePaymentService();
+  orchardService = FakeOrchardService(demoOrchard());
   SharedPreferences.setMockInitialValues({});
+}
+
+/// Uses a fake orchard: [orchard] (null = none drawn yet). Returns it, to
+/// make the next read fail or to count the reads.
+FakeOrchardService useOrchard(MyOrchard? orchard) {
+  final fake = FakeOrchardService(orchard);
+  orchardService = fake;
+  return fake;
 }
 
 /// Uses a fake community (no internet) with 3 questions written in [lang]:
@@ -80,8 +92,8 @@ FakePhotoPicker usePhotoPicker({bool hasCamera = true}) {
   return fake;
 }
 
-/// Uses fake packs and a fake demo payment (no internet), linked to the fake
-/// login [auth]: returns it, to install a kit, turn the demo off...
+/// Uses a fake paid pack and a fake demo payment (no internet), linked to
+/// the fake login [auth]: returns it, to draw an orchard, turn the demo off...
 FakePaymentService usePayments([FakeAuthService? auth]) {
   final fake = FakePaymentService(auth: auth);
   paymentService = fake;

@@ -363,24 +363,8 @@
   "@expertPendingNote": {
     "description": "APP-ONLY. Sign up / payment."
   },
-  "packConnectedKit": "مع عُدّة حسّاسات لوز (نركّبها لك)",
-  "@packConnectedKit": {
-    "description": "APP-ONLY. Sign up / payment."
-  },
   "priceForDays": "{price} د.ت / {period}",
   "@priceForDays": {
-    "placeholders": {
-      "price": {
-        "type": "String"
-      },
-      "period": {
-        "type": "String"
-      }
-    },
-    "description": "APP-ONLY. Sign up / payment."
-  },
-  "pricePerSensorForDays": "{price} د.ت لكل حسّاس / {period}",
-  "@pricePerSensorForDays": {
     "placeholders": {
       "price": {
         "type": "String"
@@ -398,27 +382,6 @@
         "type": "int"
       }
     },
-    "description": "APP-ONLY. Sign up / payment."
-  },
-  "kitSensors": "{count, plural, =1{حسّاس واحد} =2{حسّاسان} few{{count} حسّاسات} many{{count} حسّاسًا} other{{count} حسّاس}}",
-  "@kitSensors": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    },
-    "description": "APP-ONLY. Sign up / payment."
-  },
-  "kitTitle": "عُدّة لوز",
-  "@kitTitle": {
-    "description": "APP-ONLY. Sign up / payment."
-  },
-  "kitRequested": "سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.",
-  "@kitRequested": {
-    "description": "APP-ONLY. Sign up / payment."
-  },
-  "kitMeanwhileFree": "حتى ذلك الوقت، تستعمل الباقة المجانية.",
-  "@kitMeanwhileFree": {
     "description": "APP-ONLY. Sign up / payment."
   },
   "demoMode": "وضع تجريبي",
@@ -486,16 +449,8 @@
   "@paymentNotAvailable": {
     "description": "APP-ONLY. Sign up / payment."
   },
-  "kitNotInstalled": "عُدّة لوز لم تُركّب بعد.",
-  "@kitNotInstalled": {
-    "description": "APP-ONLY. Sign up / payment."
-  },
   "tooManyPayments": "محاولات دفع كثيرة. حاول بعد ساعة.",
   "@tooManyPayments": {
-    "description": "APP-ONLY. Sign up / payment."
-  },
-  "chooseGovernorateFirst": "اختر ولايتك أولًا.",
-  "@chooseGovernorateFirst": {
     "description": "APP-ONLY. Sign up / payment."
   },
   "planUntil": "حتى {date}",
@@ -718,14 +673,6 @@
     },
     "description": "APP-ONLY. 3D orchard zones."
   },
-  "planEssential": "أساسي",
-  "@planEssential": {
-    "description": "APP-ONLY. Plan name (test switch)."
-  },
-  "planConnected": "متصل",
-  "@planConnected": {
-    "description": "APP-ONLY. Plan name (test switch)."
-  },
   "devPlanSwitch": "وضع التجربة: تغيير الخطة",
   "@devPlanSwitch": {
     "description": "APP-ONLY. Debug builds only."
@@ -807,29 +754,12 @@
   "@packNoPayment": {
     "description": "APP-ONLY. Sign up / sign in."
   },
-  "packAssistantLimit": "المساعد: {count} أسئلة في اليوم",
-  "@packAssistantLimit": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    },
-    "description": "APP-ONLY. Sign up / sign in."
-  },
   "packRegionalAlerts": "تنبيهات منطقتك",
   "@packRegionalAlerts": {
     "description": "APP-ONLY. Sign up / sign in."
   },
   "packAllOfFree": "كل ما في الباقة المجانية",
   "@packAllOfFree": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "packAllOfEssential": "كل ما في الباقة الأساسية",
-  "@packAllOfEssential": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
-  "packUnlimitedAssistant": "المساعد بلا حدود",
-  "@packUnlimitedAssistant": {
     "description": "APP-ONLY. Sign up / sign in."
   },
   "pack3dOrchard": "بستانك ثلاثي الأبعاد",
@@ -840,13 +770,111 @@
   "@packPhotoDiagnosis": {
     "description": "APP-ONLY. Sign up / sign in."
   },
-  "packLiveSensors": "حسّاسات البستان مباشرة",
-  "@packLiveSensors": {
-    "description": "APP-ONLY. Sign up / sign in."
-  },
   "packPredictions": "توقّع السقي والحصاد",
   "@packPredictions": {
     "description": "APP-ONLY. Sign up / sign in."
+  },
+  "planPaid": "بريميوم",
+  "@planPaid": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "pricePerZoneForDays": "{price} د.ت للمنطقة / {period}",
+  "@pricePerZoneForDays": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "dinarsAmount": "{price} د.ت",
+  "@dinarsAmount": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "zonesCount": "{count, plural, =1{منطقة واحدة} =2{منطقتان} few{{count} مناطق} many{{count} منطقة} other{{count} منطقة}}",
+  "@zonesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "packZoneNote": "كل منطقة من بستانك فيها حسّاس لوز واحد، نركّبه لك.",
+  "@packZoneNote": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "packVoiceAssistant": "المساعد والحديث بالصوت",
+  "@packVoiceAssistant": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "noDrawingYet": "ارسم بستانك أولًا.",
+  "@noDrawingYet": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "designerTitle": "ارسم بستانك",
+  "@designerTitle": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "designerSubtitle": "ثلاث خطوات بسيطة",
+  "@designerSubtitle": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "designerStepOutline": "ارسم حدود بستانك",
+  "@designerStepOutline": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "designerStepZones": "قسّمه إلى مناطق",
+  "@designerStepZones": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "designerStepPay": "شاهد السعر وادفع",
+  "@designerStepPay": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "startDrawing": "ابدأ الرسم",
+  "@startDrawing": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "renewPack": "جدّد باقتك",
+  "@renewPack": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "zoneTypeYoungTrees": "أشجار صغيرة",
+  "@zoneTypeYoungTrees": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "zoneTypeOldTrees": "أشجار كبيرة",
+  "@zoneTypeOldTrees": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "zoneTypeSandySoil": "تربة رملية",
+  "@zoneTypeSandySoil": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "zoneTypeIrrigated": "مسقية",
+  "@zoneTypeIrrigated": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "zoneTypeRainfed": "بعلية",
+  "@zoneTypeRainfed": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "zoneTypeOther": "أخرى",
+  "@zoneTypeOther": {
+    "description": "APP-ONLY. Two packs / orchard."
+  },
+  "nodeWaiting": "في انتظار التركيب",
+  "@nodeWaiting": {
+    "description": "APP-ONLY. Two packs / orchard."
   },
   "logOut": "تسجيل الخروج",
   "@logOut": {

@@ -18,32 +18,83 @@ final latin = RegExp('[A-Za-zÀ-ÖØ-öø-ÿ]');
 final arabic = RegExp('[؀-ۿ]');
 
 void main() {
-  test('prices in dinars, per 30 days, per sensor', () {
+  test('prices in dinars, per zone and 30 days', () {
     expect(dinars(15000), '15');
     expect(dinars(8000), '8');
     expect(dinars(15500), '15.5');
     expect(dinars(12345), '12.345');
-    const essential = PackPrice(
-      plan: Plan.essential,
-      millimes: 15000,
-      days: 30,
-    );
-    const connected = PackPrice(
-      plan: Plan.connected,
-      millimes: 8000,
-      days: 30,
-      perSensor: true,
-    );
-    expect(priceText(ar, essential), '15 د.ت / 30 يومًا');
-    expect(priceText(fr, essential), '15 DT / 30 jours');
-    expect(priceText(ar, connected), '8 د.ت لكل حسّاس / 30 يومًا');
-    expect(priceText(fr, connected), '8 DT par capteur / 30 jours');
-    // The installed kit: the whole amount.
-    expect(priceText(ar, connected, sensors: 5), '40 د.ت / 30 يومًا');
-    expect(ar.kitSensors(5), '5 حسّاسات');
-    expect(ar.kitSensors(1), 'حسّاس واحد');
-    expect(fr.kitSensors(12), '12 capteurs');
+    const price = PackPrice(millimes: 8000, days: 30);
+    expect(pricePerZoneText(ar, price), '8 د.ت للمنطقة / 30 يومًا');
+    expect(pricePerZoneText(fr, price), '8 DT par zone / 30 jours');
+    expect(ar.zonesCount(1), 'منطقة واحدة');
+    expect(ar.zonesCount(2), 'منطقتان');
+    expect(ar.zonesCount(4), '4 مناطق');
+    expect(ar.zonesCount(12), '12 منطقة');
+    expect(fr.zonesCount(1), '1 zone');
+    expect(fr.zonesCount(4), '4 zones');
     expect(dayText(DateTime(2026, 11, 30, 12)), '30/11/2026');
+    expect(planName(ar, Plan.paid), 'بريميوم');
+    expect(planName(fr, Plan.free), 'Gratuit');
+  });
+
+  test('the bill of the database (orchard_quote) and what to pay now', () {
+    // The row given by the real database for the demo orchard.
+    final covered = OrchardQuote.fromRow({
+      'area_ha': 2.37,
+      'zones': 4,
+      'min_nodes_by_area': 2,
+      'billed_nodes': 4,
+      'paid_nodes': 4,
+      'price_per_node': 8000,
+      'period_days': 30,
+      'monthly_millimes': 32000,
+      'kind': 'covered',
+      'due_now_millimes': 0,
+      'ends_at': '2026-12-03T18:15:54.733489+00:00',
+    });
+    expect(covered.kind, QuoteKind.covered);
+    expect(covered.billedZones, 4);
+    expect(covered.endsAt, DateTime.utc(2026, 12, 3, 18, 15, 54, 733, 489));
+    // Covered: paying = the next whole period.
+    expect(covered.payNowMillimes, 32000);
+    expect(payNowText(ar, covered), '32 د.ت / 30 يومًا');
+
+    final extra = OrchardQuote.fromRow({
+      'area_ha': 2.37,
+      'zones': 6,
+      'min_nodes_by_area': 2,
+      'billed_nodes': 6,
+      'paid_nodes': 4,
+      'price_per_node': 8000,
+      'period_days': 30,
+      'monthly_millimes': 48000,
+      'kind': 'extra_nodes',
+      'due_now_millimes': 15500,
+      'ends_at': '2026-12-08T10:00:00+00:00',
+    });
+    expect(extra.kind, QuoteKind.extraZones);
+    // Only the extra zones until the end of the period.
+    expect(extra.payNowMillimes, 15500);
+    expect(payNowText(ar, extra), '15.5 د.ت');
+    expect(payNowText(fr, extra), '15.5 DT');
+
+    final fresh = OrchardQuote.fromRow({
+      'area_ha': 10,
+      'zones': 1,
+      'min_nodes_by_area': 5,
+      'billed_nodes': 5,
+      'paid_nodes': 0,
+      'price_per_node': 8000,
+      'period_days': 30,
+      'monthly_millimes': 40000,
+      'kind': 'new',
+      'due_now_millimes': 40000,
+      'ends_at': null,
+    });
+    expect(fresh.kind, QuoteKind.fresh);
+    expect(fresh.paidZones, 0);
+    expect(fresh.endsAt, isNull);
+    expect(payNowText(fr, fresh), '40 DT / 30 jours');
   });
 
   test('numbers typed by the farmer (also with an Arabic keyboard)', () {
@@ -87,15 +138,13 @@ void main() {
         code: 'PT403',
       ): PaymentFailure.notAvailable,
       const PostgrestException(
-        message: 'The LOOZ kit is not installed yet',
+        message: 'Draw your orchard first',
         code: 'PT409',
-      ): PaymentFailure.kitNotInstalled,
+      ): PaymentFailure.noDrawing,
       const PostgrestException(message: 'Too many payments', code: 'PT429'):
           PaymentFailure.tooManyTries,
-      const PostgrestException(
-        message: 'Choose your governorate first',
-        code: '22023',
-      ): PaymentFailure.noGovernorate,
+      const PostgrestException(message: 'Unknown paid pack', code: '22023'):
+          PaymentFailure.unknown,
       const PostgrestException(message: 'JWT expired', code: 'PGRST303'):
           PaymentFailure.sessionExpired,
       Exception('ClientException: Failed host lookup'):

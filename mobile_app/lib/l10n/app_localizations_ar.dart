@@ -370,16 +370,8 @@ class AppLocalizationsAr extends AppLocalizations {
       'ستظهر شارة «◆ خبير موثّق» بعد أن نتحقق من حسابك.';
 
   @override
-  String get packConnectedKit => 'مع عُدّة حسّاسات لوز (نركّبها لك)';
-
-  @override
   String priceForDays(String price, String period) {
     return '$price د.ت / $period';
-  }
-
-  @override
-  String pricePerSensorForDays(String price, String period) {
-    return '$price د.ت لكل حسّاس / $period';
   }
 
   @override
@@ -395,29 +387,6 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String kitSensors(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count حسّاس',
-      many: '$count حسّاسًا',
-      few: '$count حسّاسات',
-      two: 'حسّاسان',
-      one: 'حسّاس واحد',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get kitTitle => 'عُدّة لوز';
-
-  @override
-  String get kitRequested => 'سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.';
-
-  @override
-  String get kitMeanwhileFree => 'حتى ذلك الوقت، تستعمل الباقة المجانية.';
 
   @override
   String get demoMode => 'وضع تجريبي';
@@ -468,13 +437,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentNotAvailable => 'الدفع غير متاح الآن.';
 
   @override
-  String get kitNotInstalled => 'عُدّة لوز لم تُركّب بعد.';
-
-  @override
   String get tooManyPayments => 'محاولات دفع كثيرة. حاول بعد ساعة.';
-
-  @override
-  String get chooseGovernorateFirst => 'اختر ولايتك أولًا.';
 
   @override
   String planUntil(String date) {
@@ -809,12 +772,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get planEssential => 'أساسي';
-
-  @override
-  String get planConnected => 'متصل';
-
-  @override
   String get devPlanSwitch => 'وضع التجربة: تغيير الخطة';
 
   @override
@@ -874,21 +831,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packNoPayment => 'بدون دفع';
 
   @override
-  String packAssistantLimit(String count) {
-    return 'المساعد: $count أسئلة في اليوم';
-  }
-
-  @override
   String get packRegionalAlerts => 'تنبيهات منطقتك';
 
   @override
   String get packAllOfFree => 'كل ما في الباقة المجانية';
-
-  @override
-  String get packAllOfEssential => 'كل ما في الباقة الأساسية';
-
-  @override
-  String get packUnlimitedAssistant => 'المساعد بلا حدود';
 
   @override
   String get pack3dOrchard => 'بستانك ثلاثي الأبعاد';
@@ -897,10 +843,86 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packPhotoDiagnosis => 'تشخيص الأوراق بالصورة';
 
   @override
-  String get packLiveSensors => 'حسّاسات البستان مباشرة';
+  String get packPredictions => 'توقّع السقي والحصاد';
 
   @override
-  String get packPredictions => 'توقّع السقي والحصاد';
+  String get planPaid => 'بريميوم';
+
+  @override
+  String pricePerZoneForDays(String price, String period) {
+    return '$price د.ت للمنطقة / $period';
+  }
+
+  @override
+  String dinarsAmount(String price) {
+    return '$price د.ت';
+  }
+
+  @override
+  String zonesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count منطقة',
+      many: '$count منطقة',
+      few: '$count مناطق',
+      two: 'منطقتان',
+      one: 'منطقة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get packZoneNote =>
+      'كل منطقة من بستانك فيها حسّاس لوز واحد، نركّبه لك.';
+
+  @override
+  String get packVoiceAssistant => 'المساعد والحديث بالصوت';
+
+  @override
+  String get noDrawingYet => 'ارسم بستانك أولًا.';
+
+  @override
+  String get designerTitle => 'ارسم بستانك';
+
+  @override
+  String get designerSubtitle => 'ثلاث خطوات بسيطة';
+
+  @override
+  String get designerStepOutline => 'ارسم حدود بستانك';
+
+  @override
+  String get designerStepZones => 'قسّمه إلى مناطق';
+
+  @override
+  String get designerStepPay => 'شاهد السعر وادفع';
+
+  @override
+  String get startDrawing => 'ابدأ الرسم';
+
+  @override
+  String get renewPack => 'جدّد باقتك';
+
+  @override
+  String get zoneTypeYoungTrees => 'أشجار صغيرة';
+
+  @override
+  String get zoneTypeOldTrees => 'أشجار كبيرة';
+
+  @override
+  String get zoneTypeSandySoil => 'تربة رملية';
+
+  @override
+  String get zoneTypeIrrigated => 'مسقية';
+
+  @override
+  String get zoneTypeRainfed => 'بعلية';
+
+  @override
+  String get zoneTypeOther => 'أخرى';
+
+  @override
+  String get nodeWaiting => 'في انتظار التركيب';
 
   @override
   String get logOut => 'تسجيل الخروج';

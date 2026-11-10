@@ -1,9 +1,10 @@
 // The start of the app: the start screen, sign in, sign up (farmer: Free,
-// Essential with the DEMO payment, Connected = a kit request; expert),
-// stopped in the middle, Premium and Profile. With a fake login and fake
-// packs (test/fake_auth_service.dart, test/fake_payment_service.dart:
-// every code is 123456, no internet). Against the real Supabase:
-// test_live/signup_payment_live_test.dart.
+// or Premium = "ارسم بستانك" first, the designer; expert), stopped in the
+// middle, Premium (the bill of the orchard and the DEMO payment) and
+// Profile. With a fake login and a fake paid pack
+// (test/fake_auth_service.dart, test/fake_payment_service.dart: every code
+// is 123456, no internet). Against the real Supabase:
+// test_live/signup_payment_live_test.dart, test_live/orchard_live_test.dart.
 // Run it with: flutter test
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,8 +25,8 @@ import 'package:looz_mobile/features/onboarding/role_screen.dart';
 import 'package:looz_mobile/features/onboarding/sign_up_info_screen.dart';
 import 'package:looz_mobile/features/onboarding/start_screen.dart';
 import 'package:looz_mobile/features/onboarding/welcome_screen.dart';
+import 'package:looz_mobile/features/orchard_designer/designer_start_screen.dart';
 import 'package:looz_mobile/features/premium/demo_card_form.dart';
-import 'package:looz_mobile/features/premium/kit_requested_screen.dart';
 import 'package:looz_mobile/features/premium/payment_result_screen.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'package:looz_mobile/features/premium/premium_screen.dart';
@@ -149,6 +150,28 @@ List<String> cardTexts(WidgetTester tester) => [
     (box.widget as TextField).controller!.text,
 ];
 
+/// Premium (in the app), logged in, with an orchard of [zones] zones on
+/// [areaHa] hectares drawn (null = nothing drawn).
+Future<(FakeAuthService, FakePaymentService)> openPremium(
+  WidgetTester tester, {
+  int? zones = 4,
+  double areaHa = 2.37,
+  String lang = 'ar',
+  Plan plan = Plan.free,
+}) async {
+  usePhoneScreen(tester);
+  noAnimations(tester);
+  logInTestUser(lang);
+  final auth = authService as FakeAuthService;
+  final payments = usePayments(auth);
+  if (zones != null) payments.drawOrchard(zones, areaHa: areaHa);
+  currentPlan.value = plan;
+  appLocale.value = Locale(lang);
+  await tester.pumpWidget(const LoozApp(home: PremiumScreen()));
+  await tester.pumpAndSettle();
+  return (auth, payments);
+}
+
 String inDays(int days) {
   final d = DateTime.now().add(Duration(days: days));
   return '${d.day}/${d.month}/${d.year}';
@@ -206,10 +229,10 @@ void main() {
         ..addUser(
           '+21650000002',
           language: 'fr',
-          chosenPlan: Plan.essential,
+          chosenPlan: Plan.paid,
           paymentStatus: PaymentStatus.paid,
         )
-        ..plans['+21650000002'] = Plan.essential; // paid
+        ..plans['+21650000002'] = Plan.paid; // paid
       await startApp(tester, auth: auth);
       await logIn(tester, signUp: false, digits: '50000002');
       expect(find.byType(HomePage), findsOneWidget);
@@ -218,7 +241,7 @@ void main() {
       expect(auth.calls.where((c) => c.startsWith('saveSignUpInfo')), isEmpty);
       expect(auth.calls.where((c) => c.startsWith('choosePlan')), isEmpty);
       expect(auth.calls, contains('saveLanguage ar'));
-      expect(currentPlan.value, Plan.essential);
+      expect(currentPlan.value, Plan.paid);
     });
 
     testWidgets('A number without account: a message, nothing created, '
@@ -329,12 +352,16 @@ void main() {
       await scrollAndTap(tester, find.text('بعلي'));
       await scrollAndTap(tester, find.text('متابعة'));
 
-      // The packs, with the prices of the database.
+      // The 2 packs, with the price of the database.
       expect(find.byType(PackScreen), findsOneWidget);
       expect(find.text('اختر باقتك'), findsOneWidget);
-      expect(find.text('15 د.ت / 30 يومًا'), findsOneWidget);
-      expect(find.text('8 د.ت لكل حسّاس / 30 يومًا'), findsOneWidget);
-      expect(find.text('مع عُدّة حسّاسات لوز (نركّبها لك)'), findsOneWidget);
+      expect(find.text('مجاني'), findsOneWidget);
+      expect(find.text('بريميوم'), findsOneWidget);
+      expect(find.text('8 د.ت للمنطقة / 30 يومًا'), findsOneWidget);
+      expect(
+        find.text('كل منطقة من بستانك فيها حسّاس لوز واحد، نركّبه لك.'),
+        findsOneWidget,
+      );
       await scrollAndTap(tester, find.text('متابعة')); // nothing chosen
       expect(find.byType(PackScreen), findsOneWidget);
       await scrollAndTap(tester, find.text('مجاني'));
@@ -358,82 +385,101 @@ void main() {
       expect(payments.calls.where((c) => c.startsWith('pay')), isEmpty);
     });
 
-    testWidgets(
-      'Essential: the demo payment, "جاري التحقق…", paid for 30 days',
-      (tester) async {
-        final (auth, payments) = await startApp(tester);
-        await logIn(tester, signUp: true, digits: '50000004');
-        await fillInfo(tester);
-        await scrollAndTap(tester, find.text('أساسي'));
-        await scrollAndTap(tester, find.text('متابعة'));
-        // Saved as "pending" first (if the app closes, the payment comes back).
-        expect(
-          auth.accounts['+21650000004']!.paymentStatus,
-          PaymentStatus.pending,
-        );
-
-        // The design's payment screen, with the small "وضع تجريبي".
-        expect(find.byType(PaymentScreen), findsOneWidget);
-        expect(
-          find.byType(LoozTabBar),
-          findsNothing,
-        ); // the app is not open yet
-        expect(find.text('وضع تجريبي'), findsOneWidget);
-        expect(find.text('الدفع'), findsOneWidget);
-        expect(find.text('15 د.ت / 30 يومًا'), findsOneWidget);
-
-        // Empty or wrong card: what is wrong, nothing paid.
-        await confirmDemoPayment(tester, checking: false);
-        expect(find.text('16 رقمًا'), findsOneWidget);
-        expect(find.text('تاريخ غير صحيح (شهر/سنة)'), findsOneWidget);
-        expect(find.text('3 أرقام'), findsOneWidget);
-        expect(find.text('هذه الخانة مطلوبة'), findsOneWidget);
-        await typeDemoCard(
-          tester,
-          number: '4242 4242',
-          expiry: '1320',
-          code: '12',
-        );
-        await confirmDemoPayment(tester, checking: false);
-        expect(find.text('16 رقمًا'), findsOneWidget);
-        expect(find.text('تاريخ غير صحيح (شهر/سنة)'), findsOneWidget);
-        expect(payments.calls.where((c) => c.startsWith('pay')), isEmpty);
-
-        // A good card: grouped by 4, then paid.
-        await typeDemoCard(tester);
-        expect(find.text('4242 4242 4242 4242'), findsOneWidget);
-        expect(find.text('12/30'), findsOneWidget);
-        await confirmDemoPayment(tester);
-        expect(find.byType(PaymentResultScreen), findsOneWidget);
-        expect(find.text('تم الدفع!'), findsOneWidget);
-        expect(find.text('باقتك مفعّلة حتى ${inDays(30)}'), findsOneWidget);
-
-        // The card was forgotten, and only "accepted" left the form.
-        expect(cardTexts(tester).every((t) => t.isEmpty), isTrue);
-        expect(payments.calls.where((c) => c.startsWith('pay')), [
-          'pay essential accepted',
-        ]);
-        expect(payments.calls.join(' '), isNot(contains('4242')));
-
-        await tapAndWait(tester, find.text('متابعة'));
-        expect(find.byType(WelcomeScreen), findsOneWidget);
-        await tapAndWait(tester, find.text('ابدأ'));
-        expect(find.byType(HomePage), findsOneWidget);
-        expect(currentPlan.value, Plan.essential);
-        expect(
-          auth.accounts['+21650000004']!.paymentStatus,
-          PaymentStatus.paid,
-        );
-      },
-    );
-
-    testWidgets('The test card 4000 0000 0000 0002: not paid, try again, '
-        'then continue free', (tester) async {
+    testWidgets('Premium at sign-up: saved "pending", then "ارسم بستانك" '
+        '(the designer: phase 3 = "قريبًا"), "متابعة مجانًا" → welcome', (
+      tester,
+    ) async {
       final (auth, payments) = await startApp(tester);
       await logIn(tester, signUp: true, digits: '50000004');
       await fillInfo(tester);
-      await scrollAndTap(tester, find.text('أساسي'));
+      await scrollAndTap(tester, find.text('بريميوم'));
       await scrollAndTap(tester, find.text('متابعة'));
+      // Saved as "pending" first (if the app closes, the designer comes back).
+      final chosen = auth.accounts['+21650000004']!;
+      expect(chosen.chosenPlan, Plan.paid);
+      expect(chosen.paymentStatus, PaymentStatus.pending);
+
+      expect(find.byType(DesignerStartScreen), findsOneWidget);
+      expect(find.byType(LoozTabBar), findsNothing); // the app is not open yet
+      expect(find.text('ارسم بستانك'), findsOneWidget);
+      expect(find.text('ارسم حدود بستانك'), findsOneWidget);
+      expect(find.text('قسّمه إلى مناطق'), findsOneWidget);
+      expect(find.text('شاهد السعر وادفع'), findsOneWidget);
+      expect(find.text('8 د.ت للمنطقة / 30 يومًا'), findsOneWidget);
+      // The drawing is the next part of the app: "قريبًا" for now.
+      await tapAndWait(tester, findTextWithSymbol('★ ابدأ الرسم'));
+      expect(find.text('قريبًا'), findsOneWidget);
+      expect(find.byType(DesignerStartScreen), findsOneWidget);
+      await tester.pump(const Duration(seconds: 3)); // "قريبًا" goes away
+      await tester.pumpAndSettle();
+
+      await scrollAndTap(tester, find.text('متابعة مجانًا'));
+      expect(find.byType(WelcomeScreen), findsOneWidget);
+      final saved = auth.accounts['+21650000004']!;
+      expect(saved.chosenPlan, Plan.free);
+      expect(saved.paymentStatus, PaymentStatus.free);
+      expect(currentPlan.value, Plan.free);
+      expect(payments.calls.where((c) => c.startsWith('pay')), isEmpty);
+    });
+
+    testWidgets('Premium (in the app): the bill of the orchard, the card '
+        'checks, "جاري التحقق…", paid for 30 days', (tester) async {
+      final (auth, payments) = await openPremium(tester);
+      await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
+
+      // The design's payment screen, with the small "وضع تجريبي".
+      expect(find.byType(PaymentScreen), findsOneWidget);
+      expect(find.byType(LoozTabBar), findsOneWidget); // in the app
+      expect(find.text('وضع تجريبي'), findsOneWidget);
+      expect(find.text('الدفع'), findsOneWidget);
+      // The bill of the database: 4 zones x 8 DT.
+      expect(find.text('32 د.ت / 30 يومًا'), findsOneWidget);
+      expect(find.text('4 مناطق'), findsOneWidget);
+
+      // Empty or wrong card: what is wrong, nothing paid.
+      await confirmDemoPayment(tester, checking: false);
+      expect(find.text('16 رقمًا'), findsOneWidget);
+      expect(find.text('تاريخ غير صحيح (شهر/سنة)'), findsOneWidget);
+      expect(find.text('3 أرقام'), findsOneWidget);
+      expect(find.text('هذه الخانة مطلوبة'), findsOneWidget);
+      await typeDemoCard(
+        tester,
+        number: '4242 4242',
+        expiry: '1320',
+        code: '12',
+      );
+      await confirmDemoPayment(tester, checking: false);
+      expect(find.text('16 رقمًا'), findsOneWidget);
+      expect(find.text('تاريخ غير صحيح (شهر/سنة)'), findsOneWidget);
+      expect(payments.calls.where((c) => c.startsWith('pay')), isEmpty);
+
+      // A good card: grouped by 4, then paid.
+      await typeDemoCard(tester);
+      expect(find.text('4242 4242 4242 4242'), findsOneWidget);
+      expect(find.text('12/30'), findsOneWidget);
+      await confirmDemoPayment(tester);
+      expect(find.byType(PaymentResultScreen), findsOneWidget);
+      expect(find.text('تم الدفع!'), findsOneWidget);
+      expect(find.text('باقتك مفعّلة حتى ${inDays(30)}'), findsOneWidget);
+
+      // The card was forgotten, and only "accepted" left the form.
+      expect(cardTexts(tester).every((t) => t.isEmpty), isTrue);
+      expect(payments.calls.where((c) => c.startsWith('pay')), [
+        'pay accepted',
+      ]);
+      expect(payments.calls.join(' '), isNot(contains('4242')));
+
+      await tapAndWait(tester, find.text('متابعة'));
+      expect(find.byType(QrScreen), findsOneWidget);
+      expect(currentPlan.value, Plan.paid);
+      expect(auth.accounts['+21650000002']!.paymentStatus, PaymentStatus.paid);
+      await closeApp(tester);
+    });
+
+    testWidgets('The test card 4000 0000 0000 0002: not paid, try again, '
+        'then continue free', (tester) async {
+      final (_, payments) = await openPremium(tester);
+      await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
       await typeDemoCard(tester, number: refusedTestCard);
       await confirmDemoPayment(tester);
       expect(find.text('لم يكتمل الدفع'), findsOneWidget);
@@ -450,60 +496,29 @@ void main() {
       await confirmDemoPayment(tester);
       await tapAndWait(tester, find.text('متابعة مجانًا'));
 
-      expect(find.byType(WelcomeScreen), findsOneWidget);
+      // Back to the app, on Home (the free plan).
+      expect(currentTab.value, AppTab.home);
       expect(payments.calls.where((c) => c.startsWith('pay')), [
-        'pay essential refused',
-        'pay essential refused',
+        'pay refused',
+        'pay refused',
       ]);
-      final saved = auth.accounts['+21650000004']!;
-      expect(saved.chosenPlan, Plan.free);
-      expect(saved.paymentStatus, PaymentStatus.free);
+      expect(payments.activePack, isNull);
       expect(currentPlan.value, Plan.free);
+      await closeApp(tester);
     });
 
     testWidgets('Demo payments turned off by an admin: a clear message', (
       tester,
     ) async {
-      final (_, payments) = await startApp(tester);
+      final (_, payments) = await openPremium(tester);
       payments.demoOff = true;
-      await logIn(tester, signUp: true, digits: '50000004');
-      await fillInfo(tester);
-      await scrollAndTap(tester, find.text('أساسي'));
-      await scrollAndTap(tester, find.text('متابعة'));
+      await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
       await typeDemoCard(tester);
       await confirmDemoPayment(tester);
       expect(find.text('لم يكتمل الدفع'), findsOneWidget);
       expect(find.text('الدفع غير متاح الآن.'), findsOneWidget);
       expect(currentPlan.value, Plan.free);
-    });
-
-    testWidgets('Connected: the LOOZ kit is asked, the farmer stays on Free', (
-      tester,
-    ) async {
-      final (auth, payments) = await startApp(tester);
-      await logIn(tester, signUp: true, digits: '50000005');
-      await fillInfo(tester, governorate: 'القيروان', trees: '300');
-      await scrollAndTap(tester, find.text('متصل'));
-      await scrollAndTap(tester, find.text('متابعة'));
-
-      expect(find.byType(KitRequestedScreen), findsOneWidget);
-      expect(find.text('عُدّة لوز'), findsOneWidget);
-      expect(
-        find.text('سنتصل بك لتركيب عُدّة الحسّاسات في بستانك.'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('حتى ذلك الوقت، تستعمل الباقة المجانية.'),
-        findsOneWidget,
-      );
-      await tapAndWait(tester, find.text('متابعة'));
-      expect(find.byType(WelcomeScreen), findsOneWidget);
-
-      expect(payments.kit?.status, KitStatus.requested);
-      expect(payments.calls.where((c) => c.startsWith('pay')), isEmpty);
-      expect(auth.accounts['+21650000005']!.chosenPlan, Plan.free);
-      expect(auth.accounts['+21650000005']!.hasChosenPlan, isTrue);
-      expect(currentPlan.value, Plan.free);
+      await closeApp(tester);
     });
 
     testWidgets(
@@ -606,12 +621,26 @@ void main() {
         governorate: 'Sfax',
         area: '1.25',
       );
-      expect(find.text('15 DT / 30 jours'), findsOneWidget);
-      expect(find.text('8 DT par capteur / 30 jours'), findsOneWidget);
-      await scrollAndTap(tester, find.text('Essentiel'));
+      expect(find.text('Gratuit'), findsOneWidget);
+      expect(find.text('8 DT par zone / 30 jours'), findsOneWidget);
+      await scrollAndTap(tester, find.text('Premium'));
       await scrollAndTap(tester, find.text('Continuer'));
+      expect(find.text('Dessinez votre verger'), findsOneWidget);
+      expect(find.text('Dessinez le contour de votre verger'), findsOneWidget);
+      expect(find.text('Divisez-le en zones'), findsOneWidget);
+      expect(find.text('Voyez le prix et payez'), findsOneWidget);
+      expect(find.text('Continuer gratuitement'), findsOneWidget);
+      final page = tester.element(find.byType(DesignerStartScreen));
+      expect(Directionality.of(page), TextDirection.ltr);
+    });
+
+    testWidgets('French: the bill and the demo payment', (tester) async {
+      await openPremium(tester, lang: 'fr');
+      await scrollAndTap(tester, findTextWithSymbol('★ ${fr.startPremium}'));
       expect(find.text('Mode démo'), findsOneWidget);
       expect(find.text('Paiement'), findsOneWidget);
+      expect(find.text('32 DT / 30 jours'), findsOneWidget);
+      expect(find.text('4 zones'), findsOneWidget);
       await typeDemoCard(tester, name: 'Amine Ben Ali');
       await confirmDemoPayment(tester);
       expect(find.text('Paiement reçu !'), findsOneWidget);
@@ -621,6 +650,7 @@ void main() {
       );
       final page = tester.element(find.byType(PaymentResultScreen));
       expect(Directionality.of(page), TextDirection.ltr);
+      await closeApp(tester);
     });
   });
 
@@ -667,99 +697,99 @@ void main() {
       expect(find.byType(PackScreen), findsOneWidget);
     });
 
-    testWidgets('Essential chosen, not paid → the payment (back = the packs)', (
+    testWidgets('Premium chosen, nothing drawn nor paid → "ارسم بستانك"', (
       tester,
     ) async {
       final auth = useFakeAuth()
-        ..addUser('+21650000004', language: 'ar', chosenPlan: Plan.essential);
+        ..addUser('+21650000004', language: 'ar', chosenPlan: Plan.paid);
       auth.loggedIn = '+21650000004'; // the app opens with the session
       await startApp(tester, auth: auth);
-      expect(find.byType(PaymentScreen), findsOneWidget);
-      expect(find.text('وضع تجريبي'), findsOneWidget);
-      await tester.binding.handlePopRoute(); // the phone's "back"
-      await tester.pumpAndSettle();
-      expect(find.byType(PackScreen), findsOneWidget);
+      expect(find.byType(DesignerStartScreen), findsOneWidget);
+      expect(find.text('متابعة مجانًا'), findsOneWidget); // the sign-up one
     });
 
-    testWidgets('Essential not paid, "إنشاء حساب" again → the payment '
+    testWidgets('Premium not paid, "إنشاء حساب" again → "ارسم بستانك" '
         '(not "already has an account")', (tester) async {
       final auth = useFakeAuth()
-        ..addUser('+21650000004', language: 'ar', chosenPlan: Plan.essential);
+        ..addUser('+21650000004', language: 'ar', chosenPlan: Plan.paid);
       await startApp(tester, auth: auth);
       await logIn(tester, signUp: true, digits: '50000004');
       expect(find.byType(AccountExistsScreen), findsNothing);
-      expect(find.byType(PaymentScreen), findsOneWidget);
+      expect(find.byType(DesignerStartScreen), findsOneWidget);
       expect(auth.calls.where((c) => c.startsWith('choosePlan')), isEmpty);
     });
   });
 
   group('after the sign-up', () {
-    testWidgets('Premium → Connected once the kit is installed: 8 DT x 5 '
-        'sensors, paid, then the QR screen', (tester) async {
-      usePhoneScreen(tester);
-      noAnimations(tester);
-      logInTestUser();
-      final auth = authService as FakeAuthService;
-      final payments = usePayments(auth)..installKit(5);
-      await tester.pumpWidget(const LoozApp(home: PremiumScreen()));
-      await tester.pumpAndSettle();
-      expect(
-        find.textContaining('15 د.ت'),
-        findsOneWidget,
-      ); // the smallest pack
-      await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
-
-      // Only the paid packs; Connected = 8 x 5 sensors.
-      expect(find.byType(PackScreen), findsOneWidget);
-      expect(find.text('مجاني'), findsNothing);
-      expect(find.text('40 د.ت / 30 يومًا'), findsOneWidget);
-      expect(find.text('5 حسّاسات'), findsOneWidget);
-      await scrollAndTap(tester, find.text('متصل'));
-      await scrollAndTap(tester, find.text('متابعة'));
-
-      expect(find.byType(PaymentScreen), findsOneWidget);
-      expect(find.text('40 د.ت / 30 يومًا'), findsOneWidget);
-      expect(find.text('5 حسّاسات'), findsOneWidget); // why 40
+    testWidgets('Premium with more zones than paid: only the extra zones '
+        'until the end of the period', (tester) async {
+      final (_, payments) = await openPremium(
+        tester,
+        zones: 6,
+        plan: Plan.paid,
+      );
+      payments.activePack = ActivePack(
+        endsAt: DateTime.now().add(const Duration(days: 15)),
+        zones: 4,
+      );
+      await scrollAndTap(tester, findTextWithSymbol('★ جدّد باقتك'));
+      // 2 extra zones x 8 DT x 15 days / 30 = 8 DT, until the same end.
+      expect(find.text('8 د.ت'), findsOneWidget);
+      expect(find.text('6 مناطق · حتى ${inDays(15)}'), findsOneWidget);
       await typeDemoCard(tester);
       await confirmDemoPayment(tester);
       expect(find.text('تم الدفع!'), findsOneWidget);
-      expect(payments.calls, contains('pay connected accepted'));
-      expect(currentPlan.value, Plan.connected);
-      await tapAndWait(tester, find.text('متابعة'));
-      expect(find.byType(QrScreen), findsOneWidget);
+      expect(find.text('باقتك مفعّلة حتى ${inDays(15)}'), findsOneWidget);
+      expect(payments.activePack!.zones, 6);
       await closeApp(tester);
     });
 
-    testWidgets('Premium → Connected without a kit: the kit is asked', (
-      tester,
-    ) async {
-      usePhoneScreen(tester);
-      noAnimations(tester);
-      logInTestUser();
-      final payments = usePayments(authService as FakeAuthService);
-      await tester.pumpWidget(const LoozApp(home: PremiumScreen()));
-      await tester.pumpAndSettle();
+    testWidgets('Premium without an orchard: "ارسم بستانك" ("★ ابدأ الرسم" = '
+        '"قريبًا"), "ليس الآن" goes back', (tester) async {
+      final (_, payments) = await openPremium(tester, zones: null);
       await scrollAndTap(tester, findTextWithSymbol('★ ابدأ بريميوم'));
-      await scrollAndTap(tester, find.text('متصل'));
-      await scrollAndTap(tester, find.text('متابعة'));
-      expect(find.byType(KitRequestedScreen), findsOneWidget);
-      expect(payments.kit?.status, KitStatus.requested);
+      expect(find.byType(DesignerStartScreen), findsOneWidget);
+      expect(find.byType(LoozTabBar), findsOneWidget); // in the app
+      await tapAndWait(tester, findTextWithSymbol('★ ابدأ الرسم'));
+      expect(find.text('قريبًا'), findsOneWidget);
+      await scrollAndTap(tester, find.text('ليس الآن'));
+      expect(find.byType(PremiumScreen), findsOneWidget);
       expect(payments.calls, isNot(contains(startsWith('pay'))));
       await closeApp(tester);
     });
 
-    testWidgets('Profile: my pack and until when', (tester) async {
+    testWidgets('Profile: my pack, its zones and until when', (tester) async {
       usePhoneScreen(tester);
       logInTestUser();
       final payments = usePayments(authService as FakeAuthService)
         ..activePack = ActivePack(
-          plan: Plan.essential,
           endsAt: DateTime.now().add(const Duration(days: 12)),
+          zones: 4,
         );
       currentTab.value = AppTab.profile;
       await tester.pumpWidget(const LoozApp(home: MainShell()));
       await tester.pumpAndSettle();
-      expect(find.text('أساسي · حتى ${inDays(12)}'), findsOneWidget);
+      expect(
+        find.text('بريميوم · 4 مناطق · حتى ${inDays(12)}'),
+        findsOneWidget,
+      );
+      payments.activePack = null;
+      await closeApp(tester);
+    });
+
+    testWidgets('Profile: a longer pack line ("منطقة واحدة") takes 2 lines '
+        'and the row grows (no overflow)', (tester) async {
+      usePhoneScreen(tester);
+      logInTestUser();
+      final payments = usePayments(authService as FakeAuthService)
+        ..activePack = ActivePack(endsAt: DateTime(2026, 11, 30), zones: 1);
+      currentTab.value = AppTab.profile;
+      await tester.pumpWidget(const LoozApp(home: MainShell()));
+      await tester.pumpAndSettle();
+      final line = find.text('بريميوم · منطقة واحدة · حتى 30/11/2026');
+      expect(line, findsOneWidget);
+      expect(tester.getSize(line).height, greaterThan(30)); // 2 lines
+      expect(tester.takeException(), isNull); // no overflow
       payments.activePack = null;
       await closeApp(tester);
     });
@@ -767,7 +797,7 @@ void main() {
 
   group('demo login (any number, any code, no SMS)', () {
     testWidgets('A number that never existed and ANY code: every step of the '
-        'sign-up (who are you, information, pack, payment, welcome), Home', (
+        'sign-up (who are you, information, pack, designer, welcome), Home', (
       tester,
     ) async {
       final auth = useFakeAuth()..demoLogin = true;
@@ -787,13 +817,11 @@ void main() {
       expect(find.byType(RoleScreen), findsOneWidget);
       await fillInfo(tester, trees: '120', irrigation: ar.irrigated);
       expect(find.byType(PackScreen), findsOneWidget);
-      await scrollAndTap(tester, find.text(ar.planEssential));
+      await scrollAndTap(tester, find.text(ar.planPaid));
       await scrollAndTap(tester, find.text(ar.continueLabel));
-      expect(find.byType(PaymentScreen), findsOneWidget);
-      await typeDemoCard(tester);
-      await confirmDemoPayment(tester);
-      expect(find.text(ar.paidTitle), findsOneWidget);
-      await tapAndWait(tester, find.text(ar.continueLabel));
+      // Premium: the designer first (phase 3: "قريبًا"), Free meanwhile.
+      expect(find.byType(DesignerStartScreen), findsOneWidget);
+      await scrollAndTap(tester, find.text(ar.continueFree));
       expect(find.byType(WelcomeScreen), findsOneWidget);
       await tapAndWait(tester, find.text(ar.start));
       expect(find.byType(HomePage), findsOneWidget);
@@ -802,8 +830,8 @@ void main() {
       expect(saved.fullName, 'محمد بن سالم');
       expect(saved.role, UserRole.farmer);
       expect(saved.almondTrees, 120);
-      expect(saved.chosenPlan, Plan.essential);
-      expect(payments.calls, contains('pay essential accepted'));
+      expect(saved.chosenPlan, Plan.free);
+      expect(payments.calls, isNot(contains(startsWith('pay'))));
     });
 
     testWidgets('Sign in with ANY code: Home', (tester) async {

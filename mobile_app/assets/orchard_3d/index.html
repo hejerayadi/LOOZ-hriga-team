@@ -13,6 +13,11 @@
     health = its zone's health). A "!" marker shows above a tree only if its
     latest photo diagnosis is warning / danger.
     Tap a zone (or a tree / node in it) to see its panel.
+  - REAL orchard (migration 011): "real": true, the outline drawn by the farmer
+    ("orchard.outline": the ground follows it), each zone with its colour and
+    type from the designer (trees keep the health tint), nodes "installed" or
+    waiting, and texts from the app's ARB files ("texts"). The old planner
+    tools (AI layout, manual planting, sizes) are hidden then.
   - Data comes from Flutter (lib/features/orchard_3d/orchard_3d_data.dart):
       1. this page sends "looz:ready",
       2. Flutter answers with window.loozSetOrchard({...}) (WebView)
@@ -158,6 +163,7 @@
     .zc-title .dot { width: 26px; height: 26px; }
     .zc-title b { display: block; font-size: 22px; color: var(--ink); }
     #zcHealth { font-size: 16px; font-weight: 700; }
+    #zcType { font-size: 16px; font-weight: 600; color: #5b6b62; }
     .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 12px; }
     .tile {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -304,7 +310,7 @@
     <div class="panel-head">
       <div class="zc-title">
         <span id="zcDot" class="dot"></span>
-        <div><b id="zcName"></b><span id="zcHealth"></span></div>
+        <div><b id="zcName"></b><span id="zcHealth"></span><span id="zcType"></span></div>
       </div>
       <button id="zcClose" class="round"><svg data-icon="close"></svg></button>
     </div>
@@ -442,6 +448,9 @@
       nextId: 1
     };
     var DATA = null;         // the orchard sent by the app (zones, nodes, trees)
+    var REAL = false;        // a real orchard from the database (no planner tools)
+    var OUTLINE = null;      // its outline [{x, z}] (null = the rectangle of the planner)
+    var SCALE = 1;           // labels and node boxes grow with big orchards
     var LIVE = true;         // live zone data (sensors) in the user's plan ("Connecté")
     var NEUTRAL = '#1E4D35'; // zone color when the health (from sensors) is not in the plan
     var HEALTH = { good: '#4C9A2A', warning: '#E8912D', danger: '#C8442F' };
@@ -543,9 +552,38 @@
     scene.add(plot);
 
     function updatePlot() {
+      if (OUTLINE) { requestRender(); return; }   // the drawn outline keeps its shape
       plot.scale.set(S.plotW, 1, S.plotL);
       plotTex.repeat.set(S.plotW / 5, S.plotL / 5);
       requestRender();
+    }
+
+    // The ground of a real orchard: the outline the farmer drew.
+    function setOutline(points) {
+      OUTLINE = points;
+      var shape = new THREE.Shape(points.map(function (p) { return new THREE.Vector2(p.x, -p.z); }));
+      var geo = new THREE.ShapeGeometry(shape);
+      geo.rotateX(-Math.PI / 2);
+      plot.geometry.dispose();
+      plot.geometry = geo;
+      plot.scale.set(1, 1, 1);
+      plotTex.repeat.set(0.2, 0.2);   // the shape's UVs are in metres: 1 speckle tile per 5 m
+      requestRender();
+    }
+
+    // A big orchard: wider shadows, field, view distance and bigger labels.
+    function fitScene() {
+      var size = Math.max(S.plotW, S.plotL);
+      SCALE = Math.max(1, size / 40);
+      var half = size / 2 + 12;
+      Object.assign(sun.shadow.camera, { left: -half, right: half, top: half, bottom: -half, far: Math.max(500, size * 3) });
+      sun.shadow.camera.updateProjectionMatrix();
+      sun.position.set(35 * SCALE, 48 * SCALE, 22 * SCALE);
+      var grow = Math.max(1, size * 4 / 400);
+      field.scale.set(grow, grow, 1);
+      fieldTex.repeat.set(40 * grow, 40 * grow);
+      camera.far = Math.max(1000, size * 8);
+      camera.updateProjectionMatrix();
     }
 
     // ---------------------------------------------------------------
@@ -636,8 +674,9 @@
       return out;
     }
 
-    // Color of a zone: its health, or neutral green if the plan has no live data.
-    function zoneColor(zone) { return LIVE ? HEALTH[zone.health] : NEUTRAL; }
+    // Color of a zone: the colour chosen in the designer (else its health),
+    // or neutral green if the plan has no live data.
+    function zoneColor(zone) { return LIVE ? (zone.color || HEALTH[zone.health]) : NEUTRAL; }
 
     // Does the latest photo diagnosis of this tree show a problem?
     function photoProblem(t) { return t.photo === 'warning' || t.photo === 'danger'; }
@@ -803,8 +842,9 @@
       S.trees.forEach(function (t, i) {
         if (!photoProblem(t)) return;
         var sprite = new THREE.Sprite(markerMaterial(t.photo));
-        sprite.scale.set(1.4, 1.4, 1);
-        sprite.position.set(t.x, S.labels ? 3.6 : 3, t.z);   // above the ID label
+        var big = Math.min(SCALE, 2.5);
+        sprite.scale.set(1.4 * big, 1.4 * big, 1);
+        sprite.position.set(t.x, (S.labels ? 3.6 : 3) + big - 1, t.z);   // above the ID label
         sprite.userData.index = i;
         markersGroup.add(sprite);
       });
@@ -866,8 +906,8 @@
         var cx = 0, cz = 0;
         pts.forEach(function (p) { cx += p.x; cz += p.z; });
         zone.label = new THREE.Sprite(zoneLabelMaterial(zone));
-        zone.label.scale.set(6, 2.25, 1);
-        zone.label.position.set(cx / pts.length, 8, cz / pts.length);   // high enough not to hide tree markers
+        zone.label.scale.set(6 * SCALE, 2.25 * SCALE, 1);
+        zone.label.position.set(cx / pts.length, 6 + 2 * SCALE, cz / pts.length);   // high enough not to hide tree markers
         zone.label.userData.zoneId = zone.id;
         zonesGroup.add(zone.label);
       });
@@ -928,7 +968,7 @@
           group.add(mesh);
         });
         group.position.set(n.position_x, 0, n.position_z);
-        group.scale.setScalar(1.6);   // bigger than real, so it is easy to spot and tap
+        group.scale.setScalar(1.6 * Math.min(SCALE, 4));   // bigger than real, so it is easy to spot and tap
         nodesGroup.add(group);
       });
     }
@@ -946,6 +986,12 @@
     function setOrchard(data) {
       DATA = data;
       LIVE = data.live !== false;
+      REAL = data.real === true;
+      if (REAL) S.panelOpen = false;
+      // New texts from the app (its ARB files), in both languages.
+      if (data.texts) {
+        Object.keys(data.texts).forEach(function (l) { if (TXTS[l]) Object.assign(TXTS[l], data.texts[l]); });
+      }
       if (data.colors) {
         HEALTH = data.colors;
         Object.keys(HEALTH).forEach(function (k) { document.documentElement.style.setProperty('--' + k, HEALTH[k]); });
@@ -953,12 +999,15 @@
       if (data.orchard) {
         S.plotW = data.orchard.width;
         S.plotL = data.orchard.length;
+        if (data.orchard.outline && data.orchard.outline.length >= 3) setOutline(data.orchard.outline);
         syncSliders();
         updatePlot();
+        fitScene();
       }
       if (data.lang) setLanguage(data.lang, true);
       ZONES = (data.zones || []).map(function (z) {
-        return { id: z.id, names: z.names, name: zoneName(z), health: z.health, points: z.boundary, node: null };
+        return { id: z.id, names: z.names, name: zoneName(z), health: z.health, color: z.color || null,
+                 type: z.type || null, points: z.boundary, node: null };
       });
       (data.nodes || []).forEach(function (n) {
         var zone = zoneById(n.zone_id);
@@ -1061,6 +1110,8 @@
       orbit.theta = Math.PI / 4;
       orbit.phi = Math.PI / 3.4;
       orbit.radius = Math.min(maxRadius, Math.max(62, fitRadius()));
+      scene.fog.near = Math.max(70, orbit.radius * 0.9);
+      scene.fog.far = Math.max(170, orbit.radius * 2.6);
       resetWalker();
       requestRender();
     }
@@ -1256,19 +1307,24 @@
         $('zcName').textContent = zone.name;
         $('zcHealth').textContent = LIVE ? TXT.health[zone.health] : '';
         $('zcHealth').style.color = HEALTH[zone.health];
+        $('zcType').textContent = zone.type && TXT.types && TXT.types[zone.type] ? ' · ' + TXT.types[zone.type] : '';
         // Live zone data not in the plan: a lock + "Passer à Connecté" instead.
         document.querySelectorAll('#zoneCard .live').forEach(function (el) { el.classList.toggle('hidden', !LIVE); });
         show('zcLocked', !LIVE);
         $('zcTiles').style.gridTemplateColumns = LIVE ? '' : '1fr';
-        $('zcMoist').textContent = n ? Math.round(n.soil_moisture) + ' %' : '—';
-        $('zcTemp').textContent = n ? n.temperature.toFixed(1) + '°' : '—';
-        $('zcBat').textContent = n ? n.battery + ' %' : '—';
-        $('zcBat').classList.toggle('low', !!n && n.battery < 20);
+        // No readings yet (they will come from the readings database): "قريبًا".
+        $('zcMoist').textContent = n && n.soil_moisture != null ? Math.round(n.soil_moisture) + ' %' : (TXT.soon || '—');
+        $('zcTemp').textContent = n && n.temperature != null ? n.temperature.toFixed(1) + '°' : (TXT.soon || '—');
+        $('zcBat').textContent = n && n.battery != null ? n.battery + ' %' : '—';
+        $('zcBat').classList.toggle('low', !!n && n.battery != null && n.battery < 20);
         var inZone = S.trees.filter(function (t) { return t.zoneId === id; });
         $('zcTrees').textContent = inZone.length;
-        var online = n && n.status === 'online';
+        var waiting = !!n && n.installed === false;   // the technician did not come yet
+        var online = n && n.status === 'online' && !waiting;
         $('zcNodeDot').style.background = online ? '#57d16b' : '#9aa0a6';
-        $('zcNode').textContent = n ? (online ? TXT.online : TXT.offline) + ' · ' + timeAgo(n.last_seen) : '—';
+        $('zcNode').textContent = !n ? '—'
+          : waiting ? (TXT.nodeWaiting || TXT.offline)
+          : (online ? TXT.online : TXT.offline) + (n.last_seen ? ' · ' + timeAgo(n.last_seen) : '');
         var flagged = inZone.filter(photoProblem);
         show('zcFlag', flagged.length > 0);
         $('zcFlagText').textContent = TXT.check + flagged.map(function (t) { return '#' + t.id; }).join(', ');
@@ -1408,7 +1464,7 @@
       toggle('btnManual', S.mode === 'manual');
       toggle('varMain', S.variety === 'main');
       toggle('varPoll', S.variety === 'pollinizer');
-      show('btnSettings', !walking);
+      show('btnSettings', !walking && !REAL);
       show('viewSwitch', ZONES.length > 0);
       show('btnReal', !!DATA);
       show('manualBox', S.mode === 'manual');
