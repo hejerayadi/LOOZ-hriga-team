@@ -1,10 +1,10 @@
 # Looz — project status
 
-Last update: 3 November 2026.
+Last update: 9 November 2026 (two packs + my orchard in 3D with real data = Milestone 1).
 
-> **⚠ Before a real launch: turn the DEMO LOGIN off** (section 3). While it is on, anyone who types a
+> **⚠ Before a real launch: turn the DEMO LOGIN off** (section 4). While it is on, anyone who types a
 > phone number can open that account: any 6-digit code works. Turn the **demo payment** off too
-> (section 7) once a real payment provider is set up.
+> (section 8) once a real payment provider is set up.
 
 ## 1. What works today
 
@@ -13,42 +13,63 @@ Last update: 3 November 2026.
 | Design (23 screens of the Figma, Arabic right to left + French) | Done | — |
 | Start of the app: start screen, sign in, sign up (who are you → information → pack) | Done | **Real** (Supabase) |
 | Login with the phone | Done as a **demo login** (any number, any code, no SMS) | **Real** accounts and sessions (Edge Function `demo-auth`) |
-| Payment of the packs | Done as a **demo** (no real money) | **Real** database, demo card |
-| LOOZ kit request (Connected pack) | Done | **Real** (Supabase) |
-| Profile: name, phone, my pack and its end date, log out | Done | **Real** (Supabase) |
+| **Two packs**: Free and Premium (8 DT per zone / 30 days) | Done | **Real** (database rules + app) |
+| Payment of Premium: the bill comes from the database (zones of the orchard) | Done as a **demo** (no real money) | **Real** database, demo card |
+| **My orchard in 3D** (Premium): the farmer's real orchard, zones, trees, sensor boxes | Done | **Real** (Supabase). Sensor readings not yet: "قريبًا" |
+| Orchard designer (draw the orchard, cut it into zones, pay) | **Not built yet** (Phase 3): "ابدأ الرسم" shows "قريبًا" | — |
+| Profile: name, phone, my pack, its zones and end date, log out | Done | **Real** (Supabase) |
 | Community: questions, answers, delete, photos | Done | **Real** (Supabase + Storage) |
-| Plans: what each pack can use (Free / Essential / Connected) | Done | **Real** (database rules + app) |
-| Home, alerts, my orchard in 3D, camera diagnosis, assistant, voice, map, journal, tips | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`) |
+| Home, alerts, camera diagnosis, assistant, voice, map, journal, tips | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`) |
 | Admin dashboard (`dashboard/`) | Started, not ready | — |
 
 The list of every screen and how it was checked: `mobile_app/SCREENS_CHECKLIST.md`.
 
-## 2. The start of the app (how it works now)
+## 2. The two packs (migration 011)
+
+| | Free | Premium |
+| --- | --- | --- |
+| Price | 0 | **8 DT per zone / 30 days** (1 zone = 1 LOOZ sensor box, installed by us) |
+| Community, alerts of the region | ✓ | ✓ |
+| My orchard in 3D, smart alerts, predictions, photo diagnosis, assistant and voice | — | ✓ |
+
+- **The bill** = the zones the farmer drew, but at least **1 zone per 2 hectares** (drawing 1 zone on
+  10 ha still bills 5). An admin can replace this minimum with the real number of boxes installed
+  (section 9). The app never computes the price: it asks the database (`orchard_quote()`).
+  - No pack yet, or the pack has ended → a new month: zones × 8 DT.
+  - Pack still running and more zones drawn → only the **extra zones**, for the days left.
+  - Pack still running, same zones → paying adds **the next month** ("جدّد باقتك").
+- **No orchard drawn yet** → nothing to bill: "★ ابدأ بريميوم" opens **"ارسم بستانك"** (the
+  designer's first screen). Its "★ ابدأ الرسم" says "قريبًا" until Phase 3.
+- **Free users**: the "بستاني ★" tab shows the locked screen ("★ ابدأ بريميوم"). The camera
+  button, the assistant bar and "تكلّم" lead there too.
+- **The old packs** (Essential 15 DT, Connected 8 DT per sensor) are gone. Their paid subscribers
+  became **Premium** with the same end date (Connected kept its number of sensors). Their old
+  payments keep the old name (history). Open kit requests of the old Connected flow were cancelled
+  with a note.
+
+## 3. The start of the app (how it works now)
 
 - **Start screen**: the almond-blossom photo, "عربي | FR" (remembered on the phone),
   "إنشاء حساب" (sign up) and "تسجيل الدخول" (sign in).
 - **Sign in**: phone → code → Home. A number with no account gets
   "لا يوجد حساب بهذا الرقم." and a button "إنشاء حساب" (nothing is created).
-- **Sign up**: phone → code → **"من أنت؟"** (its own screen, two big buttons with an icon: "فلاح"
-  or "مهندس فلاحي أو مرشد") → **"معلوماتك"**:
+- **Sign up**: phone → code → **"من أنت؟"** ("فلاح" or "مهندس فلاحي أو مرشد") → **"معلوماتك"**:
   - first name, last name, governorate (24), all required;
   - farmers, optional: almond trees, area in hectares, irrigated / rain-fed;
   - experts, optional: only their organisation (no orchard boxes).
 - **Farmer, then the pack**:
   - Free → welcome → Home.
-  - Essential (15 DT / 30 days) → demo payment → welcome → Home.
-  - Connected (8 DT per sensor / 30 days) → a **kit request**. The farmer stays on Free and sees
-    "we will contact you". After the installation, they pay from Premium.
+  - Premium → **"ارسم بستانك"** (3 steps: draw the outline, cut it into zones, see the price and
+    pay). For now "★ ابدأ الرسم" = "قريبًا", and "متابعة مجانًا" → welcome → Home on Free.
+    (Phase 3: the drawing, then the bill and the payment, then the orchard is built.)
 - **Expert**: no pack, no payment → welcome → Home. The "◆ خبير موثّق" badge appears only after an
-  admin verifies them (see 7).
-- **A number that already has an account**: "هذا الرقم لديه حساب بالفعل." + "تسجيل الدخول". Nothing
-  is changed.
-- **Stopped in the middle** (no information, no pack, Essential not paid): the next login opens the
-  missing step.
-- **Errors** (no internet, wrong code...) show a neutral warning icon (▲!). The insect icon is only
-  for real pests (alerts, diagnosis, tips, journal).
+  admin verifies them (section 9).
+- **A number that already has an account**: "هذا الرقم لديه حساب بالفعل." + "تسجيل الدخول".
+- **Stopped in the middle** (no information, no pack, or Premium chosen and not paid): the next
+  login opens the missing step ("ارسم بستانك" for Premium).
+- **Errors** (no internet, wrong code...) show a neutral warning icon (▲!).
 
-## 3. Demo login (any number, any code) — TURN IT OFF BEFORE A REAL LAUNCH
+## 4. Demo login (any number, any code) — TURN IT OFF BEFORE A REAL LAUNCH
 
 **What it does.** While `app_settings.demo_login_enabled` is `true`:
 
@@ -66,7 +87,8 @@ session. Its limits:
 - every account it makes is marked `demo_login: true` (in its app metadata).
 
 **Why it must be off for a real launch.** While it is on, **anyone who types a phone number can open
-that account** (and see that person's profile, pack and posts). It is only for demos and tests.
+that account** (and see that person's profile, pack, orchard and posts). It is only for demos and
+tests.
 
 **How to turn it off** (takes effect at once, no new app needed):
 
@@ -75,7 +97,7 @@ that account** (and see that person's profile, pack and posts). It is only for d
 
 Then the app uses the normal Supabase SMS code again. **Before that**, set up a real SMS provider in
 Supabase › Authentication › Sign In / Providers › Phone; otherwise only the 5 test numbers of
-section 4 can log in. To turn the demo back on: `true`.
+section 5 can log in. To turn the demo back on: `true`.
 
 **The demo accounts.** To list them (read only, in the SQL Editor):
 
@@ -87,11 +109,10 @@ where raw_app_meta_data->>'demo_login' = 'true' order by created_at;
 Delete the ones you don't need in Supabase › Authentication › Users (their profile goes with them).
 
 **If you deploy `demo-auth` again** (Edge Functions › `demo-auth` › edit › Deploy): check in its
-settings that **"Verify JWT" is still off** (the app calls it before anyone is logged in; some
-dashboards switch it back on after a deploy). If the function is missing, the app quietly uses the
+settings that **"Verify JWT" is still off**. If the function is missing, the app quietly uses the
 normal SMS code.
 
-## 4. Run the app
+## 5. Run the app
 
 Put the Supabase URL and the **publishable** key in `mobile_app/.env` (see `mobile_app/.env.example`).
 Never put the `service_role` key in the app.
@@ -105,19 +126,18 @@ flutter run -d chrome --dart-define-from-file=.env
 With the demo login on, **any number works** (type only the 8 digits: "+216" is already there) with
 **any 6 digits** as the code.
 
-**Numbers already used by the tests** (they have accounts):
+**Numbers already used** (they have accounts):
 
 | Number | Used for |
 | --- | --- |
-| +216 50 000 001 ... 005 | Supabase test numbers (code `123456`, also without the demo login): auth, community, sign-up and payment live tests |
-| +216 22 999 001 | Demo login live test: farmer |
-| +216 22 999 003 | Demo login live test: expert |
+| +216 50 000 001 ... 005 | Supabase test numbers (code `123456`, also without the demo login): auth, community, sign-up and payment live tests. 04 = Premium, 1 zone, no orchard. 05 = Free (its kit request was cancelled by 011) |
+| +216 22 999 001 / 003 | Demo login live test: farmer / expert |
 | +216 22 999 002 | Demo login live test: must **never** get an account ("no account" check) |
-| +216 22 123 456 | Real app in Chrome, Arabic: farmer + Essential paid (demo) |
-| +216 22 123 457 | Real app in Chrome, French: farmer + Connected (kit request) |
-| +216 22 123 458 | Real app in Chrome, Arabic: expert |
+| +216 22 123 456 | **Premium with the demo orchard** (seed): 4 zones, until 3/12/2026. Use it to see "بستاني ★" in 3D |
+| +216 22 123 457 | **Free** farmer: the locked screens |
+| +216 22 123 458 | Expert |
 
-## 5. Database and Edge Function (Supabase)
+## 6. Database and Edge Function (Supabase)
 
 Run the files in **Supabase > SQL Editor**, in this order. Every file can be run again safely.
 
@@ -132,24 +152,28 @@ Run the files in **Supabase > SQL Editor**, in this order. Every file can be run
 9. `supabase/migrations/008_signup_profile_payment.sql`
 10. `supabase/migrations/009_demo_payment_kits_roles.sql`
 11. `supabase/migrations/010_demo_login.sql`
-12. Optional, demo questions for the community: `supabase/seed/community_demo.sql`
+12. `supabase/migrations/011_two_packs_orchard_designer.sql`
+13. Optional, the demo orchard of +216 22 123 456: `supabase/seed/orchard_demo.sql`
+    (to remove it: `supabase/seed/orchard_demo_delete.sql`).
+14. Optional, demo questions for the community: `supabase/seed/community_demo.sql`
     (to remove them: `supabase/seed/community_demo_delete.sql`).
 
 Then the **Edge Function** `demo-auth`: Edge Functions › Deploy a new function › Via Editor › paste
 `supabase/functions/demo-auth/index.ts` › name `demo-auth` › Deploy function; then in its settings
 turn **"Verify JWT" off**. No secret to add.
 
-All 11 SQL files are in the real database, and `demo-auth` answers (checked on 3 November 2026 by
-`test_live/database_check_test.dart` and `test_live/demo_login_live_test.dart`).
+All 12 SQL files and the demo orchard are in the real database, and `demo-auth` answers (checked on
+9 November 2026 by `test_live/database_check_test.dart`, `orchard_live_test.dart` and
+`demo_login_live_test.dart`).
 
-## 6. Tests
+## 7. Tests
 
 From `mobile_app/`:
 
 | Command | What it checks | Last result |
 | --- | --- | --- |
 | `flutter analyze` | The code | No issues |
-| `flutter test` | All the screens and flows, with a fake login (also in demo mode), fake payment and fake community; the real login code with a fake web server (no internet) | 133 / 133 pass |
+| `flutter test` | All the screens and flows, with a fake login (also in demo mode), fake payment, fake orchard and fake community; the real login code with a fake web server (no internet) | 140 / 140 pass |
 | `python tool/find_hardcoded_texts.py` | No text written in the code (all texts in `lib/l10n/*.arb`) | 0 |
 
 **Live tests**: against the real Supabase. They need internet and `mobile_app/.env`.
@@ -157,58 +181,71 @@ Run each one with `--dart-define-from-file=.env`.
 
 | File | What it does | Last result |
 | --- | --- | --- |
-| `test_live/database_check_test.dart` | Are all the SQL files in the database? (read only) | 11 / 11 |
+| `test_live/database_check_test.dart` | Are all the SQL files in the database? (read only) | 12 / 12 |
+| `test_live/orchard_live_test.dart` | The demo orchard of 22 123 456; the app reads it and builds the 3D; in the app "بستاني ★" shows it; Premium → bill 32 DT for 4 zones, refused test card changes nothing; a Free account sees no orchard | 5 / 5 |
+| `test_live/signup_payment_live_test.dart` | 04 (old Essential) is Premium now, 1 zone, same end date, "ارسم بستانك"; 05's kit request cancelled, Free, locked → "ارسم بستانك"; 20 database rules (no free pack, no price change, no orchard written by hand...) | 4 / 4 |
 | `test_live/demo_login_live_test.dart` | `demo-auth` answers; sign up with a new number and any code (farmer, expert), sign in with another code, "no account", the rules | 6 / 6 |
 | `test_live/auth_live_test.dart` | Sign in 01 and 02, the security rules of the profiles | 5 / 5 |
-| `test_live/signup_payment_live_test.dart` | Sign up 04 + demo payment (refused, then paid 30 days), 05 + kit request, the payment rules | 4 / 4 |
 | `test_live/community_live_test.dart` | Questions, answers, rules (01, 02, 03) | 6 / 6 |
 | `test_live/community_photo_live_test.dart` | Photos in Storage (01, 02) | 3 / 3 |
 
 Example:
 
 ```powershell
-flutter test test_live/demo_login_live_test.dart --dart-define-from-file=.env
+flutter test test_live/orchard_live_test.dart --dart-define-from-file=.env
 ```
 
 The numbers of the live tests have accounts now: the sign-up tests then check "account exists"
 instead. To test them as new users again, delete them in Supabase > Authentication > Users.
 
-## 7. What is demo or fake
+## 8. What is demo or fake
 
-- **Login = DEMO** (section 3): any number, any code, no SMS. Turn it off before a real launch.
+- **Login = DEMO** (section 4): any number, any code, no SMS. Turn it off before a real launch.
 - **Payment = DEMO.** No money moves, there is no payment provider.
   - The card boxes only *look* real: the app checks the format (16 digits, a date, 3 digits,
     a name), then clears them.
   - The card is never saved, never sent (not to Supabase, not anywhere), never in a log or a test.
-  - The database only records "paid_demo" or "failed_demo".
+  - The database only records "paid_demo" or "failed_demo", with the amount and the zones.
   - The test card **4000 0000 0000 0002** is always refused, to show the "not paid" screen.
     Any other well-formed card is accepted.
   - The payment screen shows a small "وضع تجريبي / Mode démo" label.
   - The code is ready for a real provider: only `DemoPaymentService` in
     `mobile_app/lib/data/payment_service.dart` would change.
-- **Fake data**: Home, alerts, 3D orchard, diagnosis, assistant, map, journal and tips use
+- **The demo orchard** of +216 22 123 456 comes from `supabase/seed/orchard_demo.sql`
+  (`orchards.is_demo = true`). Its sensor boxes have no readings yet: the 3D shows "قريبًا" for
+  soil moisture and temperature.
+- **Fake data**: Home, alerts, diagnosis, assistant, map, journal and tips use
   `lib/data/fake_data.dart`.
-- **"Mode test : changer d'offre"** in Profile: a switch for testing that changes the plan in the
-  app only (not in the database).
+- **"Mode test : changer d'offre"** in Profile (debug builds only): switches Free / Premium in the
+  app only (not in the database), to see the locked screens.
 
-## 8. Admin how-tos (Supabase > Table Editor)
+## 9. Admin how-tos (Supabase > Table Editor)
 
 | To do | Where | How |
 | --- | --- | --- |
-| **Turn the demo login off** | `app_settings` (one row) | `demo_login_enabled` = `false` (section 3). |
+| **Turn the demo login off** | `app_settings` (one row) | `demo_login_enabled` = `false` (section 4). |
 | Turn the demo payment off | `app_settings` (one row) | `demo_payments_enabled` = `false`. The app then says "payment not available". |
-| Mark a kit as installed | `kit_requests` | `status` = `installed` **and** `sensors` = the number of sensors (e.g. 5). The farmer can then pay Connected (8 DT × 5 = 40 DT) from Premium. Other statuses: `new`, `contacted`, `cancelled`. |
+| Change the price | `plan_prices`, row `paid` | `price_millimes` = the price of **one zone** (8000 = 8 DT); `period_days` = 30. |
+| Change the minimum per area | `app_settings` (one row) | `hectares_per_node` = 2.00 (1 zone billed per 2 ha at least). Empty = bill only the zones drawn. |
+| Bill the real number of boxes | `orchards` | `confirmed_nodes` = the boxes really installed (1 to 100). It replaces the area minimum. |
+| Installation visits | `kit_requests` | Made **by the database** when a paid orchard is built (Phase 3), with the number of boxes to install. `new` → `contacted` → `installed` (every waiting box of that orchard becomes "installed" in the 3D), or `cancelled`. |
 | Verify an expert | `profiles` (`role` = `expert`) | `verified` = `true`. The "◆ خبير موثّق" badge then appears next to their posts and answers. |
-| Change a price | `plan_prices` | `price_millimes` (15000 = 15 DT). Connected has `per_sensor` = `true`. |
 | Make an admin (dashboard) | `profiles` | `role` = `admin`. |
 
 Users can't do any of these themselves: the database rules refuse it (checked by the live tests).
 
-## 9. Next steps
+## 10. Next steps
 
-1. **Real SMS** (an SMS provider in Supabase Auth), then **turn the demo login off**.
-2. **Real payment**: choose the provider (Konnect was compared), add an Edge Function and its
+1. **Orchard designer**
+   - Phase 3: draw the outline on a grid, cut it into zones (automatic or by hand), see the bill,
+     pay, and the orchard is built (zones, one box per zone, trees in rows).
+   - Phase 4: edit the orchard later (history kept, extra zones billed for the days left).
+   - Phase 5: draw on a satellite map (after choosing a map provider).
+2. **Real SMS** (an SMS provider in Supabase Auth), then **turn the demo login off**.
+3. **Real payment**: choose the provider (Konnect was compared), add an Edge Function and its
    secret key in Supabase secrets (never in the app), and replace `DemoPaymentService`.
-3. **Admin dashboard**: pages for kit requests, expert verification and the two demo switches.
-4. **Real data** for the orchard, sensors, alerts and photo diagnosis (in place of `fake_data.dart`).
-5. Remind farmers before their pack ends (the end date is in `subscriptions.ends_at`).
+4. **Admin dashboard**: pages for installation visits, `confirmed_nodes`, expert verification and
+   the two demo switches.
+5. **Real sensor readings** in the 3D (soil moisture, temperature), then real alerts and photo
+   diagnosis (in place of `fake_data.dart`).
+6. Remind farmers before their pack ends (the end date is in `subscriptions.ends_at`).
