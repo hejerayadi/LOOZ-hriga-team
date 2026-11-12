@@ -1,0 +1,1546 @@
+[
+    {
+        "id": "e36a9607f46cef68",
+        "type": "tab",
+        "label": "Almond Smart Farm",
+        "disabled": false,
+        "info": "Prototype Node-RED LOOZ : nœuds simulés (L1, 1 nœud ESP32 par zone, plusieurs arbres par nœud) → passerelle (L2/L3) → mémoire numérique du nœud, indices de stress et alertes par zone (L4) → dashboard (L5).\n\nLOOZ (iot/node-red) : L6 envoie les mesures notées à Supabase (Edge Function iot-ingest), un lot par minute. Zones A à D comme dans Supabase. La clé de la passerelle vient de .env (jamais dans ce fichier).",
+        "env": []
+    },
+    {
+        "id": "cc4f03618119518e",
+        "type": "comment",
+        "z": "e36a9607f46cef68",
+        "name": "L1 · Nœuds simulés (4 ESP32, 1 par zone, plusieurs arbres par nœud) — toutes les 5 s = 15 min simulées",
+        "info": "Paramètres en tête de la fonction : ORCHARD, TICK_MINUTES, START, NODES (zone, arbres couverts, scénario).\nScénarios : NODE-02 irrigation défaillante, NODE-03 zone chaude, NODE-04 sonde sol défaillante.",
+        "x": 330,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "8141eaf4dcc6912b",
+        "type": "comment",
+        "z": "e36a9607f46cef68",
+        "name": "L2/L3 · Passerelle : checksum, plages, séquence, sonde figée, batterie, signal",
+        "info": "Les drapeaux de santé capteur sont séparés des scores biologiques (§18).",
+        "x": 820,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "23072970d327921b",
+        "type": "comment",
+        "z": "e36a9607f46cef68",
+        "name": "L4 · Mémoire numérique du nœud (zone) + indices de stress + alertes (rules-v1)",
+        "info": "Water-Stress Index, Heat-Stress Index, score d'anomalie vs baseline personnalisée, niveau INFO/WATCH/WARNING/CRITICAL (§13-14).\nPour brancher un vrai service IA : remplacer cette fonction par un nœud http request vers l'API du modèle.",
+        "x": 1330,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "05432d544dd1129b",
+        "type": "comment",
+        "z": "e36a9607f46cef68",
+        "name": "L5 · Dashboard agriculteur : http://127.0.0.1:1881/dashboard",
+        "info": "",
+        "x": 1880,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "2e409b84252902d3",
+        "type": "comment",
+        "z": "e36a9607f46cef68",
+        "name": "MQTT : entrée farm/<verger>/<nœud>/telemetry (désactivée) · sorties farm/VERGER-NORD/validated · farm/<verger>/<nœud>/health · farm/<verger>/alerts",
+        "info": "Activez les nœuds MQTT (clic droit → Activer) si un broker tourne (Mosquitto…). L'entrée « Nœuds réels » permet de remplacer la simulation par de vrais ESP32.",
+        "x": 820,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "58453538ad3a3e61",
+        "type": "inject",
+        "z": "e36a9607f46cef68",
+        "name": "Toutes les 5 s",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "d39eb3047a3ea65d"
+            ]
+        ]
+    },
+    {
+        "id": "d39eb3047a3ea65d",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Nœuds simulés (ESP32, 1 par zone)",
+        "func": "// ============================================================\n//  SIMULATION DES NŒUDS (ESP32) — LOOZ\n//  1 nœud = 1 zone du verger ; chaque nœud couvre plusieurs arbres.\n//  Zones A à D : les mêmes noms que dans Supabase et le dashboard admin LOOZ.\n//  Un message par NŒUD à chaque déclenchement. Paramètres ci-dessous.\n// ============================================================\nconst ORCHARD      = \"VERGER-NORD\";\nconst TICK_MINUTES = 15;                            // minutes simulées par déclenchement (1 jour ≈ 96 ticks)\nconst START        = Date.UTC(2026, 5, 15, 5, 0);   // 15 juin 2026, 05:00 — heure simulée\nconst FIELD_CAP    = 38;                            // % humidité du sol à la capacité au champ\nconst WILTING      = 15;                            // % point de flétrissement\nconst NODES = [\n    // 1 nœud ESP32 par zone. trees = arbres couverts par ce nœud.\n    // scénarios : normal | irrigation_defaillante | zone_chaude | sonde_sol_defaillante\n    { id: \"NODE-01\", zone: \"A\", cultivar: \"Nonpareil\", age: 8,  scenario: \"normal\",                 far: false,\n      trees: [\"TREE-012\", \"TREE-013\", \"TREE-014\", \"TREE-027\", \"TREE-028\"] },\n    { id: \"NODE-02\", zone: \"B\", cultivar: \"Nonpareil\", age: 10, scenario: \"irrigation_defaillante\", far: false,\n      trees: [\"TREE-042\", \"TREE-043\", \"TREE-044\", \"TREE-058\"] },\n    { id: \"NODE-03\", zone: \"C\", cultivar: \"Tuono\",     age: 12, scenario: \"zone_chaude\",            far: true,\n      trees: [\"TREE-073\", \"TREE-074\", \"TREE-075\", \"TREE-076\", \"TREE-077\"] },\n    { id: \"NODE-04\", zone: \"D\", cultivar: \"Ferraduel\", age: 4,  scenario: \"sonde_sol_defaillante\",  far: true,\n      trees: [\"TREE-089\", \"TREE-090\", \"TREE-091\", \"TREE-092\"] }\n];\n\nif (flow.get(\"simulation_active\") === false) {\n    node.status({ fill: \"grey\", shape: \"ring\", text: \"simulation en pause\" });\n    return null;\n}\n\n// ---------- horloge simulée ----------\nlet clock = context.get(\"clock\");\nclock = (clock === undefined) ? START : clock + TICK_MINUTES * 60000;\ncontext.set(\"clock\", clock);\nconst d   = new Date(clock);\nconst h   = d.getUTCHours() + d.getUTCMinutes() / 60;          // heure décimale\nconst day = Math.floor((clock - START) / 86400000);            // jour simulé (0 = premier jour)\nconst ts  = d.toISOString();\nconst p2  = v => String(v).padStart(2, \"0\");\nconst label = `${p2(d.getUTCDate())}/${p2(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())} (jour ${day + 1})`;\n\n// ---------- météo du verger (commune) ----------\nconst rnd = a => (Math.random() - 0.5) * 2 * a;\nconst r1  = v => Math.round(v * 10) / 10;\nconst canicule = (day >= 1 && day <= 2) ? 3 : 0;                      // vague de chaleur jours 2-3 (+3 °C)\nlet cloud = context.get(\"cloud_\" + day);\nif (cloud === undefined) { cloud = 0.75 + Math.random() * 0.25; context.set(\"cloud_\" + day, cloud); }\nconst tAir0 = 27 + canicule + 8 * Math.cos(2 * Math.PI * (h - 15) / 24); // min ≈ 19 °C à 03:00, max ≈ 35 °C à 15:00\nconst par0  = (h > 6 && h < 20) ? 1900 * cloud * Math.sin(Math.PI * (h - 6) / 14) : 0;\n\n// ---------- somme de contrôle (recalculée par la passerelle) ----------\nfunction checksum(p) {\n    const s = [p.nodeId, p.seq, p.soil_moisture_pct, p.soil_temp_c, p.air_temp_c, p.humidity_pct, p.light_par].join(\"|\");\n    let c = 0; for (const ch of s) c = (c * 31 + ch.charCodeAt(0)) & 0xffff; return c;\n}\n\nconst state    = context.get(\"state\") || {};\nconst irrigate = flow.get(\"irrigation_urgence\") || null;              // bouton du dashboard\nconst out = [];\n\nNODES.forEach((t, i) => {\n    const s = state[t.id] || {\n        sm: (t.scenario === \"irrigation_defaillante\" ? 24 : FIELD_CAP - 2) + rnd(1.5),\n        tsol: 22, batt: 92 + rnd(5), seq: 0, stuck: 0, stuckValue: 0\n    };\n    const zoneOffset = t.scenario === \"zone_chaude\" ? 4 : (t.far ? 1.5 : 0);\n    const tAir = tAir0 + zoneOffset + rnd(0.4);\n    const rh   = Math.min(95, Math.max(20, 95 - 1.9 * (tAir - 15) + rnd(2)));\n    const par  = Math.max(0, par0 * (1 + rnd(0.05)));\n    const es   = 0.6108 * Math.exp(17.27 * tAir / (tAir + 237.3));\n    const vpd  = es * (1 - rh / 100);                                   // déficit de pression de vapeur (kPa)\n\n    // assèchement du sol (évapotranspiration) — ≈ 7 % par jour sans irrigation\n    const drying = 0.025 + 0.04 * Math.min(1, vpd / 3) + 0.02 * (par / 1900);\n    s.sm = Math.max(WILTING - 6, s.sm - drying * (TICK_MINUTES / 10));\n    // irrigation quotidienne à 06:00\n    if (h >= 6 && h < 6 + TICK_MINUTES / 60) {\n        const efficace = t.scenario !== \"irrigation_defaillante\";\n        s.sm = efficace ? FIELD_CAP + rnd(1) : s.sm + 0.8;              // ligne fuyarde : apport dérisoire\n    }\n    if (irrigate === t.id) s.sm = FIELD_CAP;                           // irrigation d'urgence de la zone (agriculteur)\n    s.tsol = s.tsol + 0.08 * (tAir - 2 - s.tsol);                       // sol : inertie thermique\n    s.batt = Math.min(100, Math.max(5, s.batt + (par > 600 ? 0.02 : -0.015))); // recharge solaire\n    s.seq += 1;\n\n    let smRead = r1(s.sm + rnd(0.25));                                 // bruit de lecture de la sonde\n    if (t.scenario === \"sonde_sol_defaillante\") {                       // valeurs impossibles ou figées\n        if (s.stuck > 0) { smRead = s.stuckValue; s.stuck--; }\n        else if (Math.random() < 0.03) smRead = [-1, 0, 101][Math.floor(Math.random() * 3)];\n        else if (Math.random() < 0.012) { s.stuck = 12; s.stuckValue = smRead; }\n    }\n    state[t.id] = s;\n\n    const payload = {\n        nodeId: t.id, orchardId: ORCHARD, zone: t.zone, cultivar: t.cultivar, age_years: t.age,\n        trees: t.trees, tree_count: t.trees.length,\n        firmware: \"1.2.0\", seq: s.seq, timestamp: ts,\n        soil_moisture_pct: smRead,\n        soil_temp_c:  r1(s.tsol),\n        air_temp_c:   r1(tAir),\n        humidity_pct: r1(rh),\n        light_par:    Math.round(par),                                  // µmol/m²/s\n        vpd_kpa:      Math.round(vpd * 100) / 100,\n        battery_pct:  r1(s.batt),\n        rssi_dbm:     Math.round(-78 - (t.far ? 12 : 0) + rnd(6)),\n        piezo_rms:    Math.round((0.02 + Math.random() * 0.01) * 1000) / 1000   // canal expérimental\n    };\n    payload.checksum = checksum(payload);\n    out.push({ topic: `farm/${ORCHARD}/${t.id}/telemetry`, payload, lastOfTick: i === NODES.length - 1, simTime: label });\n});\n\nif (irrigate) flow.set(\"irrigation_urgence\", null);\ncontext.set(\"state\", state);\nnode.status({ fill: \"green\", shape: \"dot\", text: label });\nreturn [out];\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 200,
+        "wires": [
+            [
+                "0b74ec7d74f187af"
+            ]
+        ]
+    },
+    {
+        "id": "8c5abf47bb18d4d2",
+        "type": "mqtt in",
+        "z": "e36a9607f46cef68",
+        "d": true,
+        "name": "Nœuds réels (MQTT)",
+        "topic": "farm/+/+/telemetry",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "70e5e1c1c30db3d5",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 400,
+        "y": 300,
+        "wires": [
+            [
+                "0b74ec7d74f187af"
+            ]
+        ]
+    },
+    {
+        "id": "0b74ec7d74f187af",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Passerelle : validation & santé capteurs",
+        "func": "// ============================================================\n//  PASSERELLE DE VERGER : validation des paquets, santé des capteurs\n//  (drapeaux « santé » séparés des scores biologiques — cf. §18)\n// ============================================================\nconst GATEWAY = \"GW-01\";\nconst LIMITS = {\n    soil_moisture_pct: [3, 95], soil_temp_c: [-10, 60], air_temp_c: [-15, 55],\n    humidity_pct: [0, 100], light_par: [0, 2500], battery_pct: [0, 100]\n};\nfunction checksum(p) {\n    const s = [p.nodeId, p.seq, p.soil_moisture_pct, p.soil_temp_c, p.air_temp_c, p.humidity_pct, p.light_par].join(\"|\");\n    let c = 0; for (const ch of s) c = (c * 31 + ch.charCodeAt(0)) & 0xffff; return c;\n}\n\nconst p = msg.payload;\nif (!p || !p.nodeId) { node.warn(\"paquet ignoré : nodeId absent\"); return null; }\nconst faults = [];\n\nif (checksum(p) !== p.checksum) faults.push(\"checksum_invalide\");\nfor (const [k, [lo, hi]] of Object.entries(LIMITS)) {\n    const v = p[k];\n    if (typeof v !== \"number\" || Number.isNaN(v)) faults.push(k + \"_absent\");\n    else if (k === \"soil_moisture_pct\" && v <= lo) faults.push(\"sonde_sol_deconnectee\");   // lecture ≈ 0 : sonde débranchée\n    else if (v < lo || v > hi) faults.push(k + \"_hors_plage\");\n}\n// séquence (paquets perdus / dupliqués) et sonde figée\nconst last = context.get(\"last_\" + p.nodeId) || { seq: 0, sm: null, same: 0 };\nif (last.seq > 0 && p.seq <= last.seq) faults.push(\"sequence_dupliquee\");\nelse if (last.seq > 0 && p.seq > last.seq + 1) faults.push(\"paquets_perdus_\" + (p.seq - last.seq - 1));\nlast.same = (last.sm === p.soil_moisture_pct) ? last.same + 1 : 0;\nif (last.same >= 8) faults.push(\"sonde_sol_figee\");\nif (p.battery_pct < 15) faults.push(\"batterie_faible\");\nif (p.rssi_dbm < -105) faults.push(\"signal_faible\");\ncontext.set(\"last_\" + p.nodeId, { seq: p.seq, sm: p.soil_moisture_pct, same: last.same });\n\np.gateway     = GATEWAY;\np.received_at = new Date().toISOString();\np.health      = { ok: faults.length === 0, faults };\nmsg.payload   = p;\n\nnode.status({ fill: faults.length ? \"yellow\" : \"green\", shape: \"dot\", text: `${p.nodeId} ${faults.length ? \"⚠ \" + faults[0] : \"OK\"}` });\nconst fault = faults.length\n    ? { topic: `farm/${p.orchardId}/${p.nodeId}/health`, payload: { nodeId: p.nodeId, zone: p.zone, trees: p.trees, timestamp: p.timestamp, faults } }\n    : null;\nreturn [msg, fault];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 200,
+        "wires": [
+            [
+                "5753aa8ae37577f0",
+                "b8419720f8a27e07",
+                "c94e5a5a2ff95caf"
+            ],
+            [
+                "18d26742097062f7",
+                "500b531c3f24865e"
+            ]
+        ]
+    },
+    {
+        "id": "c94e5a5a2ff95caf",
+        "type": "debug",
+        "z": "e36a9607f46cef68",
+        "name": "Télémétrie validée",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1090,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "18d26742097062f7",
+        "type": "debug",
+        "z": "e36a9607f46cef68",
+        "name": "Défauts capteurs",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1090,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "b8419720f8a27e07",
+        "type": "mqtt out",
+        "z": "e36a9607f46cef68",
+        "name": "Publier télémétrie",
+        "topic": "farm/VERGER-NORD/validated",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "70e5e1c1c30db3d5",
+        "x": 1090,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "500b531c3f24865e",
+        "type": "mqtt out",
+        "z": "e36a9607f46cef68",
+        "name": "Publier santé capteurs",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "70e5e1c1c30db3d5",
+        "x": 1090,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "5753aa8ae37577f0",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Mémoire numérique · indices de stress · alertes",
+        "func": "// ============================================================\n//  MÉMOIRE NUMÉRIQUE DU NŒUD (ZONE) · INDICES DE STRESS · LOGIQUE D'ALERTE\n//  Les alertes parlent de la ZONE (nœud), pas d'un arbre.\n//  Règles déterministes (modèle « rules-v1 ») — point d'accroche du service IA (§12)\n// ============================================================\nconst MEMORY_SIZE  = 288;          // 3 jours simulés à 15 min\nconst TICK_MINUTES = 15;\nconst FIELD_CAP = 38, WILTING = 15, T_HEAT = 35;\n\nconst p    = msg.payload;\nconst mem  = flow.get(\"memoire\") || {};\nconst tree = mem[p.nodeId] || { history: [], prevSeverity: \"OK\", persist: 0, faultHold: 0, lower: 0 };\nconst RANK = { CRITICAL: 4, WARNING: 3, WATCH: 2, INFO: 1, CAPTEUR: 1, OK: 0 };\nconst faults = p.health.faults;\nconst soilOk = !faults.some(f => f.startsWith(\"soil_moisture\") || f.startsWith(\"sonde_sol\") || f === \"checksum_invalide\");\n\n// ---------- mémoire longitudinale (mesures valides seulement) ----------\nconst now = Date.parse(p.timestamp);\nif (soilOk) tree.history.push({ t: now, sm: p.soil_moisture_pct, ta: p.air_temp_c, rh: p.humidity_pct, par: p.light_par });\nif (tree.history.length > MEMORY_SIZE) tree.history.splice(0, tree.history.length - MEMORY_SIZE);\nconst H = tree.history;\n\n// ---------- baseline personnalisée : plage « normale » apprise sur le premier jour de CE nœud ----------\nconst mean = a => a.reduce((x, y) => x + y, 0) / a.length;\nconst std  = a => { const m = mean(a); return Math.sqrt(mean(a.map(v => (v - m) ** 2))); };\nlet baseline = null;\nif (H.length >= 24) {                                                       // ≥ 6 h de mesures valides\n    const sms = H.slice(0, 96).map(x => x.sm);                              // 96 échantillons = 1 jour simulé\n    baseline = { sm_mean: Math.round(mean(sms) * 10) / 10, sm_std: Math.max(2, std(sms)), n: sms.length };\n}\n// hystérésis des défauts capteur : un défaut maintient l'état CAPTEUR pendant 8 cycles (2 h simulées)\ntree.faultHold = soilOk ? Math.max(0, tree.faultHold - 1) : 8;\nconst sensorFault = tree.faultHold > 0;\n\n// ---------- features ----------\nconst clamp = (v, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));\nconst ago6 = H.filter(x => x.t <= now - 6 * 3600000).pop();                 // mesure ≈ 6 h plus tôt\nconst dryingRate = (ago6 && soilOk) ? Math.max(0, (ago6.sm - p.soil_moisture_pct) / ((now - ago6.t) / 3600000)) : 0; // %/h\nconst hoursHot = H.filter(x => x.t > now - 24 * 3600000 && x.ta >= T_HEAT).length * TICK_MINUTES / 60;\n\n// ---------- indices (0–100) ----------\nlet wsi = null, anomaly = null;\nif (soilOk) {\n    const deficit = clamp((FIELD_CAP - p.soil_moisture_pct) / (FIELD_CAP - WILTING));\n    wsi = Math.round(100 * (0.60 * deficit + 0.25 * clamp(dryingRate / 1.5) + 0.15 * clamp(p.vpd_kpa / 3)));\n}\nconst hsi = Math.round(100 * (0.50 * clamp((p.air_temp_c - 32) / 12) + 0.35 * clamp(hoursHot / 10) + 0.15 * clamp(p.light_par / 1800)));\nif (baseline && soilOk) {\n    const z = (baseline.sm_mean - p.soil_moisture_pct) / baseline.sm_std;    // > 0 : plus sec que d'habitude\n    anomaly = Math.round(100 * clamp(z / 4)) / 100;\n}\n\n// ---------- logique d'alerte (§14) ----------\nconst zl = \"zone \" + p.zone;                    // ex. « zone 2 »\nconst nb = (p.tree_count || 0) + \" arbres\";\nconst signals = [];\nif (wsi !== null && wsi >= 60) signals.push(\"stress hydrique\");\nif (hsi >= 60) signals.push(\"stress thermique\");\nif (anomaly !== null && anomaly >= 0.6) signals.push(\"écart au profil habituel\");\nconst modere = (wsi !== null && wsi >= 40) || hsi >= 40 || (anomaly !== null && anomaly >= 0.6);\ntree.persist = modere ? tree.persist + 1 : 0;\nconst hydrique = (wsi !== null && wsi >= hsi);\n\nlet severity = \"OK\", message = \"\", action = \"\";\nif (sensorFault) {\n    severity = \"CAPTEUR\";\n    message  = `Zone ${p.zone} · nœud ${p.nodeId} : défaut capteur${faults.length ? \" (\" + faults.join(\", \") + \")\" : \" récent\"}. Indices de stress hydrique suspendus.`;\n    action   = \"Vérifier la sonde de sol et le câblage du nœud.\";\n} else if ((wsi !== null && wsi >= 80) || hsi >= 80 || p.soil_moisture_pct <= WILTING) {\n    severity = \"CRITICAL\";\n    message  = `Inspection immédiate recommandée : stress sévère détecté dans la ${zl} (${nb}).`;\n    action   = hydrique ? \"Irriguer sans délai et inspecter la zone racinaire.\" : \"Protéger les arbres de la zone (ombrage, irrigation de rafraîchissement).\";\n} else if (signals.length >= 2) {\n    severity = \"WARNING\";\n    message  = hydrique\n        ? `Le risque de stress hydrique augmente dans la ${zl}. Inspecter la ligne d'irrigation de la zone.`\n        : `Le risque de stress thermique augmente dans la ${zl} (${nb}).`;\n    action   = hydrique ? \"Contrôler la ligne d'irrigation et l'humidité du sol.\" : \"Prévoir un arrosage de rafraîchissement.\";\n} else if (modere && tree.persist >= 4) {\n    severity = \"WATCH\";\n    message  = hydrique\n        ? `Stress hydrique possible dans la ${zl}. Vérifier l'irrigation et l'humidité du sol.`\n        : `Exposition thermique prolongée dans la ${zl}. Surveiller l'évolution.`;\n    action   = \"Vérifier sur place dans la journée.\";\n} else if (anomaly !== null && anomaly >= 0.5) {\n    severity = \"INFO\";\n    message  = `La ${zl} sèche plus vite que d'habitude (profil habituel du nœud).`;\n    action   = \"Aucune action immédiate ; suivre la tendance.\";\n}\n// hystérésis : on ne redescend d'un niveau qu'après 4 cycles consécutifs (1 h simulée) sous ce niveau\nif (severity !== \"CAPTEUR\" && tree.prevSeverity !== \"CAPTEUR\" && RANK[severity] < RANK[tree.prevSeverity]) {\n    tree.lower += 1;\n    if (tree.lower < 4) severity = tree.prevSeverity;\n} else tree.lower = 0;\nconst confidence = sensorFault ? 0.9 : Math.min(0.95, 0.45 + 0.15 * signals.length + (baseline ? 0.15 : 0) + Math.min(0.2, tree.persist * 0.02));\n\n// ---------- codes (Supabase, applis LOOZ) : jamais de phrases ----------\n// reasons = ce qui explique le niveau ; cause = water | heat | sensor (null si OK)\nconst reasons = [];\nif (severity === \"CAPTEUR\") reasons.push(\"sensor_fault\");\nelse if (severity !== \"OK\") {\n    if (soilOk && p.soil_moisture_pct <= WILTING) reasons.push(\"wilting_point\");\n    if (wsi !== null && wsi >= 40) reasons.push(\"water_stress\");\n    if (hsi >= 40) reasons.push(\"heat_stress\");\n    if (anomaly !== null && anomaly >= 0.5) reasons.push(\"unusual_drying\");\n}\nconst cause = severity === \"OK\" ? null\n            : severity === \"CAPTEUR\" ? \"sensor\"\n            : (severity === \"INFO\" || hydrique) ? \"water\" : \"heat\";\n\np.indicators = { water_stress: wsi, heat_stress: hsi, anomaly_score: anomaly,\n                 drying_rate_pct_h: Math.round(dryingRate * 100) / 100, hours_above_35c: Math.round(hoursHot * 10) / 10 };\np.baseline = baseline;\np.alert    = { severity, message, action, confidence: Math.round(confidence * 100) / 100, model: \"rules-v1\",\n               reasons, cause };\nmsg.payload = p;\n\n// événement d'alerte uniquement sur changement de niveau (alertes événementielles, pas de flux continu)\nlet event = null;\nif (severity !== tree.prevSeverity) {\n    const retour = severity === \"OK\";\n    event = { topic: `farm/${p.orchardId}/alerts`, payload: {\n        id: `${p.nodeId}-${p.seq}`, nodeId: p.nodeId, zone: p.zone, cultivar: p.cultivar,\n        trees: p.trees, tree_count: p.tree_count,\n        severity, previous: tree.prevSeverity,\n        message: retour ? `Retour à la normale dans la ${zl}.` : message,\n        action:  retour ? \"Aucune.\" : action,\n        confidence: p.alert.confidence, confidence_pct: Math.round(p.alert.confidence * 100),\n        indicators: p.indicators, model: \"rules-v1\",\n        timestamp: p.timestamp, timestamp_label: msg.simTime || p.timestamp\n    } };\n    tree.prevSeverity = severity;\n}\nmem[p.nodeId] = tree;\nflow.set(\"memoire\", mem);\nnode.status({ fill: severity === \"OK\" ? \"green\" : (severity === \"CRITICAL\" ? \"red\" : \"yellow\"), shape: \"dot\", text: `${p.nodeId} ${severity}` });\nreturn [msg, event];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1350,
+        "y": 200,
+        "wires": [
+            [
+                "732083a54c582a76",
+                "a1c0de5000000002"
+            ],
+            [
+                "fb8621ffe69f51f1",
+                "a8658c4c58b17276"
+            ]
+        ]
+    },
+    {
+        "id": "a8658c4c58b17276",
+        "type": "debug",
+        "z": "e36a9607f46cef68",
+        "name": "Événements d'alerte",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1600,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "fb8621ffe69f51f1",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Journal des alertes",
+        "func": "// ============================================================\n//  JOURNAL DES ALERTES — conserve les 12 derniers événements\n// ============================================================\nconst a = msg.payload;\nconst log = flow.get(\"journal_alertes\") || [];\nlog.unshift(a);\nif (log.length > 12) log.length = 12;\nflow.set(\"journal_alertes\", log);\n\nconst ICON = { CRITICAL: \"🔴\", WARNING: \"🟠\", WATCH: \"🟡\", INFO: \"🔵\", CAPTEUR: \"⚙️\", OK: \"🟢\" };\nconst notif = (a.severity === \"WARNING\" || a.severity === \"CRITICAL\")\n    ? { payload: `${ICON[a.severity]} ${a.severity} · zone ${a.zone} (${a.nodeId}) — ${a.message}` }\n    : null;\nreturn [{ payload: log }, notif, { topic: msg.topic, payload: a }];\n",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1600,
+        "y": 340,
+        "wires": [
+            [
+                "8479f0f22a13e747"
+            ],
+            [
+                "db28fd7db7981fa6"
+            ],
+            [
+                "9441f2b53b01905c"
+            ]
+        ]
+    },
+    {
+        "id": "9441f2b53b01905c",
+        "type": "mqtt out",
+        "z": "e36a9607f46cef68",
+        "name": "Publier alertes",
+        "topic": "",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "70e5e1c1c30db3d5",
+        "x": 1600,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "732083a54c582a76",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Dispatch dashboard",
+        "func": "// ============================================================\n//  DISPATCH DASHBOARD — 13 sorties (tableau, graphiques, KPI, nœud sélectionné)\n// ============================================================\nconst p = msg.payload;\nconst latest = flow.get(\"latest\") || {};\nlatest[p.nodeId] = p;\nflow.set(\"latest\", latest);\nconst sel  = flow.get(\"noeud_selectionne\");\nconst RANK = { CRITICAL: 4, WARNING: 3, WATCH: 2, INFO: 1, CAPTEUR: 1, OK: 0 };\nconst ind  = p.indicators;\nconst out  = new Array(13).fill(null);\n\nif (ind.water_stress !== null) out[1] = { topic: \"Zone \" + p.zone, payload: ind.water_stress };\nout[2] = { topic: \"Zone \" + p.zone, payload: ind.heat_stress };\nif (p.health.ok) out[3] = { topic: \"Zone \" + p.zone, payload: p.soil_moisture_pct };\nout[4] = { topic: \"Zone \" + p.zone, payload: p.air_temp_c };\n\nif (msg.lastOfTick) {\n    const vals = Object.values(latest).sort((a, b) => a.nodeId.localeCompare(b.nodeId));\n    out[0] = { payload: vals.map(r => ({\n        \"Zone\": r.zone, \"Nœud\": r.nodeId, \"Arbres\": r.tree_count + \" (\" + (r.trees || []).join(\", \") + \")\", \"Cultivar\": r.cultivar,\n        \"Sol %\": r.health.ok ? r.soil_moisture_pct : \"⚠ \" + r.soil_moisture_pct,\n        \"Air °C\": r.air_temp_c, \"HR %\": r.humidity_pct, \"PAR\": r.light_par,\n        \"Stress hydrique\": r.indicators.water_stress === null ? \"—\" : r.indicators.water_stress,\n        \"Stress thermique\": r.indicators.heat_stress,\n        \"Anomalie\": r.indicators.anomaly_score === null ? \"—\" : r.indicators.anomaly_score,\n        \"Niveau\": r.alert.severity, \"Batterie %\": r.battery_pct, \"RSSI dBm\": r.rssi_dbm\n    })) };\n    out[5] = { payload: `${vals.filter(v => v.health.ok).length} sains / ${vals.length} nœuds en ligne · ${vals.reduce((n, v) => n + (v.tree_count || 0), 0)} arbres suivis` };\n    out[6] = { payload: String(vals.filter(v => RANK[v.alert.severity] >= 2).length) };\n    out[7] = { payload: msg.simTime || p.timestamp };\n}\n\nif (p.nodeId === sel) {\n    if (p.health.ok) out[8] = { payload: p.soil_moisture_pct };\n    out[9]  = { payload: p.air_temp_c };\n    if (ind.water_stress !== null) out[10] = { payload: ind.water_stress };\n    out[11] = { payload: ind.heat_stress };\n    out[12] = { payload: p };\n}\nreturn out;\n",
+        "outputs": 13,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1600,
+        "y": 200,
+        "wires": [
+            [
+                "3280f5a8234b3340"
+            ],
+            [
+                "2dbc3c41bd537766"
+            ],
+            [
+                "74c2d187a0c6b6eb"
+            ],
+            [
+                "ad09ab018452c38c"
+            ],
+            [
+                "959cbe6bd754c2d6"
+            ],
+            [
+                "f7ac0a09c1c832b2"
+            ],
+            [
+                "76816b1e9816a7d0"
+            ],
+            [
+                "7d40eb24bcc0933f"
+            ],
+            [
+                "ae25b9cb22808faf"
+            ],
+            [
+                "381bb375d48a64d5"
+            ],
+            [
+                "edb17110ba46601c"
+            ],
+            [
+                "d28291ac396f7ef9"
+            ],
+            [
+                "82cdbd6fc459f8ef"
+            ]
+        ]
+    },
+    {
+        "id": "f7ac0a09c1c832b2",
+        "type": "ui-text",
+        "z": "e36a9607f46cef68",
+        "group": "6e3100135f6ea658",
+        "order": 1,
+        "width": "4",
+        "height": "1",
+        "name": "KPI arbres",
+        "label": "Nœuds :",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1900,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "76816b1e9816a7d0",
+        "type": "ui-text",
+        "z": "e36a9607f46cef68",
+        "group": "6e3100135f6ea658",
+        "order": 2,
+        "width": "4",
+        "height": "1",
+        "name": "KPI alertes",
+        "label": "Alertes actives (≥ WATCH) :",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1900,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "7d40eb24bcc0933f",
+        "type": "ui-text",
+        "z": "e36a9607f46cef68",
+        "group": "6e3100135f6ea658",
+        "order": 3,
+        "width": "4",
+        "height": "1",
+        "name": "KPI heure simulée",
+        "label": "Heure simulée :",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1900,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "3280f5a8234b3340",
+        "type": "ui-table",
+        "z": "e36a9607f46cef68",
+        "group": "6e3100135f6ea658",
+        "name": "Tableau des arbres",
+        "label": "État des arbres",
+        "order": 4,
+        "width": "12",
+        "height": "6",
+        "maxrows": 0,
+        "passthru": false,
+        "autocols": true,
+        "showSearch": false,
+        "deselect": true,
+        "selectionType": "none",
+        "columns": [],
+        "mobileBreakpoint": "sm",
+        "mobileBreakpointType": "defaults",
+        "action": "replace",
+        "className": "",
+        "x": 1900,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2dbc3c41bd537766",
+        "type": "ui-chart",
+        "z": "e36a9607f46cef68",
+        "group": "8d1946549935db60",
+        "name": "Graphique stress hydrique",
+        "label": "Indice de stress hydrique",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "indice",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "0",
+        "ymax": "100",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 2,
+        "showLegend": true,
+        "removeOlder": 20,
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095FF",
+            "#2CA02C",
+            "#EF4444",
+            "#A347E1",
+            "#FF7F0E",
+            "#8B5E3C",
+            "#9467BD",
+            "#C5B0D5",
+            "#FF9896"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 6,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1900,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "74c2d187a0c6b6eb",
+        "type": "ui-chart",
+        "z": "e36a9607f46cef68",
+        "group": "8d1946549935db60",
+        "name": "Graphique stress thermique",
+        "label": "Indice de stress thermique",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "indice",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "0",
+        "ymax": "100",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 2,
+        "showLegend": true,
+        "removeOlder": 20,
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095FF",
+            "#2CA02C",
+            "#EF4444",
+            "#A347E1",
+            "#FF7F0E",
+            "#8B5E3C",
+            "#9467BD",
+            "#C5B0D5",
+            "#FF9896"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 6,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1900,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ad09ab018452c38c",
+        "type": "ui-chart",
+        "z": "e36a9607f46cef68",
+        "group": "547ac9d58c72b996",
+        "name": "Graphique humidité du sol",
+        "label": "Humidité du sol (%)",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "%",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "0",
+        "ymax": "50",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 2,
+        "showLegend": true,
+        "removeOlder": 20,
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095FF",
+            "#2CA02C",
+            "#EF4444",
+            "#A347E1",
+            "#FF7F0E",
+            "#8B5E3C",
+            "#9467BD",
+            "#C5B0D5",
+            "#FF9896"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 6,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1900,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "959cbe6bd754c2d6",
+        "type": "ui-chart",
+        "z": "e36a9607f46cef68",
+        "group": "547ac9d58c72b996",
+        "name": "Graphique température air",
+        "label": "Température de l'air (°C)",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "timestamp",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "°C",
+        "yAxisProperty": "payload",
+        "yAxisPropertyType": "msg",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "append",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 2,
+        "showLegend": true,
+        "removeOlder": 20,
+        "removeOlderUnit": "60",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095FF",
+            "#2CA02C",
+            "#EF4444",
+            "#A347E1",
+            "#FF7F0E",
+            "#8B5E3C",
+            "#9467BD",
+            "#C5B0D5",
+            "#FF9896"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 6,
+        "className": "",
+        "interpolation": "linear",
+        "x": 1900,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a13e39f5723868e4",
+        "type": "ui-dropdown",
+        "z": "e36a9607f46cef68",
+        "group": "33f7bdd407c2e21c",
+        "name": "Sélecteur de nœud",
+        "label": "Nœud :",
+        "tooltip": "",
+        "order": 1,
+        "width": "12",
+        "height": "1",
+        "passthru": false,
+        "multiple": false,
+        "chips": false,
+        "clearable": false,
+        "options": [
+            {
+                "label": "NODE-01 · zone A · Nonpareil · 5 arbres",
+                "value": "NODE-01",
+                "type": "str"
+            },
+            {
+                "label": "NODE-02 · zone B · Nonpareil · 4 arbres",
+                "value": "NODE-02",
+                "type": "str"
+            },
+            {
+                "label": "NODE-03 · zone C · Tuono · 5 arbres",
+                "value": "NODE-03",
+                "type": "str"
+            },
+            {
+                "label": "NODE-04 · zone D · Ferraduel · 4 arbres",
+                "value": "NODE-04",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "noeud_selectionne",
+        "topicType": "str",
+        "className": "",
+        "typeIsComboBox": false,
+        "msgTrigger": "onChange",
+        "x": 170,
+        "y": 500,
+        "wires": [
+            [
+                "1af03a0ed77229a5"
+            ]
+        ]
+    },
+    {
+        "id": "ae25b9cb22808faf",
+        "type": "ui-gauge",
+        "z": "e36a9607f46cef68",
+        "name": "Jauge humidité sol",
+        "group": "33f7bdd407c2e21c",
+        "order": 2,
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Humidité du sol",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "%",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#EF4444"
+            },
+            {
+                "from": "15",
+                "color": "#F59E0B"
+            },
+            {
+                "from": "25",
+                "color": "#22C55E"
+            },
+            {
+                "from": "42",
+                "color": "#3B82F6"
+            }
+        ],
+        "min": "0",
+        "max": "50",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1900,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "381bb375d48a64d5",
+        "type": "ui-gauge",
+        "z": "e36a9607f46cef68",
+        "name": "Jauge température air",
+        "group": "33f7bdd407c2e21c",
+        "order": 3,
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Température de l'air",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "°C",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#3B82F6"
+            },
+            {
+                "from": "15",
+                "color": "#22C55E"
+            },
+            {
+                "from": "30",
+                "color": "#F59E0B"
+            },
+            {
+                "from": "35",
+                "color": "#EF4444"
+            }
+        ],
+        "min": "0",
+        "max": "50",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1900,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "edb17110ba46601c",
+        "type": "ui-gauge",
+        "z": "e36a9607f46cef68",
+        "name": "Jauge stress hydrique",
+        "group": "33f7bdd407c2e21c",
+        "order": 4,
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Stress hydrique",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "/100",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#22C55E"
+            },
+            {
+                "from": "40",
+                "color": "#EAB308"
+            },
+            {
+                "from": "60",
+                "color": "#F59E0B"
+            },
+            {
+                "from": "80",
+                "color": "#EF4444"
+            }
+        ],
+        "min": "0",
+        "max": "100",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1900,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d28291ac396f7ef9",
+        "type": "ui-gauge",
+        "z": "e36a9607f46cef68",
+        "name": "Jauge stress thermique",
+        "group": "33f7bdd407c2e21c",
+        "order": 5,
+        "width": 3,
+        "height": 3,
+        "gtype": "gauge-half",
+        "gstyle": "needle",
+        "title": "Stress thermique",
+        "alwaysShowTitle": false,
+        "floatingTitlePosition": "top-left",
+        "units": "/100",
+        "icon": "",
+        "prefix": "",
+        "suffix": "",
+        "segments": [
+            {
+                "from": "0",
+                "color": "#22C55E"
+            },
+            {
+                "from": "40",
+                "color": "#EAB308"
+            },
+            {
+                "from": "60",
+                "color": "#F59E0B"
+            },
+            {
+                "from": "80",
+                "color": "#EF4444"
+            }
+        ],
+        "min": "0",
+        "max": "100",
+        "sizeThickness": 16,
+        "sizeGap": 4,
+        "sizeKeyThickness": 8,
+        "styleRounded": true,
+        "styleGlow": false,
+        "className": "",
+        "x": 1900,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "82cdbd6fc459f8ef",
+        "type": "ui-template",
+        "z": "e36a9607f46cef68",
+        "group": "33f7bdd407c2e21c",
+        "page": "",
+        "ui": "",
+        "name": "Fiche du nœud",
+        "order": 6,
+        "width": "12",
+        "height": "4",
+        "head": "",
+        "format": "<template>\n    <div class=\"fiche\">\n        <div v-if=\"!msg.payload\" class=\"vide\">Sélectionnez un nœud dans la liste.</div>\n        <div v-else>\n            <h3>Zone {{ msg.payload.zone }} — nœud {{ msg.payload.nodeId }} (fw {{ msg.payload.firmware }}) · {{ msg.payload.cultivar }} · {{ msg.payload.age_years }} ans</h3>\n            <div class=\"arbres\">Arbres couverts ({{ msg.payload.tree_count }}) : {{ (msg.payload.trees || []).join(', ') }}</div>\n            <div class=\"grille\">\n                <div><span>Humidité du sol</span><b>{{ msg.payload.soil_moisture_pct }} %</b></div>\n                <div><span>Température du sol</span><b>{{ msg.payload.soil_temp_c }} °C</b></div>\n                <div><span>Air</span><b>{{ msg.payload.air_temp_c }} °C · {{ msg.payload.humidity_pct }} % HR</b></div>\n                <div><span>Lumière (PAR)</span><b>{{ msg.payload.light_par }} µmol/m²/s</b></div>\n                <div><span>VPD</span><b>{{ msg.payload.vpd_kpa }} kPa</b></div>\n                <div><span>Assèchement</span><b>{{ msg.payload.indicators.drying_rate_pct_h }} %/h</b></div>\n                <div><span>Heures ≥ 35 °C (24 h)</span><b>{{ msg.payload.indicators.hours_above_35c }} h</b></div>\n                <div><span>Baseline sol</span><b>{{ msg.payload.baseline ? msg.payload.baseline.sm_mean + ' % (n=' + msg.payload.baseline.n + ')' : 'en construction' }}</b></div>\n                <div><span>Score d'anomalie</span><b>{{ msg.payload.indicators.anomaly_score === null ? '—' : msg.payload.indicators.anomaly_score }}</b></div>\n                <div><span>Batterie · RSSI</span><b>{{ msg.payload.battery_pct }} % · {{ msg.payload.rssi_dbm }} dBm</b></div>\n                <div><span>Santé capteurs</span><b>{{ msg.payload.health.ok ? 'OK' : msg.payload.health.faults.join(', ') }}</b></div>\n                <div><span>Horodatage (simulé)</span><b>{{ msg.payload.timestamp }}</b></div>\n            </div>\n            <div class=\"alerte\" :class=\"msg.payload.alert.severity\">\n                <b>{{ msg.payload.alert.severity }}</b> — {{ msg.payload.alert.message || 'Aucune alerte en cours.' }}\n                <span v-if=\"msg.payload.alert.action\"> → {{ msg.payload.alert.action }}</span>\n                <em> (confiance {{ Math.round(msg.payload.alert.confidence * 100) }} %)</em>\n            </div>\n        </div>\n    </div>\n</template>\n<style>\n.fiche h3 { margin: 0 0 10px 0; font-size: 15px; }\n.fiche .arbres { margin: 0 0 10px 0; color: #555; }\n.fiche .vide { color: #777; font-style: italic; }\n.fiche .grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 16px; }\n.fiche .grille div { display: flex; justify-content: space-between; border-bottom: 1px dotted #ddd; padding: 3px 0; }\n.fiche .grille span { color: #666; } .fiche .grille b { font-weight: 600; }\n.fiche .alerte { margin-top: 12px; padding: 8px 12px; border-radius: 4px; background: #f3f4f6; border-left: 5px solid #22C55E; }\n.fiche .CRITICAL { border-color: #EF4444; background: #fef2f2; } .fiche .WARNING { border-color: #F59E0B; background: #fffbeb; }\n.fiche .WATCH { border-color: #EAB308; } .fiche .INFO { border-color: #3B82F6; } .fiche .CAPTEUR { border-color: #6B7280; }\n</style>\n",
+        "storeOutMessages": false,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1900,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8479f0f22a13e747",
+        "type": "ui-template",
+        "z": "e36a9607f46cef68",
+        "group": "fdb189f1a909d0d2",
+        "page": "",
+        "ui": "",
+        "name": "Journal des alertes",
+        "order": 1,
+        "width": "12",
+        "height": "6",
+        "head": "",
+        "format": "<template>\n    <div class=\"journal\">\n        <div v-if=\"!msg.payload || !msg.payload.length\" class=\"vide\">Aucune alerte pour le moment — les alertes sont événementielles (changement de niveau).</div>\n        <div v-for=\"a in (msg.payload || [])\" :key=\"a.id\" class=\"ligne\" :class=\"a.severity\">\n            <span class=\"badge\">{{ a.severity }}</span>\n            <span class=\"arbre\">Zone {{ a.zone }} · {{ a.nodeId }} · {{ a.tree_count }} arbres · {{ a.cultivar }}</span>\n            <span class=\"heure\">{{ a.timestamp_label }}</span>\n            <div class=\"msg\">{{ a.message }}</div>\n            <div class=\"action\">→ {{ a.action }} <em>(confiance {{ a.confidence_pct }} % · {{ a.model }})</em></div>\n        </div>\n    </div>\n</template>\n<style>\n.journal .vide { color: #777; font-style: italic; }\n.journal .ligne { border-left: 5px solid #999; padding: 6px 12px; margin-bottom: 8px; background: #fafafa; border-radius: 4px; }\n.journal .CRITICAL { border-color: #EF4444; } .journal .WARNING { border-color: #F59E0B; } .journal .WATCH { border-color: #EAB308; }\n.journal .INFO { border-color: #3B82F6; } .journal .CAPTEUR { border-color: #6B7280; } .journal .OK { border-color: #22C55E; }\n.journal .badge { font-weight: 700; font-size: 12px; margin-right: 8px; letter-spacing: .5px; }\n.journal .arbre { font-weight: 600; } .journal .heure { float: right; color: #777; font-size: 12px; }\n.journal .msg { margin-top: 4px; } .journal .action { color: #555; font-size: 13px; }\n</style>\n",
+        "storeOutMessages": false,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1900,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "db28fd7db7981fa6",
+        "type": "ui-notification",
+        "z": "e36a9607f46cef68",
+        "ui": "b0d5e8da5771b55b",
+        "position": "top right",
+        "colorDefault": true,
+        "color": "#000000",
+        "displayTime": "10",
+        "showCountdown": true,
+        "outputs": 0,
+        "allowDismiss": true,
+        "dismissText": "Fermer",
+        "allowConfirm": false,
+        "confirmText": "OK",
+        "raw": false,
+        "className": "",
+        "name": "Notification agriculteur",
+        "x": 1890,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "8a8d9155451c0f28",
+        "type": "ui-switch",
+        "z": "e36a9607f46cef68",
+        "name": "Interrupteur simulation",
+        "label": "Simulation active",
+        "group": "712fa51631882c9c",
+        "order": 2,
+        "width": "6",
+        "height": "1",
+        "passthru": false,
+        "decouple": false,
+        "topic": "simulation_active",
+        "topicType": "str",
+        "style": "",
+        "className": "",
+        "layout": "row-spread",
+        "clickableArea": "switch",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "x": 170,
+        "y": 580,
+        "wires": [
+            [
+                "aa4ea6981bf83af5"
+            ]
+        ]
+    },
+    {
+        "id": "aa4ea6981bf83af5",
+        "type": "change",
+        "z": "e36a9607f46cef68",
+        "name": "flow.simulation_active ← payload",
+        "rules": [
+            {
+                "t": "set",
+                "p": "simulation_active",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dd5a83c82083f021",
+        "type": "ui-button",
+        "z": "e36a9607f46cef68",
+        "group": "712fa51631882c9c",
+        "name": "Bouton irrigation",
+        "label": "Irrigation d'urgence de la zone sélectionnée",
+        "order": 3,
+        "width": "6",
+        "height": "1",
+        "emulateClick": false,
+        "tooltip": "Remet l'humidité du sol de la zone à la capacité au champ (action agriculteur)",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "water",
+        "iconPosition": "left",
+        "payload": "irrigation",
+        "payloadType": "str",
+        "topic": "irrigation",
+        "topicType": "str",
+        "buttonColor": "",
+        "x": 170,
+        "y": 640,
+        "wires": [
+            [
+                "f97e64a84e99882d"
+            ]
+        ]
+    },
+    {
+        "id": "f97e64a84e99882d",
+        "type": "change",
+        "z": "e36a9607f46cef68",
+        "name": "flow.irrigation_urgence ← flow.noeud_selectionne",
+        "rules": [
+            {
+                "t": "set",
+                "p": "irrigation_urgence",
+                "pt": "flow",
+                "to": "noeud_selectionne",
+                "tot": "flow"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 520,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1af03a0ed77229a5",
+        "type": "change",
+        "z": "e36a9607f46cef68",
+        "name": "flow.noeud_selectionne ← payload",
+        "rules": [
+            {
+                "t": "set",
+                "p": "noeud_selectionne",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6e75dcf3bc3ccc67",
+        "type": "inject",
+        "z": "e36a9607f46cef68",
+        "name": "Au démarrage : NODE-02 sélectionné",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "NODE-02",
+        "payloadType": "str",
+        "x": 200,
+        "y": 440,
+        "wires": [
+            [
+                "a13e39f5723868e4",
+                "1af03a0ed77229a5"
+            ]
+        ]
+    },
+    {
+        "id": "9db60c8b542bd373",
+        "type": "inject",
+        "z": "e36a9607f46cef68",
+        "name": "Au démarrage : simulation ON",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 180,
+        "y": 520,
+        "wires": [
+            [
+                "8a8d9155451c0f28"
+            ]
+        ]
+    },
+    {
+        "id": "a1c0de5000000001",
+        "type": "comment",
+        "z": "e36a9607f46cef68",
+        "name": "L6 · Supabase (LOOZ) : codes → mémoire → 1 lot par minute → Edge Function iot-ingest (clé dans .env)",
+        "info": "Le dashboard admin LOOZ lit ces mesures dans Supabase. Réglages : iot/node-red/.env",
+        "x": 1280,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "a1c0de5000000002",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Codes pour Supabase",
+        "func": "// ============================================================\n//  CODES POUR SUPABASE (LOOZ)\n//  Chaque mesure notée devient une ligne de CODES (aucune phrase : chaque\n//  appli écrit ses textes dans sa langue). Les lignes attendent dans la\n//  mémoire du flux (supabase_buffer, gardée sur le disque) ; le nœud\n//  « Lot Supabase » les envoie une fois par minute.\n// ============================================================\nconst MAX_BUFFER = 5000;   // ≈ 100 min de mesures si Supabase ne répond pas\nconst LEVEL = { OK: \"ok\", INFO: \"info\", WATCH: \"watch\", WARNING: \"warning\", CRITICAL: \"critical\", CAPTEUR: \"sensor\" };\nconst FIELD = { soil_moisture_pct: \"soil_moisture\", soil_temp_c: \"soil_temp\", air_temp_c: \"air_temp\",\n                humidity_pct: \"humidity\", light_par: \"light\", battery_pct: \"battery\" };\n\n// Codes de la passerelle (français) -> codes LOOZ (migration 012).\nfunction faultCode(f) {\n    if (f === \"checksum_invalide\") return \"checksum_invalid\";\n    if (f === \"sonde_sol_deconnectee\") return \"soil_probe_disconnected\";\n    if (f === \"sonde_sol_figee\") return \"soil_probe_stuck\";\n    if (f === \"sequence_dupliquee\") return \"duplicate_seq\";\n    if (f.startsWith(\"paquets_perdus_\")) return \"packets_lost\";\n    if (f === \"batterie_faible\") return \"battery_low\";\n    if (f === \"signal_faible\") return \"signal_weak\";\n    for (const [k, short] of Object.entries(FIELD)) {\n        if (f === k + \"_hors_plage\") return short + \"_out_of_range\";\n        if (f === k + \"_absent\") return short + \"_missing\";\n    }\n    return \"other\";\n}\nconst num = v => (typeof v === \"number\" && Number.isFinite(v)) ? v : null;\n\nconst p = msg.payload;\nconst faults = (p.health && p.health.faults) || [];\nlet packetsLost = 0;\nfor (const f of faults) if (f.startsWith(\"paquets_perdus_\")) packetsLost += Number(f.slice(15)) || 0;\n\n// Mode démo : l'horloge simulée est l'heure de TUNISIE écrite comme UTC\n// (« 05:00Z » = 05:00 à Sfax) -> on enlève 1 h pour envoyer le vrai instant.\nconst demo = (env.get(\"LOOZ_TIME_MODE\") || \"demo\") === \"demo\";\nconst t = Date.parse(p.timestamp) - (demo ? 3600000 : 0);\nif (!Number.isFinite(t)) { node.warn(\"mesure sans heure : ignorée\"); return null; }\nconst ind = p.indicators || {};\nconst a = p.alert || {};\n\nconst reading = {\n    device: p.nodeId,\n    measured_at: new Date(t).toISOString(),\n    seq: num(p.seq),\n    soil_moisture_pct: num(p.soil_moisture_pct),\n    soil_temp_c: num(p.soil_temp_c),\n    air_temp_c: num(p.air_temp_c),\n    humidity_pct: num(p.humidity_pct),\n    light_par: num(p.light_par),\n    vpd_kpa: num(p.vpd_kpa),\n    battery_pct: num(p.battery_pct),\n    rssi_dbm: num(p.rssi_dbm),\n    water_stress: num(ind.water_stress),\n    heat_stress: num(ind.heat_stress),\n    anomaly: num(ind.anomaly_score),\n    drying_rate_pct_h: num(ind.drying_rate_pct_h),\n    hours_above_35c: num(ind.hours_above_35c),\n    packets_lost: packetsLost,\n    level: LEVEL[a.severity] || null,\n    reasons: Array.isArray(a.reasons) ? a.reasons : [],\n    cause: a.cause || null,\n    confidence: num(a.confidence),\n    faults: [...new Set(faults.map(faultCode))],\n    firmware: p.firmware || null,\n    model: a.model || null\n};\n\nconst buffer = flow.get(\"supabase_buffer\") || [];\nbuffer.push(reading);\n// Trop de mesures en attente (Supabase injoignable) : les plus vieilles partent,\n// mais jamais pendant un envoi (le lot en cours garde sa place).\nif (buffer.length > MAX_BUFFER && !flow.get(\"supabase_inflight\")) buffer.splice(0, buffer.length - MAX_BUFFER);\nflow.set(\"supabase_buffer\", buffer);\nnode.status({ fill: \"grey\", shape: \"dot\", text: `${buffer.length} mesure(s) en attente` });\nreturn null;\n",
+        "outputs": 0,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1640,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "a1c0de5000000003",
+        "type": "inject",
+        "z": "e36a9607f46cef68",
+        "name": "Toutes les 10 s",
+        "props": [],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "5",
+        "topic": "",
+        "x": 1170,
+        "y": 840,
+        "wires": [
+            [
+                "a1c0de5000000004"
+            ]
+        ]
+    },
+    {
+        "id": "a1c0de5000000004",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Lot Supabase",
+        "func": "// ============================================================\n//  LOT SUPABASE (LOOZ) — toutes les 10 s : est-ce l'heure d'envoyer ?\n//  Un lot = les mesures en attente (500 au plus) -> Edge Function\n//  iot-ingest. Réglages dans iot/node-red/.env (jamais dans ce fichier) :\n//    LOOZ_INGEST_URL, LOOZ_GATEWAY_KEY (secret), LOOZ_GATEWAY_CODE,\n//    LOOZ_BATCH_SECONDS (60 ; 20 pour une démo devant un jury).\n// ============================================================\nconst MAX_PER_BATCH = 500;\nconst url = env.get(\"LOOZ_INGEST_URL\") || \"\";\nconst key = env.get(\"LOOZ_GATEWAY_KEY\") || \"\";\nconst gateway = env.get(\"LOOZ_GATEWAY_CODE\") || \"GW-01\";\nconst every = Math.max(10, Number(env.get(\"LOOZ_BATCH_SECONDS\")) || 60) * 1000;\n\nconst buffer = flow.get(\"supabase_buffer\") || [];\nif (!/^https:\\/\\/|^http:\\/\\/(127\\.0\\.0\\.1|localhost)[:/]/.test(url) || !/^lgw_[0-9a-f]{64}$/.test(key)) {\n    node.status({ fill: \"red\", shape: \"ring\", text: `URL ou clé absente de .env · ${buffer.length} en attente` });\n    return null;\n}\nconst inflight = flow.get(\"supabase_inflight\");\nif (inflight && Date.now() - inflight.at < 60000) return null;      // le lot précédent n'a pas encore répondu\nconst last = context.get(\"last_send\") || 0;\n// Du retard (plus d'un lot en attente) : on rattrape toutes les 10 s.\nconst wait = buffer.length > MAX_PER_BATCH ? 10000 : every;\nif (Date.now() - last < wait - 500) return null;\nif (!buffer.length) {\n    node.status({ fill: \"grey\", shape: \"ring\", text: \"rien à envoyer\" });\n    return null;\n}\ncontext.set(\"last_send\", Date.now());\nconst readings = buffer.slice(0, MAX_PER_BATCH);\nflow.set(\"supabase_inflight\", { count: readings.length, at: Date.now() });\nnode.status({ fill: \"blue\", shape: \"dot\", text: `envoi de ${readings.length} mesures…` });\nreturn {\n    url,\n    method: \"POST\",\n    requestTimeout: 30000,\n    headers: { \"content-type\": \"application/json\", \"x-looz-gateway-key\": key },\n    payload: { gateway, sent_at: new Date().toISOString(), readings }\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1360,
+        "y": 840,
+        "wires": [
+            [
+                "a1c0de5000000005"
+            ]
+        ]
+    },
+    {
+        "id": "a1c0de5000000005",
+        "type": "http request",
+        "z": "e36a9607f46cef68",
+        "name": "POST iot-ingest",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1560,
+        "y": 840,
+        "wires": [
+            [
+                "a1c0de5000000006"
+            ]
+        ]
+    },
+    {
+        "id": "a1c0de5000000006",
+        "type": "function",
+        "z": "e36a9607f46cef68",
+        "name": "Réponse Supabase",
+        "func": "// ============================================================\n//  RÉPONSE SUPABASE (LOOZ)\n//  200 : le lot est enregistré -> il quitte la mémoire.\n//  Autre : les mesures restent et repartent au lot suivant.\n// ============================================================\nconst inflight = flow.get(\"supabase_inflight\") || { count: 0 };\nflow.set(\"supabase_inflight\", null);\ndelete msg.headers;                          // la clé ne va nulle part ailleurs\nconst code = msg.statusCode;\nconst p2 = v => String(v).padStart(2, \"0\");\nconst d = new Date();\nconst at = `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;\nconst buffer = flow.get(\"supabase_buffer\") || [];\n\nif (code === 200 && msg.payload && typeof msg.payload === \"object\") {\n    buffer.splice(0, inflight.count);\n    flow.set(\"supabase_buffer\", buffer);\n    const r = msg.payload;\n    const refused = Object.entries(r.refused || {}).map(([k, n]) => `${n} ${k}`).join(\", \");\n    const text = `✓ ${at} · ${r.accepted} acceptée(s)` + (r.old ? ` · ${r.old} déjà reçue(s)` : \"\")\n               + (refused ? ` · refusées : ${refused}` : \"\") + (buffer.length ? ` · ${buffer.length} en attente` : \"\");\n    node.status({ fill: refused ? \"yellow\" : \"green\", shape: \"dot\", text });\n    if (refused) node.warn(`Supabase a refusé : ${refused} ${JSON.stringify(r.refused_devices || {})}`);\n    return { payload: `${text}` };\n}\nconst why = code === 401 ? \"clé refusée (401) : vérifiez LOOZ_GATEWAY_KEY\"\n          : code === 503 ? \"réception coupée dans Supabase (503)\"\n          : code === 404 ? \"fonction iot-ingest introuvable (404)\"\n          : code === 400 ? \"lot refusé (400)\"\n          : code === 413 ? \"lot trop gros (413)\"\n          : `pas de réponse (${code || \"réseau\"})`;\nconst text = `✗ ${at} · ${why} · ${buffer.length} en attente`;\nnode.status({ fill: \"red\", shape: \"ring\", text });\nnode.warn(`Envoi à Supabase échoué : ${why}`);\nreturn { payload: text };\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1760,
+        "y": 840,
+        "wires": [
+            [
+                "a1c0de5000000007"
+            ]
+        ]
+    },
+    {
+        "id": "a1c0de5000000007",
+        "type": "ui-text",
+        "z": "e36a9607f46cef68",
+        "group": "712fa51631882c9c",
+        "order": 4,
+        "width": "12",
+        "height": "1",
+        "name": "État Supabase",
+        "label": "Envoi à Supabase :",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "style": false,
+        "font": "",
+        "fontSize": 14,
+        "color": "#717171",
+        "wrapText": true,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1980,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "33f7bdd407c2e21c",
+        "type": "ui-group",
+        "name": "Arbre sélectionné",
+        "page": "f1781a8bad0e211d",
+        "width": "12",
+        "height": "1",
+        "order": 4,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "547ac9d58c72b996",
+        "type": "ui-group",
+        "name": "Mesures par arbre",
+        "page": "f1781a8bad0e211d",
+        "width": "12",
+        "height": "1",
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "6e3100135f6ea658",
+        "type": "ui-group",
+        "name": "Vue d'ensemble du verger",
+        "page": "f1781a8bad0e211d",
+        "width": "12",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "6e5252c0ac56ed85",
+        "type": "ui-theme",
+        "name": "Thème verger",
+        "colors": {
+            "surface": "#fcfcfd",
+            "primary": "#3f7d3a",
+            "bgPage": "#f5f7f2",
+            "groupBg": "#ffffff",
+            "groupOutline": "#d9e2d4"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "70e5e1c1c30db3d5",
+        "type": "mqtt-broker",
+        "name": "Broker MQTT de la ferme",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "712fa51631882c9c",
+        "type": "ui-group",
+        "name": "Simulation",
+        "page": "f1781a8bad0e211d",
+        "width": "12",
+        "height": "1",
+        "order": 6,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "8d1946549935db60",
+        "type": "ui-group",
+        "name": "Indices de stress par arbre (0–100)",
+        "page": "f1781a8bad0e211d",
+        "width": "12",
+        "height": "1",
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b0d5e8da5771b55b",
+        "type": "ui-base",
+        "name": "Almond Smart Farm",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "f1781a8bad0e211d",
+        "type": "ui-page",
+        "name": "Verger d'amandiers",
+        "ui": "b0d5e8da5771b55b",
+        "path": "/verger",
+        "icon": "tree",
+        "layout": "grid",
+        "theme": "6e5252c0ac56ed85",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": 0,
+                "cols": 3
+            },
+            {
+                "name": "Tablet",
+                "px": 576,
+                "cols": 6
+            },
+            {
+                "name": "Small Desktop",
+                "px": 768,
+                "cols": 9
+            },
+            {
+                "name": "Desktop",
+                "px": 1024,
+                "cols": 12
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "fdb189f1a909d0d2",
+        "type": "ui-group",
+        "name": "Journal des alertes (agriculteur)",
+        "page": "f1781a8bad0e211d",
+        "width": "12",
+        "height": "1",
+        "order": 5,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    }
+]

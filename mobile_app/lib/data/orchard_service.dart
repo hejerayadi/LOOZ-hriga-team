@@ -159,6 +159,14 @@ class OrchardTree {
   final double z;
   final String? zoneId;
 
+  /// The number of a tree from its code in the database: the digits at the
+  /// end. "12" -> 12 (trees made by the designer), "TREE-012" -> 12 (the
+  /// IoT demo farmer, same codes as Node-RED), no digits -> 0.
+  static int numberFromCode(String? code) {
+    final digits = RegExp(r'(\d+)$').firstMatch(code?.trim() ?? '');
+    return digits == null ? 0 : int.tryParse(digits.group(1)!) ?? 0;
+  }
+
   /// 'main' | 'pollinizer'.
   final String variety;
 
@@ -326,7 +334,7 @@ class SupabaseOrchardService implements OrchardService {
       trees: [
         for (final t in treeRows)
           OrchardTree(
-            number: int.tryParse(t['code'] as String? ?? '') ?? 0,
+            number: OrchardTree.numberFromCode(t['code'] as String?),
             x: (t['pos_x'] as num?)?.toDouble() ?? 0,
             z: (t['pos_z'] as num?)?.toDouble() ?? 0,
             zoneId: t['zone_id'] as String?,

@@ -59,6 +59,16 @@ __pycache__/
 .venv/
 venv/
 
+# ---------- Node-RED of the farm gateway (iot/node-red) ----------
+# Runtime files: memory of the flow, editor state, generated secrets.
+iot/node-red/context/
+iot/node-red/lib/
+iot/node-red/.config.*
+iot/node-red/.flows*.json.backup
+iot/node-red/flows_cred.json
+iot/node-red/.flows_cred.json.backup
+iot/node-red/.sessions.json
+
 # ---------- Secrets / env ----------
 .env
 .env.*

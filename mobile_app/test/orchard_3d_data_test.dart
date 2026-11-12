@@ -127,6 +127,17 @@ void main() {
     expect(trees.map((t) => t['id']).toSet().length, trees.length);
   });
 
+  test('Tree numbers come from the codes: "12" (designer) and "TREE-012" '
+      '(IoT demo farmer, like Node-RED)', () {
+    expect(OrchardTree.numberFromCode('12'), 12);
+    expect(OrchardTree.numberFromCode('TREE-012'), 12);
+    expect(OrchardTree.numberFromCode('TREE-092'), 92);
+    expect(OrchardTree.numberFromCode(' 7 '), 7);
+    expect(OrchardTree.numberFromCode('TREE'), 0);
+    expect(OrchardTree.numberFromCode(''), 0);
+    expect(OrchardTree.numberFromCode(null), 0);
+  });
+
   test('Only the latest photo of a tree counts (here tree #1: warning)', () {
     final status = {
       for (final t in page()['trees'] as List) t['id']: t['photo_status'],

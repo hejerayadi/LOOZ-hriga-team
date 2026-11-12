@@ -65,7 +65,7 @@ begin
   perform public.orchard_apply_design_for(uid, true);
 
   -- Demo: the 4 boxes are installed and send data (zone C's box is offline).
-  update kit_requests set status = 'installed', admin_note = 'Demo orchard (seed)' where orchard_id = oid;
+  update kit_requests set status = 'installed', admin_note = 'Verger de démonstration (seed)' where orchard_id = oid;
   update zones set health = case letter when 'B' then 'warning' when 'C' then 'danger' else 'good' end
   where orchard_id = oid and archived_at is null;
   update nodes n set
@@ -77,6 +77,7 @@ begin
 end $$;
 
 -- Check: you should see  +21622123456 | 2.3688 | 4 | 4 | about 670 | paid | 4
+-- (another demo_phone above: change the number at the end of this check too)
 select p.phone,
        o.area                                                        as hectares,
        (select count(*) from zones z where z.orchard_id = o.id and z.archived_at is null) as zones,
@@ -88,4 +89,4 @@ select p.phone,
 from orchards o
 join profiles p on p.id = o.farmer_id
 join subscriptions s on s.user_id = o.farmer_id
-where o.is_demo;
+where o.is_demo and p.phone = '+21622123456';
