@@ -1,14 +1,10 @@
-"use client";
+import { OverviewView } from "./OverviewView";
 
-import { useAdmin } from "@/components/AdminGuard";
-import { EmptyPage } from "@/components/EmptyPage";
+// The page appears only after the admin check (AdminGuard, in the browser):
+// Next.js cannot prerender it, so it does not check "instant navigation"
+// here (node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md).
+export const instant = false;
 
 export default function OverviewPage() {
-  const admin = useAdmin();
-  return (
-    <EmptyPage
-      title={`Welcome, ${admin.name}`}
-      description="Key numbers of Looz will appear here."
-    />
-  );
+  return <OverviewView />;
 }

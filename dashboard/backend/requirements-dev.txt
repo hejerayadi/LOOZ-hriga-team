@@ -1,0 +1,4 @@
+# Packages for the TESTS of the admin API (on top of requirements.txt).
+# Install them with:  pip install -r requirements-dev.txt
+-r requirements.txt
+pytest==8.4.2               # runs the tests (pytest = unit tests, pytest tests_live = real Supabase)

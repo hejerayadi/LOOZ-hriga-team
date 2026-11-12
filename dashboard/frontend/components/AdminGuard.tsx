@@ -2,7 +2,7 @@
 
 // Protects every dashboard page:
 // - not logged in          -> go to /login
-// - logged in, not admin   -> log out, go to /login with "Access reserved to admins"
+// - logged in, not admin   -> log out, go to /login with "Accès réservé aux administrateurs"
 // - admin                  -> show the page, and share the admin's profile
 //                             with every component (useAdmin()).
 //
@@ -11,7 +11,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { getMe, isAccessDenied } from "@/lib/api";
+import { errorMessage, getMe, isAccessDenied } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/lib/types";
 
@@ -49,7 +49,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           await supabase.auth.signOut();
           router.replace("/login?denied=1");
         } else {
-          setError(e instanceof Error ? e.message : "Unknown error");
+          setError(errorMessage(e));
         }
       }
     }
@@ -75,7 +75,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           }}
           className="rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800"
         >
-          Retry
+          Réessayer
         </button>
       </div>
     );
@@ -84,7 +84,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   if (!admin) {
     return (
       <div className="flex min-h-screen items-center justify-center text-slate-500">
-        Loading…
+        Chargement…
       </div>
     );
   }

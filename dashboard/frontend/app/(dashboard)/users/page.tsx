@@ -1,5 +1,10 @@
 import { EmptyPage } from "@/components/EmptyPage";
 
+// Not built yet. "instant = false": the page appears only after the admin
+// check (AdminGuard, in the browser), so Next.js does not check "instant
+// navigation" here (node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md).
+export const instant = false;
+
 export default function UsersPage() {
-  return <EmptyPage title="Users" description="Farmers, experts and admins." />;
+  return <EmptyPage title="Utilisateurs" description="Agriculteurs, experts et administrateurs." />;
 }

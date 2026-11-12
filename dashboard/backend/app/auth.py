@@ -18,6 +18,7 @@ from fastapi import Header, HTTPException, status
 from supabase import Client
 from supabase_auth.errors import AuthError
 
+from .config import DEMO_ADMIN_DOMAIN
 from .schemas import Profile
 from .supabase_client import user_client
 
@@ -27,6 +28,12 @@ class CurrentAdmin:
     profile: Profile
     # Supabase client acting as this admin (RLS applies). Use it for queries.
     db: Client
+
+    @property
+    def demo(self) -> bool:
+        """The demo admin ("Connexion démo"): the lists show demo accounts
+        only (screenshots), and the database lets it act on demo things only."""
+        return self.profile.demo_admin
 
 
 def _unauthorized(detail: str) -> HTTPException:
@@ -57,4 +64,5 @@ def get_current_admin(authorization: str | None = Header(default=None)) -> Curre
     if not rows or rows[0].get("role") != "admin":
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Access reserved to admins")
 
-    return CurrentAdmin(profile=Profile(**rows[0], email=user.email), db=db)
+    demo = bool(user.email) and user.email.lower().endswith(DEMO_ADMIN_DOMAIN)
+    return CurrentAdmin(profile=Profile(**rows[0], email=user.email, demo_admin=demo), db=db)
