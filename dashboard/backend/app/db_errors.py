@@ -26,7 +26,20 @@ MESSAGES: list[tuple[str, str, int]] = [
     ("This visit is closed", "visit_closed", 409),
     ("Status:", "visit_status", 422),
     ("Note:", "note", 422),
+    ("Only experts get the badge", "not_expert", 422),
+    ("An admin account cannot be blocked here", "admin_target", 403),
+    ("This report is already closed", "report_closed", 409),
+    ("This alert is ended", "alert_ended", 409),
+    ("This alert is already ended", "alert_ended", 409),
+    ("ends_at:", "alert_ends_at", 422),
+    ("Price:", "price", 422),
+    ("hectares_per_node:", "hectares", 422),
+    ("iot_history_days:", "history_days", 422),
 ]
+
+# "Wrong alert: title_ar: 1 to 80 letters, in Arabic" -> "alert_title_ar".
+ALERT_FIELDS = ("kind", "severity", "governorates", "title_ar", "title_fr", "body_ar", "body_fr", "advice_ar",
+                "advice_fr", "advice", "starts_at", "ends_at")
 
 # When the message is not in the list: by Postgres error code.
 CODES: dict[str, tuple[str, int]] = {
@@ -40,6 +53,10 @@ CODES: dict[str, tuple[str, int]] = {
 
 def http_error(error: APIError) -> HTTPException:
     message = error.message or ""
+    if message.startswith("Wrong alert: "):
+        field = message[len("Wrong alert: "):].split(":", 1)[0].strip()
+        code = f"alert_{field}" if field in ALERT_FIELDS else "invalid"
+        return HTTPException(422, {"code": code, "message": message})
     for start, code, http_status in MESSAGES:
         if message.startswith(start):
             return HTTPException(http_status, {"code": code, "message": message})

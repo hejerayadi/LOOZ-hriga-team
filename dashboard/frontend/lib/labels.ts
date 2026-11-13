@@ -178,5 +178,191 @@ export const ACTION_ERROR: Record<string, string> = {
   demo_off: "La connexion démo est désactivée.",
   demo_login_failed: "La connexion du compte de démonstration a échoué (compte ou mot de passe).",
   demo_not_admin: "Le compte de démonstration n'est pas administrateur : lancez supabase/seed/demo_admin.sql.",
+  not_expert: "Seuls les experts reçoivent le badge.",
+  admin_target: "Un compte administrateur ne peut pas être bloqué ici.",
+  report_closed: "Ce signalement est déjà traité.",
+  alert_ended: "Cette alerte est terminée : elle ne peut plus changer.",
+  alert_ends_at: "Date de fin invalide.",
+  alert_kind: "Choisissez le type d'alerte.",
+  alert_severity: "Choisissez la gravité.",
+  alert_governorates: "Choisissez au moins un gouvernorat.",
+  alert_title_ar: "Titre en arabe : 1 à 80 caractères, en lettres arabes.",
+  alert_title_fr: "Titre en français : 1 à 80 caractères.",
+  alert_body_ar: "Texte en arabe : 1 à 600 caractères, en lettres arabes.",
+  alert_body_fr: "Texte en français : 1 à 600 caractères.",
+  alert_advice: "Le conseil s'écrit dans les deux langues, ou pas du tout.",
+  alert_advice_ar: "Conseil en arabe : 1 à 400 caractères, en lettres arabes.",
+  alert_advice_fr: "Conseil en français : 1 à 400 caractères.",
+  alert_starts_at: "Date de début invalide.",
+  price: "Prix : entre 1 et 1000 DT.",
+  hectares: "Hectares par boîtier : entre 0,10 et 1000, ou vide.",
+  history_days: "Durée de conservation : entre 1 et 3650 jours.",
   database: "Erreur de la base de données.",
 };
+
+export const ROLE: Record<string, string> = {
+  farmer: "Agriculteur",
+  expert: "Expert",
+  admin: "Administrateur",
+};
+
+export const LANGUAGE: Record<string, string> = {
+  ar: "Arabe",
+  fr: "Français",
+};
+
+export const POST_TYPE: Record<string, string> = {
+  question: "Question",
+  tip: "Conseil",
+};
+
+/** Why a user reported a post or an answer (the app's future "Signaler"). */
+export const REPORT_REASON: Record<string, string> = {
+  spam: "Publicité ou spam",
+  insult: "Insulte",
+  wrong_advice: "Conseil faux ou dangereux",
+  other: "Autre raison",
+};
+
+export const REPORT_STATUS: Record<string, string> = {
+  open: "À traiter",
+  dismissed: "Classé",
+  actioned: "Traité",
+};
+
+// ---------- Regional alerts (Phase C) ----------
+
+export const ALERT_KIND: Record<string, string> = {
+  frost: "Gel",
+  heat: "Vague de chaleur",
+  drought: "Sécheresse",
+  disease: "Maladie",
+  pest: "Ravageurs",
+  wind: "Vent fort",
+  rain: "Fortes pluies",
+};
+
+export const ALERT_KIND_ICON: Record<string, string> = {
+  frost: "❄️",
+  heat: "🌡️",
+  drought: "☀️",
+  disease: "🍂",
+  pest: "🐛",
+  wind: "💨",
+  rain: "🌧️",
+};
+
+export const SEVERITY: Record<string, string> = {
+  info: "Information",
+  warning: "Vigilance",
+  danger: "Danger",
+};
+
+export const ALERT_STATUS: Record<string, string> = {
+  active: "En cours",
+  scheduled: "Programmée",
+  expired: "Expirée",
+  ended: "Terminée",
+};
+
+/**
+ * ONLY for the preview of what farmers see in the app (Arabic screen): the
+ * same words as the app (mobile_app/lib/l10n/app_ar.arb).
+ */
+export const PREVIEW_AR = {
+  screenTitle: "تنبيه في منطقتك",
+  advice: "نصيحة",
+  meToo: "أنا أراه أيضًا",
+  reported: "فلاحًا أبلغوا عنها",
+  until: "إلى غاية",
+  kind: {
+    frost: "صقيع",
+    heat: "موجة حرّ",
+    drought: "جفاف",
+    disease: "مرض",
+    pest: "آفات",
+    wind: "رياح قوية",
+    rain: "أمطار غزيرة",
+  } as Record<string, string>,
+  severity: { info: "معلومة", warning: "انتباه", danger: "خطر" } as Record<string, string>,
+  governorates: {
+    tunis: "تونس",
+    ariana: "أريانة",
+    ben_arous: "بن عروس",
+    manouba: "منوبة",
+    nabeul: "نابل",
+    zaghouan: "زغوان",
+    bizerte: "بنزرت",
+    beja: "باجة",
+    jendouba: "جندوبة",
+    kef: "الكاف",
+    siliana: "سليانة",
+    sousse: "سوسة",
+    monastir: "المنستير",
+    mahdia: "المهدية",
+    sfax: "صفاقس",
+    kairouan: "القيروان",
+    kasserine: "القصرين",
+    sidi_bouzid: "سيدي بوزيد",
+    gabes: "قابس",
+    medenine: "مدنين",
+    tataouine: "تطاوين",
+    gafsa: "قفصة",
+    tozeur: "توزر",
+    kebili: "قبلي",
+  } as Record<string, string>,
+};
+
+/** The French screen of the app (mobile_app/lib/l10n/app_fr.arb). */
+export const PREVIEW_FR = {
+  screenTitle: "Alerte régionale",
+  advice: "Conseil",
+  meToo: "Moi aussi",
+  reported: "agriculteurs l'ont signalé",
+  until: "jusqu'au",
+};
+
+// ---------- Packs and payments (Phase D) ----------
+
+export const PLAN: Record<string, string> = {
+  free: "Gratuit",
+  paid: "Payant",
+};
+
+export const PAYMENT_STATUS: Record<string, string> = {
+  paid_demo: "Payé (démo)",
+  failed_demo: "Échoué (démo)",
+  pending: "En attente",
+  paid: "Payé",
+  failed: "Échoué",
+  expired: "Expiré",
+};
+
+export const PAYMENT_KIND: Record<string, string> = {
+  period: "Période",
+  extra_nodes: "Boîtiers en plus",
+};
+
+export const ORCHARD_STATUS: Record<string, string> = {
+  complete: "Construit",
+  draft: "Brouillon",
+};
+
+/** The settings of app_settings (Réglages, Abonnements). */
+export const SETTING: Record<string, string> = {
+  demo_payments_enabled: "Paiement de démonstration",
+  demo_login_enabled: "Connexion de démonstration de l'application",
+  iot_ingest_enabled: "Réception des données des capteurs",
+  demo_admin_login_enabled: "« Connexion démo » du tableau de bord",
+  hectares_per_node: "Hectares par boîtier",
+  iot_history_days: "Conservation de l'historique des capteurs",
+};
+
+/** The groups of the "Journal des actions" filter. */
+export const ACTION_GROUPS: { id: string; label: string; actions: string[] }[] = [
+  { id: "sensors", label: "Boîtiers, passerelles et visites", actions: ["node_accept", "node_unaccept", "gateway_new_key", "gateway_enable", "gateway_disable", "visit_update"] },
+  { id: "users", label: "Comptes et experts", actions: ["expert_verify", "expert_unverify", "user_block", "user_unblock"] },
+  { id: "community", label: "Communauté", actions: ["post_hide", "post_unhide", "post_delete", "comment_hide", "comment_unhide", "comment_delete", "report_dismiss"] },
+  { id: "alerts", label: "Alertes régionales", actions: ["alert_create", "alert_update", "alert_end"] },
+  { id: "settings", label: "Prix et réglages", actions: ["price_change", "setting_change"] },
+];

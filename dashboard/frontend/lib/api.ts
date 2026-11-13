@@ -7,14 +7,29 @@ import { ACTION_ERROR } from "./labels";
 import { supabase } from "./supabase";
 import type {
   ActionDone,
+  ActionsPage,
+  AlertInput,
+  BillingPage,
+  CommunityPage,
   DemoSession,
   FarmerDetail,
   FarmerHistory,
   FarmersPage,
+  ModerationDone,
   NewKey,
+  OrchardDetail,
+  OrchardsPage,
   Overview,
+  PostDetail,
   Profile,
+  RegionalAlert,
+  RegionalAlertDetail,
+  RegionalAlertsPage,
+  SensorAlertsPage,
   SensorsPage,
+  SettingsPage,
+  UserDetail,
+  UsersPage,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
@@ -166,4 +181,125 @@ export function setGatewayEnabled(code: string, enabled: boolean, reason: string
 /** status: new / contacted / cancelled (null = unchanged); note: null = unchanged, "" = removed. */
 export function updateVisit(visitId: string, status: string | null, note: string | null): Promise<ActionDone> {
   return api.post<ActionDone>(`/api/visits/${id(visitId)}`, { status, note });
+}
+
+// ---------- "Utilisateurs" ----------
+
+/** Every account (farmers, experts, admins). */
+export function getUsers(): Promise<UsersPage> {
+  return api.get<UsersPage>("/api/users");
+}
+
+export function getUser(userId: string): Promise<UserDetail> {
+  return api.get<UserDetail>(`/api/users/${id(userId)}`);
+}
+
+/** The badge of an expert. reason: optional to verify, required to remove. */
+export function setExpertVerified(userId: string, verified: boolean, reason: string): Promise<ActionDone> {
+  return api.post<ActionDone>(`/api/users/${id(userId)}/verified`, { verified, reason });
+}
+
+/** Block / unblock an account (reason required; not with the demo account). */
+export function setUserBlocked(userId: string, blocked: boolean, reason: string): Promise<ActionDone> {
+  return api.post<ActionDone>(`/api/users/${id(userId)}/blocked`, { blocked, reason });
+}
+
+// ---------- "Communauté" ----------
+
+export function getCommunity(): Promise<CommunityPage> {
+  return api.get<CommunityPage>("/api/community");
+}
+
+export function getPost(postId: string): Promise<PostDetail> {
+  return api.get<PostDetail>(`/api/community/posts/${id(postId)}`);
+}
+
+export type Moderation = "hide" | "unhide" | "delete";
+
+/** Hide, show again or delete a post or an answer (reason required). */
+export function moderate(kind: "post" | "comment", targetId: string, action: Moderation, reason: string): Promise<ModerationDone> {
+  const what = kind === "post" ? "posts" : "comments";
+  return api.post<ModerationDone>(`/api/community/${what}/${id(targetId)}/moderate`, { action, reason });
+}
+
+/** "Classer" a report: nothing wrong (reason required). */
+export function dismissReport(reportId: string, reason: string): Promise<ActionDone> {
+  return api.post<ActionDone>(`/api/community/reports/${id(reportId)}/dismiss`, { reason });
+}
+
+// ---------- "Alertes" ----------
+
+export function getRegionalAlerts(): Promise<RegionalAlertsPage> {
+  return api.get<RegionalAlertsPage>("/api/alerts/regional");
+}
+
+export function getRegionalAlert(alertId: string): Promise<RegionalAlertDetail> {
+  return api.get<RegionalAlertDetail>(`/api/alerts/regional/${id(alertId)}`);
+}
+
+/** Create (alertId null) or change a regional alert. */
+export function saveRegionalAlert(alertId: string | null, input: AlertInput): Promise<RegionalAlert> {
+  return api.post<RegionalAlert>(alertId ? `/api/alerts/regional/${id(alertId)}` : "/api/alerts/regional", input);
+}
+
+/** End an alert now (reason required): it disappears from the app at once. */
+export function endRegionalAlert(alertId: string, reason: string): Promise<RegionalAlert> {
+  return api.post<RegionalAlert>(`/api/alerts/regional/${id(alertId)}/end`, { reason });
+}
+
+export type SensorAlertFilters = { level?: string; governorate?: string; farmer_id?: string; days?: number };
+
+/** The newest changes of level of every box (at most 300). */
+export function getSensorAlerts(filters: SensorAlertFilters = {}): Promise<SensorAlertsPage> {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== "") q.set(k, String(v));
+  const query = q.toString();
+  return api.get<SensorAlertsPage>(`/api/alerts/sensors${query ? `?${query}` : ""}`);
+}
+
+// ---------- "Vergers" (read only) ----------
+
+export function getOrchards(): Promise<OrchardsPage> {
+  return api.get<OrchardsPage>("/api/orchards");
+}
+
+export function getOrchard(orchardId: string): Promise<OrchardDetail> {
+  return api.get<OrchardDetail>(`/api/orchards/${id(orchardId)}`);
+}
+
+// ---------- "Abonnements", "Réglages", "Journal des actions" ----------
+
+export function getBilling(): Promise<BillingPage> {
+  return api.get<BillingPage>("/api/billing");
+}
+
+/** The price of ONE box for one period, in millimes (reason required; not with the demo account). */
+export function setPrice(priceMillimes: number, reason: string): Promise<ActionDone> {
+  return api.post<ActionDone>("/api/billing/price", { price_millimes: priceMillimes, reason });
+}
+
+export function getSettings(): Promise<SettingsPage> {
+  return api.get<SettingsPage>("/api/settings");
+}
+
+export type SettingName =
+  | "demo_payments_enabled"
+  | "demo_login_enabled"
+  | "iot_ingest_enabled"
+  | "demo_admin_login_enabled"
+  | "hectares_per_node"
+  | "iot_history_days";
+
+/** One setting: "true" / "false", or a number ("" = none for hectares_per_node). */
+export function setSetting(name: SettingName, value: string, reason: string): Promise<ActionDone> {
+  return api.post<ActionDone>(`/api/settings/${name}`, { value, reason });
+}
+
+/** Every admin action, newest first, 100 at a time (before = id of the last line shown). */
+export function getActions(before?: number, actions?: string[]): Promise<ActionsPage> {
+  const q = new URLSearchParams();
+  if (before) q.set("before", String(before));
+  if (actions?.length) q.set("actions", actions.join(","));
+  const query = q.toString();
+  return api.get<ActionsPage>(`/api/actions${query ? `?${query}` : ""}`);
 }

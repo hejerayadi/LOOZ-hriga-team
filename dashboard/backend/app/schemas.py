@@ -474,3 +474,354 @@ class DemoSession(BaseModel):
     refresh_token: str
     expires_in: int | None = None
     expires_at: int | None = None
+
+
+# ---------- "Utilisateurs" (Phase B) ----------
+
+
+class UserRow(BaseModel):
+    """One account (farmer, expert or admin). The e-mail: admins only."""
+
+    id: str
+    name: str = ""
+    role: str
+    phone: str | None = None
+    email: str | None = None
+    governorate: str | None = None
+    language: str | None = None
+    created_at: datetime | None = None
+    last_sign_in_at: datetime | None = None
+    blocked: bool = False
+    verified: bool = False  # experts: the badge "◆ خبير موثّق"
+    speciality: str | None = None
+    organisation: str | None = None
+    pack: Pack = Field(default_factory=Pack)
+    orchard_status: str | None = None
+    posts: int = 0
+    answers: int = 0
+    demo: bool = False  # a demo account or a fake person of the community
+    fake: bool = False  # a fake person of the community (cannot log in)
+    demo_login: bool = False  # made with the demo login (any number, any code)
+
+
+class UsersPage(BaseModel):
+    users: list[UserRow] = Field(default_factory=list)
+    server_time: datetime
+
+
+class VerifiedBody(BaseModel):
+    verified: bool
+    reason: str | None = Field(default=None, max_length=300)
+
+
+class BlockedBody(BaseModel):
+    blocked: bool
+    reason: str = Field(max_length=300)
+
+
+# ---------- "Communauté" (Phase B) ----------
+
+
+class Author(BaseModel):
+    id: str | None = None
+    name: str = ""
+    role: str | None = None
+    verified: bool = False
+    governorate: str | None = None
+    demo: bool = False
+    fake: bool = False
+
+
+class PostRow(BaseModel):
+    id: str
+    type: str  # question / tip
+    text: str
+    photo_kind: str | None = None  # "demo" (picture of the app) or "storage" (a farmer's photo)
+    photo_demo: str | None = None  # the name of the demo picture (almond_blossoms)
+    hidden: bool = False
+    created_at: datetime
+    updated_at: datetime | None = None
+    author: Author = Field(default_factory=Author)
+    answers: int = 0
+    answers_hidden: int = 0
+    reports_open: int = 0
+    demo: bool = False
+
+
+class CommentRow(BaseModel):
+    id: str
+    post_id: str
+    text: str
+    hidden: bool = False
+    created_at: datetime
+    author: Author = Field(default_factory=Author)
+    reports_open: int = 0
+    demo: bool = False
+
+
+class ReportRow(BaseModel):
+    id: str
+    post_id: str | None = None
+    comment_id: str | None = None
+    reason: str  # spam / insult / wrong_advice / other
+    note: str | None = None
+    status: str  # open / dismissed / actioned
+    created_at: datetime
+    resolved_at: datetime | None = None
+    reporter_name: str = ""
+    target_text: str = ""
+    target_post_id: str | None = None
+    demo: bool = False
+
+
+class CommunityPage(BaseModel):
+    posts: list[PostRow] = Field(default_factory=list)
+    reports: list[ReportRow] = Field(default_factory=list)
+    actions: list[ActionLine] = Field(default_factory=list)
+    server_time: datetime
+
+
+class PostDetail(BaseModel):
+    post: PostRow
+    photo_url: str | None = None  # a farmer's photo: a link valid 5 minutes
+    answers: list[CommentRow] = Field(default_factory=list)
+    reports: list[ReportRow] = Field(default_factory=list)
+    actions: list[ActionLine] = Field(default_factory=list)
+    server_time: datetime
+
+
+class UserDetail(BaseModel):
+    user: UserRow
+    posts: list[PostRow] = Field(default_factory=list)
+    answers: list[CommentRow] = Field(default_factory=list)
+    actions: list[ActionLine] = Field(default_factory=list)
+    server_time: datetime
+
+
+class ModerateBody(BaseModel):
+    action: str = Field(pattern=r"^(hide|unhide|delete)$")
+    reason: str = Field(max_length=300)
+
+
+class ModerationDone(BaseModel):
+    ok: bool = True
+    hidden: bool | None = None
+    deleted: bool = False
+    photo_removed: bool | None = None  # a deleted post's photo: removed from Storage?
+
+
+# ---------- "Alertes" (Phase C) ----------
+
+
+class RegionalAlert(BaseModel):
+    """A regional alert (migration 013), in Arabic AND French."""
+
+    id: str
+    kind: str  # frost / heat / drought / disease / pest / wind / rain
+    severity: str  # info / warning / danger
+    governorates: list[str] = Field(default_factory=list)
+    title_ar: str
+    title_fr: str
+    body_ar: str
+    body_fr: str
+    advice_ar: str | None = None
+    advice_fr: str | None = None
+    starts_at: datetime
+    ends_at: datetime | None = None
+    ended_at: datetime | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    created_by_name: str = ""
+    ended_by_name: str = ""
+    status: str  # scheduled / active / expired / ended
+    seen_count: int = 0  # "Moi aussi" of the farmers
+    is_demo: bool = False
+
+
+class RegionalAlertsPage(BaseModel):
+    alerts: list[RegionalAlert] = Field(default_factory=list)
+    actions: list[ActionLine] = Field(default_factory=list)
+    server_time: datetime
+
+
+class RegionalAlertDetail(BaseModel):
+    alert: RegionalAlert
+    actions: list[ActionLine] = Field(default_factory=list)
+    server_time: datetime
+
+
+class AlertBody(BaseModel):
+    """Create or change a regional alert. governorates: codes, or ["all"]."""
+
+    kind: str = Field(max_length=20)
+    severity: str = Field(max_length=20)
+    governorates: list[str] = Field(min_length=1, max_length=24)
+    title_ar: str = Field(max_length=200)
+    title_fr: str = Field(max_length=200)
+    body_ar: str = Field(max_length=1200)
+    body_fr: str = Field(max_length=1200)
+    advice_ar: str | None = Field(default=None, max_length=800)
+    advice_fr: str | None = Field(default=None, max_length=800)
+    starts_at: str | None = Field(default=None, max_length=40)  # None = now (a new alert) / unchanged
+    ends_at: str | None = Field(default=None, max_length=40)  # None = until an admin ends it
+
+
+class SensorAlertRow(AlertEvent):
+    orchard_id: str
+    farmer_id: str | None = None
+    farmer_name: str = ""
+    governorate: str | None = None
+    demo: bool = False
+
+
+class FarmerChoice(BaseModel):
+    id: str
+    name: str
+
+
+class SensorAlertsPage(BaseModel):
+    events: list[SensorAlertRow] = Field(default_factory=list)
+    farmers: list[FarmerChoice] = Field(default_factory=list)  # for the filter
+    limit: int = 0  # at most this many lines (the newest)
+    server_time: datetime
+
+
+# ---------- "Vergers" (Phase D, read only) ----------
+
+
+class OrchardRow(BaseModel):
+    id: str
+    farmer_id: str
+    farmer_name: str = ""
+    farmer_phone: str | None = None
+    governorate: str | None = None
+    status: str  # draft / complete
+    draw_mode: str | None = None
+    area_ha: float | None = None
+    zones: int = 0
+    trees: int = 0
+    boxes: int = 0
+    boxes_accepted: int = 0
+    pack: Pack = Field(default_factory=Pack)
+    created_at: datetime | None = None
+    completed_at: datetime | None = None
+    demo: bool = False
+
+
+class OrchardsPage(BaseModel):
+    orchards: list[OrchardRow] = Field(default_factory=list)
+    server_time: datetime
+
+
+class OrchardDetail(BaseModel):
+    """One orchard: its line, and the plan (zones, trees, boxes). A draft:
+    the zones of its drawing (design), not yet built."""
+
+    orchard: OrchardRow
+    outline: list[Point] = Field(default_factory=list)
+    zones: list[Zone] = Field(default_factory=list)
+    trees: list[Tree] = Field(default_factory=list)
+    boxes: list[Box] = Field(default_factory=list)
+    draft_zones: int = 0  # zones of the drawing not built yet
+    bill: "Bill | None" = None
+    server_time: datetime
+
+
+# ---------- "Abonnements" (Phase D) ----------
+
+
+class Price(BaseModel):
+    price_millimes: int  # one node for period_days days (8000 = 8 DT)
+    period_days: int = 30
+    per_node: bool = True
+    updated_at: datetime | None = None
+
+
+class Bill(BaseModel):
+    """What the farmer pays for one period at the current price (same rule
+    as orchard_quote_for() of migration 011)."""
+
+    billed_nodes: int
+    min_nodes_by_area: int = 0
+    price_millimes: int
+    period_days: int
+    amount_millimes: int
+
+
+class SubscriptionRow(BaseModel):
+    user_id: str
+    farmer_name: str = ""
+    farmer_phone: str | None = None
+    governorate: str | None = None
+    plan: str = "free"
+    status: str | None = None
+    active: bool = False
+    nodes: int | None = None  # nodes paid
+    started_at: datetime | None = None
+    ends_at: datetime | None = None
+    orchard_status: str | None = None
+    bill: Bill | None = None
+    demo: bool = False
+
+
+class PaymentRow(BaseModel):
+    id: str
+    user_id: str | None = None  # None: the account was deleted
+    farmer_name: str = ""
+    plan: str
+    amount_millimes: int
+    nodes: int | None = None
+    period_days: int | None = None
+    kind: str | None = None  # period / extra_nodes
+    provider: str | None = None  # demo / ...
+    status: str  # paid_demo / failed_demo / pending / paid / failed / expired
+    created_at: datetime | None = None
+    paid_at: datetime | None = None
+    demo: bool = False
+
+
+class BillingPage(BaseModel):
+    price: Price
+    hectares_per_node: float | None = None
+    subscriptions: list[SubscriptionRow] = Field(default_factory=list)
+    payments: list[PaymentRow] = Field(default_factory=list)
+    actions: list[ActionLine] = Field(default_factory=list)
+    server_time: datetime
+
+
+class PriceBody(BaseModel):
+    price_millimes: int = Field(ge=1, le=10_000_000)
+    reason: str = Field(max_length=300)
+
+
+# ---------- "Réglages" and "Journal des actions" (Phase D) ----------
+
+
+class Settings(BaseModel):
+    demo_payments_enabled: bool
+    demo_login_enabled: bool
+    iot_ingest_enabled: bool
+    demo_admin_login_enabled: bool
+    hectares_per_node: float | None = None
+    iot_history_days: int
+    updated_at: datetime | None = None
+
+
+class SettingsPage(BaseModel):
+    settings: Settings
+    actions: list[ActionLine] = Field(default_factory=list)
+    server_time: datetime
+
+
+class SettingBody(BaseModel):
+    value: str = Field(max_length=20)  # 'true' / 'false', a number, or '' (hectares_per_node)
+    reason: str = Field(max_length=300)
+
+
+class ActionsPage(BaseModel):
+    actions: list[ActionLine] = Field(default_factory=list)
+    more: bool = False  # older lines exist (ask again with before=<the last id>)
+    server_time: datetime
+
+
+OrchardDetail.model_rebuild()

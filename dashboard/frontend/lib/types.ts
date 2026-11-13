@@ -336,3 +336,284 @@ export type DemoSession = {
   expires_in: number | null;
   expires_at: number | null;
 };
+
+// ---------- "Utilisateurs" (Phase B) ----------
+
+export type UserRow = {
+  id: string;
+  name: string;
+  role: "farmer" | "expert" | "admin" | string;
+  phone: string | null;
+  /** Admins only. */
+  email: string | null;
+  governorate: string | null;
+  language: string | null;
+  created_at: string | null;
+  last_sign_in_at: string | null;
+  blocked: boolean;
+  /** Experts: the badge "◆ خبير موثّق". */
+  verified: boolean;
+  speciality: string | null;
+  organisation: string | null;
+  pack: Pack;
+  orchard_status: string | null;
+  posts: number;
+  answers: number;
+  /** A demo account, or a fake person of the community. */
+  demo: boolean;
+  /** A fake person of the community (cannot log in). */
+  fake: boolean;
+  /** Made with the demo login (any number, any code). */
+  demo_login: boolean;
+};
+
+export type UsersPage = { users: UserRow[]; server_time: string };
+
+export type UserDetail = {
+  user: UserRow;
+  posts: PostRow[];
+  answers: CommentRow[];
+  actions: ActionLine[];
+  server_time: string;
+};
+
+// ---------- "Communauté" (Phase B) ----------
+
+export type Author = {
+  id: string | null;
+  name: string;
+  role: string | null;
+  verified: boolean;
+  governorate: string | null;
+  demo: boolean;
+  fake: boolean;
+};
+
+export type PostRow = {
+  id: string;
+  type: "question" | "tip" | string;
+  text: string;
+  /** "demo" = a picture shipped in the app, "storage" = a farmer's photo. */
+  photo_kind: "demo" | "storage" | null;
+  photo_demo: string | null;
+  hidden: boolean;
+  created_at: string;
+  updated_at: string | null;
+  author: Author;
+  answers: number;
+  answers_hidden: number;
+  reports_open: number;
+  demo: boolean;
+};
+
+export type CommentRow = {
+  id: string;
+  post_id: string;
+  text: string;
+  hidden: boolean;
+  created_at: string;
+  author: Author;
+  reports_open: number;
+  demo: boolean;
+};
+
+export type ReportRow = {
+  id: string;
+  post_id: string | null;
+  comment_id: string | null;
+  reason: string;
+  note: string | null;
+  status: "open" | "dismissed" | "actioned" | string;
+  created_at: string;
+  resolved_at: string | null;
+  reporter_name: string;
+  target_text: string;
+  target_post_id: string | null;
+  demo: boolean;
+};
+
+export type CommunityPage = {
+  posts: PostRow[];
+  reports: ReportRow[];
+  actions: ActionLine[];
+  server_time: string;
+};
+
+export type PostDetail = {
+  post: PostRow;
+  /** A farmer's photo: a link valid 5 minutes. */
+  photo_url: string | null;
+  answers: CommentRow[];
+  reports: ReportRow[];
+  actions: ActionLine[];
+  server_time: string;
+};
+
+export type ModerationDone = {
+  ok: boolean;
+  hidden: boolean | null;
+  deleted: boolean;
+  /** A deleted post's photo: removed from Storage? (null = it had none) */
+  photo_removed: boolean | null;
+};
+
+// ---------- "Alertes" (Phase C) ----------
+
+export type RegionalAlert = {
+  id: string;
+  kind: string;
+  severity: "info" | "warning" | "danger" | string;
+  governorates: string[];
+  title_ar: string;
+  title_fr: string;
+  body_ar: string;
+  body_fr: string;
+  advice_ar: string | null;
+  advice_fr: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  ended_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  created_by_name: string;
+  ended_by_name: string;
+  status: "scheduled" | "active" | "expired" | "ended" | string;
+  /** "Moi aussi" of the farmers. */
+  seen_count: number;
+  is_demo: boolean;
+};
+
+export type RegionalAlertsPage = { alerts: RegionalAlert[]; actions: ActionLine[]; server_time: string };
+
+export type RegionalAlertDetail = { alert: RegionalAlert; actions: ActionLine[]; server_time: string };
+
+/** What the editor sends. governorates: codes, or ["all"]. */
+export type AlertInput = {
+  kind: string;
+  severity: string;
+  governorates: string[];
+  title_ar: string;
+  title_fr: string;
+  body_ar: string;
+  body_fr: string;
+  advice_ar: string | null;
+  advice_fr: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+};
+
+export type SensorAlertRow = AlertEvent & {
+  orchard_id: string;
+  farmer_id: string | null;
+  farmer_name: string;
+  governorate: string | null;
+  demo: boolean;
+};
+
+export type SensorAlertsPage = {
+  events: SensorAlertRow[];
+  farmers: { id: string; name: string }[];
+  limit: number;
+  server_time: string;
+};
+
+// ---------- "Vergers", "Abonnements", "Réglages", "Journal" (Phase D) ----------
+
+export type OrchardRow = {
+  id: string;
+  farmer_id: string;
+  farmer_name: string;
+  farmer_phone: string | null;
+  governorate: string | null;
+  status: "draft" | "complete" | string;
+  draw_mode: string | null;
+  area_ha: number | null;
+  zones: number;
+  trees: number;
+  boxes: number;
+  boxes_accepted: number;
+  pack: Pack;
+  created_at: string | null;
+  completed_at: string | null;
+  demo: boolean;
+};
+
+export type OrchardsPage = { orchards: OrchardRow[]; server_time: string };
+
+/** What the farmer pays for one period at the current price. */
+export type Bill = {
+  billed_nodes: number;
+  min_nodes_by_area: number;
+  price_millimes: number;
+  period_days: number;
+  amount_millimes: number;
+};
+
+export type OrchardDetail = {
+  orchard: OrchardRow;
+  outline: Point[];
+  zones: Zone[];
+  trees: Tree[];
+  boxes: Box[];
+  /** A draft: the zones of its drawing, not built yet. */
+  draft_zones: number;
+  bill: Bill | null;
+  server_time: string;
+};
+
+export type Price = { price_millimes: number; period_days: number; per_node: boolean; updated_at: string | null };
+
+export type SubscriptionRow = {
+  user_id: string;
+  farmer_name: string;
+  farmer_phone: string | null;
+  governorate: string | null;
+  plan: string;
+  status: string | null;
+  active: boolean;
+  nodes: number | null;
+  started_at: string | null;
+  ends_at: string | null;
+  orchard_status: string | null;
+  bill: Bill | null;
+  demo: boolean;
+};
+
+export type PaymentRow = {
+  id: string;
+  user_id: string | null;
+  farmer_name: string;
+  plan: string;
+  amount_millimes: number;
+  nodes: number | null;
+  period_days: number | null;
+  kind: string | null;
+  provider: string | null;
+  status: string;
+  created_at: string | null;
+  paid_at: string | null;
+  demo: boolean;
+};
+
+export type BillingPage = {
+  price: Price;
+  hectares_per_node: number | null;
+  subscriptions: SubscriptionRow[];
+  payments: PaymentRow[];
+  actions: ActionLine[];
+  server_time: string;
+};
+
+export type Settings = {
+  demo_payments_enabled: boolean;
+  demo_login_enabled: boolean;
+  iot_ingest_enabled: boolean;
+  demo_admin_login_enabled: boolean;
+  hectares_per_node: number | null;
+  iot_history_days: number;
+  updated_at: string | null;
+};
+
+export type SettingsPage = { settings: Settings; actions: ActionLine[]; server_time: string };
+
+export type ActionsPage = { actions: ActionLine[]; more: boolean; server_time: string };

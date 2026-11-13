@@ -1,6 +1,6 @@
 # Looz — project status
 
-Last update: 11 November 2026 (IoT link: Node-RED → Supabase → admin dashboard, Milestone 1).
+Last update: 13 November 2026 (admin dashboard: Phases B, C, D built; migration 014 run).
 
 > **⚠ Before a real launch: turn the DEMO LOGIN off** (section 5). While it is on, anyone who types a
 > phone number can open that account: any 6-digit code works. Turn the **demo payment** off too
@@ -26,7 +26,7 @@ Last update: 11 November 2026 (IoT link: Node-RED → Supabase → admin dashboa
 | Community: questions, answers, delete, photos | Done | **Real** (Supabase + Storage) |
 | Home, alerts, camera diagnosis, assistant, voice, map, journal, tips | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`) |
 | **Sensor boxes → Supabase** (section 12): Node-RED of the farm (`iot/node-red/`) sends the readings once a minute to the Edge Function `iot-ingest` | Done (Milestone 1) with the **simulated** boxes NODE-01…04 of the IoT demo farmer | **Real** Supabase (migration 012), simulated boxes |
-| Admin dashboard (`dashboard/`), **in French** (section 14): login + "Connexion démo", Vue d'ensemble (numbers + "À faire"), farmers list, farmer page (orchard plan, gateway, every box live, 3-day charts, alert log, sensor problems, accept / remove a box, new gateway key, installation visit, admin actions), Capteurs (boxes, waiting list, visits, gateways, log) | **Phase A done** (12 Nov 2026). Utilisateurs + Communauté: Phase B; Alertes: Phase C; Vergers, Abonnements, Réglages: Phase D ("Bientôt") | **Real** (Supabase, admin login; every change through a checked function + admin action log, migration 013) |
+| Admin dashboard (`dashboard/`), **in French** (section 14): login + "Connexion démo", Vue d'ensemble, Agriculteurs (live boxes, 3-day charts, accept / remove), Utilisateurs (expert badge, block), Communauté (hide / show again / delete, reports), Alertes (regional alerts in Arabic + French with the preview, sensor alert log), Vergers (plan), Capteurs, Abonnements (bills, payments, price), Réglages (the switches), Journal des actions | **Phases A–D built** (A: 12 Nov, B–D: 13 Nov 2026). Migration 014 (the database keeps the demo admin on demo data) run on 13 Nov | **Real** (Supabase, admin login; every change through a checked function + admin action log, migrations 013 and 014) |
 
 The list of every screen and how it was checked: `mobile_app/SCREENS_CHECKLIST.md`.
 
@@ -211,6 +211,10 @@ Run the files in **Supabase > SQL Editor**, in this order. Every file can be run
     user `admin-demo@looz-demo.invalid`, then `supabase/seed/demo_admin.sql`
     (`admin-demo@looz-demo.invalid | admin | Démo Admin | true | 6 | 0 | false`). To remove it:
     `supabase/seed/demo_admin_delete.sql` (`false | 0 | 0`).
+19. `supabase/migrations/014_demo_admin_database.sql` (check line: `0 | 26 | true | 16 | false`; the
+    16 = the demo people: the 6 demo numbers, the demo admin and the 9 fake people of the community).
+    ⚠ If you ever run 012 or 013 again, run 014 again afterwards (they bring back the old "Admins
+    see …" rules).
 
 Then the **Edge Functions** (Edge Functions › Deploy a new function › Via Editor › paste the file ›
 name › Deploy function; then in its settings turn **"Verify JWT" off**; no secret to add):
@@ -223,7 +227,7 @@ name › Deploy function; then in its settings turn **"Verify JWT" off**; no sec
 All 12 SQL files and the demo orchard are in the real database, and `demo-auth` answers (checked on
 9 November 2026 by `test_live/database_check_test.dart`, `orchard_live_test.dart` and
 `demo_login_live_test.dart`). 012 and the IoT demo farmer were run by you on 11 November 2026;
-013, `demo_admin.sql` and the "Connexion démo" switch on 12 November 2026.
+013, `demo_admin.sql` and the "Connexion démo" switch on 12 November 2026. 014 on 13 November 2026.
 
 ## 8. Tests
 
@@ -262,13 +266,16 @@ instead. To test them as new users again, delete them in Supabase > Authenticati
 
 | Command | What it checks | Last result |
 | --- | --- | --- |
-| `pytest` | No internet, fake tables and fake database functions: only admins (401 / 403), the farmers list and page, the demo admin sees demo accounts only (and never a real admin's name), "Vue d'ensemble", the 3 days (window on the latest measure, alert log, sensor problems grouped, actions), Capteurs (waiting first, visits, gateways without key, log), every action calls its checked function and every refusal of the database becomes a French message (reason, device code, demo admin...), "Connexion démo" (switch, password only in `.env`, 127.0.0.1 only, other websites refused, not an admin → refused, one login per 3 s), CORS localhost + 127.0.0.1, a value the box flags as wrong is not drawn | 70 / 70 pass |
-| `pytest tests_live -v` | **Real Supabase, Node-RED running**: needs `LIVE_ADMIN_EMAIL` and `LIVE_ADMIN_PASSWORD` in `dashboard/backend/.env` (skipped otherwise). Phase 1: the Node-RED orchard, data arrives, the farmer reads only his boxes, a visitor nothing, `iot-ingest` refuses a wrong key. **Phase A**: overview, Capteurs, 3-day charts; **Milestone A** (NODE-04 "Retirer" → refused "not_installed" → "Accepter" → received again, both lines in the log); a farmer and the admin's direct writes refused; "Connexion démo": demo accounts only, new key / gateway off / a real box refused | 17 / 17 pass (12 Nov 2026, Node-RED running) |
+| `pytest` | No internet, fake tables and fake database functions: only admins (401 / 403), the farmers list and page, the demo admin sees demo accounts only (and never a real admin's name), "Vue d'ensemble", the 3 days (window on the latest measure, alert log, sensor problems grouped, actions), Capteurs (waiting first, visits, gateways without key, log), every action calls its checked function and every refusal of the database becomes a French message (reason, device code, demo admin...), "Connexion démo" (switch, password only in `.env`, 127.0.0.1 only, other websites refused, not an admin → refused, one login per 3 s), CORS localhost + 127.0.0.1, a value the box flags as wrong is not drawn. **Phase B**: accounts (e-mail of admins only, "New user" never shown), expert badge, block, posts newest first with every answer, private photo link (5 min), hide / show again / delete (the photo removed from Storage), reports. **Phase C**: regional alerts (states, "Moi aussi", create / change / end, every check of the database in French), sensor alert log (filters). **Phase D**: orchards and their plan (drafts too), the bill (same rule as the app), subscriptions, payments, price, settings, the action log 100 lines at a time | 113 / 113 pass |
+| `pytest tests_live -v` | **Real Supabase, Node-RED running**: needs `LIVE_ADMIN_EMAIL` and `LIVE_ADMIN_PASSWORD` in `dashboard/backend/.env` (skipped otherwise). Phase 1 and **Phase A** (Milestone A: NODE-04 "Retirer" → refused → "Accepter" → received again). **Milestone B**: the demo expert 22 123 458 verified → the app shows "◆ خبير موثّق" (and next to an answer she writes, then deletes; she STAYS verified), a demo post hidden → gone from the app → shown again. **Milestone C**: a heat alert for Sfax → 22 777 001 reads it, 22 123 457 (Kairouan) does not → changed → ended. **Milestone D**: the price 8 → 9 DT → the app's bill and the dashboard's bill change, the log says 8 → 9 DT → back to 8 DT. `test_live_014.py` (after 014): the demo admin's own token reads demo rows only through the Supabase API, and "Vue d'ensemble" counts what its lists show | 39 / 39 pass (13 Nov 2026, Node-RED running): IoT 8, A 9, B 6, C 5, D 6, 014 5 |
 
 **Frontend** (from `dashboard/frontend`): `npx tsc --noEmit`, `npm run lint`, `npm run build`: no error.
 
-**The IoT part on the laptop** (no Supabase): the SQL of 012 and the seeds were tested on a local
-PostgreSQL 17 (91 checks), the Edge Function under Deno with a local stand-in of Supabase (14
+**The SQL on the laptop** (no Supabase): 013 + `demo_admin.sql` (99 checks) and 014 (64 checks:
+real admins and the app read exactly what they read before, the demo admin only demo rows in every
+table, view and photo, its overview counts its lists, a demo alert never reaches a real farmer)
+were tested on a local PostgreSQL 17, run the 3 ways of the SQL Editor and again. The IoT part: the
+SQL of 012 and the seeds (91 checks), the Edge Function under Deno with a local stand-in of Supabase (14
 checks), and the real Node-RED flow sending to it (all readings accepted, the clock continues after
 a restart).
 
@@ -294,25 +301,31 @@ a restart).
 - **"Mode test : changer d'offre"** in Profile (debug builds only): switches Free / Premium in the
   app only (not in the database), to see the locked screens.
 
-## 10. Admin how-tos (Supabase > Table Editor)
+## 10. Admin how-tos
+
+Prefer the **dashboard**: each change there needs a reason and is written in the action log. The
+Table Editor still works (it is not logged).
 
 | To do | Where | How |
 | --- | --- | --- |
-| **Turn the demo login off** | `app_settings` (one row) | `demo_login_enabled` = `false` (section 5). |
-| Turn the demo payment off | `app_settings` (one row) | `demo_payments_enabled` = `false`. The app then says "payment not available". |
-| Change the price | `plan_prices`, row `paid` | `price_millimes` = the price of **one zone** (8000 = 8 DT); `period_days` = 30. |
-| Change the minimum per area | `app_settings` (one row) | `hectares_per_node` = 2.00 (1 zone billed per 2 ha at least). Empty = bill only the zones drawn. |
+| **Turn the demo login off** | **Dashboard › Réglages** › "Connexion de démonstration de l'application" › Désactiver (or `app_settings.demo_login_enabled`) | Only after a real SMS provider (section 5): the window asks you to confirm it. |
+| Turn the demo payment off | **Dashboard › Réglages** › "Paiement de démonstration" | The app then says "payment not available". |
+| Change the price | **Dashboard › Abonnements › Prix › Changer le prix** (shows the effect on the paid packs, asks to confirm) | The price of **one box** for 30 days (8 DT). New payments and renewals use it. |
+| Change the minimum per area | **Dashboard › Abonnements › Prix** › Hectares par boîtier | 2 = at least 1 box billed per 2 ha. Empty = bill only the zones drawn. |
 | Bill the real number of boxes | `orchards` | `confirmed_nodes` = the boxes really installed (1 to 100). It replaces the area minimum. |
 | Installation visits | **Dashboard › Capteurs › Visites d'installation › Modifier** (logged) | Made **by the database** when a paid orchard is built (the designer), with the number of boxes to install. "à planifier" → "agriculteur contacté", or "annulée", plus a note. "Installation faite" comes **by itself** when every box of the orchard is accepted. |
-| Verify an expert | `profiles` (`role` = `expert`) | `verified` = `true`. The "◆ خبير موثّق" badge then appears next to their posts and answers. |
+| Verify an expert | **Dashboard › Utilisateurs** › Vérifier (reason to remove it) | The "◆ خبير موثّق" badge appears at once next to their name and answers in the app. |
 | Make an admin (dashboard) | `profiles` | `role` = `admin`. |
 | **Delete the test accounts** of the designer | Authentication › Users | Search **2298**, then "Delete user" on each (+216 22 98x xxx). Their profile, orchard, zones, sensors, trees and installation visit go with them; their demo payments stay, without the user. |
+| Block / unblock an account | **Dashboard › Utilisateurs** › Bloquer (reason required; never an admin) | The account cannot log in; its session ends within an hour. Real deletion: Authentication › Users. |
+| Hide, show again or delete a post / answer | **Dashboard › Communauté** › open the post › Masquer / Afficher de nouveau / Supprimer (asks twice) | Hidden: gone from the app at once. Deleted: the log keeps a copy of the text; the photo is removed. |
+| A regional alert (frost, heat…) | **Dashboard › Alertes › Nouvelle alerte** (Arabic + French, governorates, dates, preview) › Terminer to end it | Only the farmers of those governorates read it (the app's tab is the next app module). |
 | **Stop all sensor data** (emergency) | `app_settings` (one row) | `iot_ingest_enabled` = `false`: every gateway is refused (Node-RED keeps its readings and sends them when it is `true` again, up to 5000). |
 | **A new key for a gateway** (key lost or seen by someone) | **Dashboard › Capteurs › Passerelles › Nouvelle clé** (or the farmer's page). SQL Editor: `select public.iot_gateway_new_key('GW-01');` | The key is shown **once**: paste it in `iot/node-red/.env` (`LOOZ_GATEWAY_KEY=`), restart Node-RED. The old key stops at once. The log keeps "Nouvelle clé", never the key. |
 | Switch a gateway off / on | **Dashboard › Capteurs › Passerelles › Désactiver / Activer** (reason required) | Every reading of that gateway is refused while it is off. |
 | Accept / remove a sensor box | **Dashboard**: farmer's page or Capteurs › "Accepter l'installation" (the code printed on the box) / "Retirer" (reason required). SQL Editor: `select public.iot_accept_node(id) from nodes where hardware_id = 'NODE-04';` / `select public.iot_unaccept_node(id, 'the reason') from nodes where hardware_id = 'NODE-04';` | A box not accepted: its readings are refused ("installation non acceptée"). |
-| Who did what | Dashboard: "Actions des administrateurs" (farmer's page), Capteurs › Journal | Table `admin_actions` (read only; written by the functions of 013). Actions in the SQL Editor are logged as "SQL Editor"; the **Table Editor is not logged**: prefer the dashboard. |
-| Keep more or less history | `app_settings` | `iot_history_days` = 30 (days of **measured** time per box). |
+| Who did what | **Dashboard › Journal des actions** (every line, filter by kind), and on each page ("Actions des administrateurs") | Table `admin_actions` (read only; written by the functions of 013). Actions in the SQL Editor are logged as "SQL Editor"; the **Table Editor is not logged**: prefer the dashboard. |
+| Keep more or less history | **Dashboard › Réglages** › Conservation de l'historique des capteurs | 30 = days of **measured** time per box (readings, sensor alerts and problems; older ones are deleted). |
 
 Users can't do any of these themselves: the database rules refuse it (checked by the live tests).
 
@@ -326,13 +339,12 @@ Users can't do any of these themselves: the database rules refuse it (checked by
 2. **Real SMS** (an SMS provider in Supabase Auth), then **turn the demo login off**.
 3. **Real payment**: choose the provider (Konnect was compared), add an Edge Function and its
    secret key in Supabase secrets (never in the app), and replace `DemoPaymentService`.
-4. **Admin dashboard** (section 14): Phase A done. Phase B: Utilisateurs (search, filters, expert
-   verification, block / unblock) and Communauté (posts, answers, photos, hide / delete with a
-   reason). Phase C: regional alerts (Arabic + French) and the sensor alert log. Phase D: Vergers,
-   Abonnements (price, `hectares_per_node`, `confirmed_nodes`), Réglages (the switches), the full
-   action log.
-5. **App**: "التنبيهات" reads the regional alerts of 013 (+ "Moi aussi"), a "Signaler" button in
-   the community (`report_content()` is ready); push notifications later.
+4. **Admin dashboard** (section 14): all pages built (Phases A–D). Next: CRDA admins limited to
+   their governorates (a separate step); fix what you find when you test it.
+5. **App module (next)**: "التنبيهات" reads the regional alerts (+ "Moi aussi",
+   `regional_alert_reports`), a "Signaler" button in the community (`report_content()` is ready, the
+   dashboard's Communauté › Signalements shows them); push notifications "قريبًا". The Arabic words
+   of the dashboard's preview (`dashboard/frontend/lib/labels.ts`, `PREVIEW_AR`) can be reused.
 6. **Real sensor readings in the app** (the farmer's view): the 3D and alerts read
    `iot_node_status` / `node_alert_events` (the database rules already allow it), in place of
    "قريبًا" and `fake_data.dart`; then photo diagnosis.
@@ -410,7 +422,7 @@ November 2026: IPv4 answered in 0.1 s, IPv6 never). Python then waits for IPv6 b
 `SUPABASE_IPV4_ONLY=true` in `dashboard/backend/.env` (it is there now) makes the backend use IPv4
 only; harmless when IPv6 works. Node-RED and the browser are not affected.
 
-## 14. Admin dashboard (migration 013)
+## 14. Admin dashboard (migrations 013 and 014)
 
 **The rule**: admins READ everything (database rules), but every CHANGE goes through one checked
 database function, called with the admin's own login (never the `service_role` key). The function
@@ -419,19 +431,24 @@ log** `admin_actions` (who, what, when, on what, why). Nobody can change or dele
 Roles, the expert badge and packs can no longer be changed through the API, admins included:
 a role stays SQL only (section 10).
 
-**Pages** (all in French; "Bientôt" = not built yet):
+**Pages** (all in French; "Bientôt" = not ready yet):
 
 | Page | Phase | What it does |
 | --- | --- | --- |
 | Connexion | A | E-mail + password; "Connexion démo" when its switch is on |
-| Vue d'ensemble | A | Numbers (farmers, boxes by state, experts, orchards, regional alerts, community, demo payments of the month, visits) + "À faire" with links |
+| Vue d'ensemble | A | Numbers (farmers, boxes by state, experts, orchards, regional alerts, community, demo payments of the month, visits) + "À faire" with links. With "Connexion démo": demo data only (after 014) |
 | Agriculteurs | A | List; a farmer's page: plan, gateway (Nouvelle clé, Désactiver), boxes live (Accepter l'installation / Retirer), visit (Modifier), charts of the last 3 days (5 measures, one line per box, the values table), alert log, sensor problems (14 days), admin actions |
 | Capteurs | A | Every box (waiting first), En attente, Visites d'installation, Passerelles, Journal |
+| Utilisateurs | B | Every account: search (name, phone, e-mail), filters (role, governorate, pack, state); an account's page (pack, login, posts, answers, actions); "Vérifier / Retirer la vérification" (the app's "◆ خبير موثّق"), "Bloquer / Débloquer" (not with the demo account). A role changes only in SQL |
+| Communauté | B | Every post newest first (hidden ones too), filters, search; a post's page: text, photo (private: a link valid 5 min; the app's demo picture), every answer; Masquer / Afficher de nouveau / Supprimer (2nd confirmation) on the post and each answer, with a reason; Signalements (the app's "Signaler" button: bientôt); Journal |
+| Alertes | C | Regional alerts: create, change, end; type, gravity, governorates (one, several, all 24), title / text / advice in Arabic AND French (the same checks as the database), start / end, and the **preview** of the app's screen in both languages. Sensor alerts of every orchard (level, governorate, farmer, period; 50 lines at a time) |
+| Vergers | D | Every orchard (owner, governorate, area, zones, trees, boxes, built or draft); an orchard's page: the plan (zones, trees, boxes), its zones, the bill of one period. Read only |
+| Abonnements | D | Every farmer's pack with the bill of one period at the current price (same rule as the app), the payments (demo ones marked), the price of a box and "hectares par boîtier" (reason + confirmation), their log |
+| Réglages | D | The switches (demo login of the app, demo payment, sensor data, "Connexion démo") and the history days, each with a warning and a confirmation; turning the app's demo login off asks "a real SMS provider is connected" |
+| Journal des actions | D | Every admin action (who, what, when, on what, why, before → after), filter by kind, 100 lines at a time |
 
-Screenshots (French, "Connexion démo", demo accounts only): `docs/screenshots/admin-dashboard-phase-a/`.
-| Utilisateurs, Communauté | B | Bientôt |
-| Alertes | C | Bientôt |
-| Vergers, Abonnements, Réglages | D | Bientôt |
+Screenshots (French, "Connexion démo", demo accounts only): `docs/screenshots/admin-dashboard-phase-a/`,
+`-phase-b/` (with the badge in the app, Arabic and French), `-phase-c/`, `-phase-d/`.
 
 **"Connexion démo"** (for the jury and the screenshots of the repo):
 
@@ -444,15 +461,14 @@ Screenshots (French, "Connexion démo", demo accounts only): `docs/screenshots/a
 - It sees **only the demo accounts**: +216 22 777 001, 22 123 456, 22 123 457, 22 123 458,
   22 999 001, 22 999 003 and the fake people of the community (not 50 000 001–005). The names of
   real admins are shown as "Administrateur". A violet tag "Compte de démonstration" is at the top.
+- Its regional alerts are marked "démo" and (after 014) reach **demo accounts only**.
 - It acts **only on demo things** (the database checks it) and **never** on the settings, the
   price, the gateways (new key, on / off) or blocking accounts.
 - To remove it completely: `supabase/seed/demo_admin_delete.sql`, delete the login in
   Authentication › Users, remove `DEMO_ADMIN_PASSWORD` from `dashboard/backend/.env`.
-- Limit: like any admin, the demo admin's login could READ every row through the Supabase API (the
-  "demo accounts only" lists are done by the backend). That is why it works only from this laptop
-  and only while its switch is on.
-
-**Ready in the database for the next phases** (migration 013, not in the dashboard yet): expert
-badge, block / unblock an account, hide / delete posts and answers with a reason, reports
-(`report_content()` for the app's future "Signaler" button), regional alerts in Arabic and French
-(the app's "التنبيهات" tab still shows fake data), price and settings with a reason.
+- **Migration 014**: the database itself keeps it on demo data. With its own login, even straight
+  through the Supabase API, it reads only the demo accounts, their orchards, boxes, readings,
+  payments, posts, answers and photos, the demo regional alerts, and its own lines of the log;
+  "Vue d'ensemble" counts demo data only. Before 014 this was done by the backend only: run 014
+  before showing the dashboard to anyone. It still works only from this laptop and only while its
+  switch is on.

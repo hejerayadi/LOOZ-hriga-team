@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .routers import demo_login, farmers, me, overview, sensors
+from .routers import admin_settings, alerts, community, demo_login, farmers, me, orchards, overview, sensors, users
 
 app = FastAPI(title="Looz Admin API")
 
@@ -22,12 +22,17 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-# One router per area (users, community, alerts... will be added here).
+# One router per area of the dashboard.
 app.include_router(me.router)
 app.include_router(demo_login.router)
 app.include_router(overview.router)
 app.include_router(farmers.router)
 app.include_router(sensors.router)
+app.include_router(users.router)
+app.include_router(community.router)
+app.include_router(alerts.router)
+app.include_router(orchards.router)
+app.include_router(admin_settings.router)
 
 
 @app.get("/api/health", tags=["health"])

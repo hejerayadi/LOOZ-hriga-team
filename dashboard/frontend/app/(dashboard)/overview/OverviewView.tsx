@@ -22,19 +22,16 @@ function Tile({
   value,
   href,
   children,
-  soon = false,
 }: {
   title: string;
   value: React.ReactNode;
   href: string;
   children?: React.ReactNode;
-  soon?: boolean;
 }) {
   return (
     <Link href={href} className="group rounded-xl border border-slate-200 bg-white p-4 hover:border-emerald-300 hover:shadow-sm">
       <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
         {title}
-        {soon && <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium normal-case text-slate-500">page bientôt</span>}
       </div>
       <div className="mt-1 text-3xl font-bold tabular-nums text-slate-900">{value}</div>
       <div className="mt-1 text-sm text-slate-600">{children}</div>
@@ -62,20 +59,20 @@ function Tiles({ o }: { o: Overview }) {
         <Chip n={b.installed} text="sans données" tone="bg-slate-100 text-slate-700" />
         {b.critical > 0 && <Chip n={b.critical} text={label(LEVEL, "critical").toLowerCase()} tone="bg-red-600 text-white" />}
       </Tile>
-      <Tile title="Experts" value={o.experts.verified + o.experts.waiting} href="/users" soon>
+      <Tile title="Experts" value={o.experts.verified + o.experts.waiting} href={o.experts.waiting ? "/users?state=to_verify" : "/users"}>
         {o.experts.verified} vérifié{o.experts.verified > 1 ? "s" : ""} · {o.experts.waiting} à vérifier
       </Tile>
-      <Tile title="Vergers" value={o.orchards.complete + o.orchards.draft} href="/orchards" soon>
+      <Tile title="Vergers" value={o.orchards.complete + o.orchards.draft} href="/orchards">
         {o.orchards.complete} construit{o.orchards.complete > 1 ? "s" : ""} · {o.orchards.draft} brouillon{o.orchards.draft > 1 ? "s" : ""}
       </Tile>
-      <Tile title="Alertes régionales" value={o.regional_alerts.active} href="/alerts" soon>
+      <Tile title="Alertes régionales" value={o.regional_alerts.active} href="/alerts">
         {o.regional_alerts.active ? `actives · dont ${o.regional_alerts.danger} danger` : "aucune alerte en cours"}
       </Tile>
-      <Tile title="Communauté (7 jours)" value={o.community.posts_week} href="/community" soon>
+      <Tile title="Communauté (7 jours)" value={o.community.posts_week} href="/community">
         publications · {plural(o.community.answers_week, "réponse", "réponses")} · {o.community.hidden} masquée
         {o.community.hidden > 1 ? "s" : ""} · {plural(o.community.reports_open, "signalement", "signalements")}
       </Tile>
-      <Tile title="Paiements démo (ce mois)" value={money(o.demo_payments_month.millimes)} href="/subscriptions" soon>
+      <Tile title="Paiements démo (ce mois)" value={money(o.demo_payments_month.millimes)} href="/subscriptions?tab=payments">
         {plural(o.demo_payments_month.count, "paiement", "paiements")} de démonstration (aucun argent réel)
       </Tile>
       <Tile title="Visites d'installation" value={o.visits_open} href="/sensors?tab=visits">
@@ -118,7 +115,6 @@ function TodoGroup({
   linkText: string;
   children: React.ReactNode;
 }) {
-  const admin = useAdmin();
   if (!count) return null;
   const more = shown === undefined ? 0 : count - shown;
   return (
@@ -135,7 +131,6 @@ function TodoGroup({
       {more > 0 && (
         <p className="px-2 text-xs text-slate-500">
           {more > 1 ? `et ${more} autres` : "et 1 autre"}
-          {admin.demo_admin ? " (comptes réels, non affichés en démonstration)" : ""}
         </p>
       )}
     </div>
@@ -167,20 +162,24 @@ function Todo({ o, now }: { o: Overview; now: number }) {
           <TodoGroup title="Visites d'installation à suivre" count={o.visits_open} href="/sensors?tab=visits" linkText="Ouvrir les visites">
             <li className="px-2 py-1.5 text-slate-600">Appeler l&apos;agriculteur, puis poser et accepter ses boîtiers.</li>
           </TodoGroup>
-          <TodoGroup title="Experts à vérifier" count={o.experts.waiting} shown={t.experts.length} href="/users" linkText="Utilisateurs (bientôt)">
+          <TodoGroup title="Experts à vérifier" count={o.experts.waiting} shown={t.experts.length} href="/users?state=to_verify" linkText="Vérifier les experts">
             {t.experts.map((e) => (
-              <li key={e.id} className="flex flex-wrap gap-x-2 px-2 py-1.5">
-                <span className="text-slate-900">{personName(e.name, "Sans nom")}</span>
-                <span className="text-xs text-slate-500">
-                  {label(GOVERNORATES, e.governorate)} · inscrit le {date(e.created_at)}
-                </span>
+              <li key={e.id}>
+                <Link href={`/users/${e.id}`} className="flex flex-wrap items-baseline gap-x-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+                  <span className="text-slate-900">{personName(e.name, "Sans nom")}</span>
+                  <span className="text-xs text-slate-500">
+                    {label(GOVERNORATES, e.governorate)} · inscrit le {date(e.created_at)}
+                  </span>
+                </Link>
               </li>
             ))}
           </TodoGroup>
-          <TodoGroup title="Signalements de la communauté" count={o.community.reports_open} shown={t.reports.length} href="/community" linkText="Communauté (bientôt)">
+          <TodoGroup title="Signalements de la communauté" count={o.community.reports_open} shown={t.reports.length} href="/community?tab=reports" linkText="Ouvrir les signalements">
             {t.reports.map((r) => (
-              <li key={r.id} className="px-2 py-1.5 text-slate-700">
-                {r.comment_id ? "Une réponse" : "Une publication"} signalée · {date(r.created_at)}
+              <li key={r.id}>
+                <Link href={r.post_id ? `/community/${r.post_id}` : "/community?tab=reports"} className="block rounded-lg px-2 py-1.5 text-slate-700 hover:bg-slate-50">
+                  {r.comment_id ? "Une réponse" : "Une publication"} signalée · {date(r.created_at)}
+                </Link>
               </li>
             ))}
           </TodoGroup>

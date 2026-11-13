@@ -5,12 +5,14 @@
 // database (migration 013): it checks the rules and writes the line of
 // the admin action log. Texts in French.
 import { useState } from "react";
+import Link from "next/link";
 
 import { acceptNode, errorMessage, newGatewayKey, setGatewayEnabled, unacceptNode, updateVisit } from "@/lib/api";
-import { dateTime } from "@/lib/format";
-import { ACTION, VISIT, label } from "@/lib/labels";
+import { dateTime, money } from "@/lib/format";
+import { ACTION, ALERT_KIND, SETTING, SEVERITY, VISIT, label } from "@/lib/labels";
 import type { ActionLine } from "@/lib/types";
 import { useAdmin } from "./AdminGuard";
+import { governoratesText } from "./alerts";
 import { Button, DemoTag, Dialog, Empty, ReasonField, reasonOk } from "./ui";
 
 /** busy / error around one call; onDone() after a success. */
@@ -348,21 +350,123 @@ export function VisitDialog({ visit, onClose, onDone }: { visit: VisitTarget; on
 
 // ---------- The admin action log ----------
 
-/** Who did what, when, on what, why (newest first). */
-export function ActionList({ actions, empty = "Aucune action d'administrateur pour l'instant." }: { actions: ActionLine[]; empty?: string }) {
+const ALERT_FIELD: Record<string, string> = {
+  kind: "type",
+  severity: "gravité",
+  governorates: "gouvernorats",
+  title_ar: "titre arabe",
+  title_fr: "titre français",
+  body_ar: "texte arabe",
+  body_fr: "texte français",
+  advice_ar: "conseil arabe",
+  advice_fr: "conseil français",
+  starts_at: "début",
+  ends_at: "fin",
+};
+
+function settingValue(v: unknown): string {
+  if (v === true) return "activé";
+  if (v === false) return "désactivé";
+  if (v === null || v === undefined || v === "") return "vide";
+  return String(v).replace(".", ",");
+}
+
+/** A short detail of a line: "8 DT → 9 DT", "désactivé → activé"... */
+export function actionDetail(a: ActionLine): string | null {
+  const d = a.details ?? {};
+  switch (a.action) {
+    case "price_change":
+      return `${money(d.before as number)} → ${money(d.after as number)}`;
+    case "setting_change":
+      return `${settingValue(d.before)} → ${settingValue(d.after)}`;
+    case "visit_update":
+      return d.status_before !== d.status
+        ? `${label(VISIT, d.status_before as string)} → ${label(VISIT, d.status as string)}${d.note_changed ? " · note modifiée" : ""}`
+        : d.note_changed
+          ? "note modifiée"
+          : null;
+    case "alert_create":
+      return [label(ALERT_KIND, d.kind as string), label(SEVERITY, d.severity as string), governoratesText((d.governorates as string[]) ?? [], 3)].join(" · ");
+    case "alert_update": {
+      const changed = ((d.changed as string[]) ?? []).map((f) => ALERT_FIELD[f] ?? f);
+      return changed.length ? `modifié : ${changed.join(", ")}` : "aucun changement";
+    }
+    case "post_delete":
+    case "comment_delete":
+      return d.text ? `texte : « ${String(d.text).slice(0, 80)}${String(d.text).length > 80 ? "…" : ""} »` : null;
+    default:
+      return null;
+  }
+}
+
+/** The page of the item of a line (null: no page, or it was deleted). */
+export function actionHref(a: ActionLine): string | null {
+  const id = a.target_id;
+  switch (a.target_type) {
+    case "user":
+      return id ? `/users/${id}` : null;
+    case "post":
+      return id && a.action !== "post_delete" ? `/community/${id}` : null;
+    case "regional_alert":
+      return id ? `/alerts/${id}` : null;
+    case "node":
+      return "/sensors";
+    case "gateway":
+      return "/sensors?tab=gateways";
+    case "visit":
+      return "/sensors?tab=visits";
+    case "report":
+      return "/community?tab=reports";
+    case "price":
+      return "/subscriptions?tab=price";
+    case "setting":
+      return a.target_id === "hectares_per_node" ? "/subscriptions?tab=price" : "/settings";
+    default:
+      return null;
+  }
+}
+
+/** Who did what, when, on what, why (newest first). links: a link to each item. */
+export function ActionList({
+  actions,
+  empty = "Aucune action d'administrateur pour l'instant.",
+  links = false,
+}: {
+  actions: ActionLine[];
+  empty?: string;
+  links?: boolean;
+}) {
   if (!actions.length) return <Empty>{empty}</Empty>;
   return (
     <ul className="divide-y divide-slate-100 text-sm">
-      {actions.map((a) => (
-        <li key={a.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-2">
-          <span className="w-32 shrink-0 text-xs text-slate-500">{dateTime(a.created_at)}</span>
-          <span className="font-medium text-slate-900">{label(ACTION, a.action)}</span>
-          {a.target_label && <span className="font-mono text-xs text-slate-600">{a.target_label}</span>}
-          <span className="text-slate-500">par {a.admin_name}</span>
-          {a.is_demo && <DemoTag />}
-          {a.reason && <span className="basis-full pl-0 text-slate-600 sm:pl-35">Motif : « {a.reason} »</span>}
-        </li>
-      ))}
+      {actions.map((a) => {
+        const target = a.target_type === "setting" ? label(SETTING, a.target_label) : a.target_label;
+        const detail = actionDetail(a);
+        const href = links ? actionHref(a) : null;
+        return (
+          <li key={a.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-2">
+            <span className="w-32 shrink-0 text-xs text-slate-500">{dateTime(a.created_at)}</span>
+            <span className="font-medium text-slate-900">{label(ACTION, a.action)}</span>
+            {target &&
+              (/^[A-Z0-9][A-Z0-9_-]*$/.test(target) ? (
+                <span className="font-mono text-xs text-slate-600">{target}</span>
+              ) : (
+                <span dir="auto" className="max-w-xs truncate text-xs text-slate-600">
+                  {target}
+                </span>
+              ))}
+            <span className="text-slate-500">par {a.admin_name}</span>
+            {a.is_demo && <DemoTag />}
+            {href && (
+              <Link href={href} className="text-xs font-medium text-emerald-800 hover:underline">
+                Ouvrir →
+              </Link>
+            )}
+            {detail && <span className="basis-full pl-0 text-xs text-slate-600 sm:pl-35">{detail}</span>}
+            {a.reason && <span className="basis-full pl-0 text-slate-600 sm:pl-35">Motif : « {a.reason} »</span>}
+          </li>
+        );
+      })}
     </ul>
   );
 }

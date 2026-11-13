@@ -101,7 +101,19 @@ const path = (pts: Point[]) => pts.map((p) => `${p.x},${p.z}`).join(" ");
  * z = south, in metres): outline, zones with their letter, trees, boxes
  * coloured by their state.
  */
-export function OrchardPlan({ outline, zones, trees, boxes }: { outline: Point[]; zones: Zone[]; trees: Tree[]; boxes: Box[] }) {
+export function OrchardPlan({
+  outline,
+  zones,
+  trees,
+  boxes,
+  className = "h-56 w-full",
+}: {
+  outline: Point[];
+  zones: Zone[];
+  trees: Tree[];
+  boxes: Box[];
+  className?: string;
+}) {
   const all = [...outline, ...zones.flatMap((z) => z.boundary)];
   if (all.length < 3) return <p className="text-sm text-slate-400">Pas de plan.</p>;
   const b = bounds(all);
@@ -113,7 +125,7 @@ export function OrchardPlan({ outline, zones, trees, boxes }: { outline: Point[]
   return (
     <svg
       viewBox={`${b.minX - pad} ${b.minZ - pad - font} ${b.maxX - b.minX + 2 * pad} ${b.maxZ - b.minZ + 2 * pad + font}`}
-      className="h-56 w-full"
+      className={className}
       role="img"
       aria-label="Plan du verger"
     >

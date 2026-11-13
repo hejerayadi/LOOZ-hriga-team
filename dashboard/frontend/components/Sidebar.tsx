@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/sensors", label: "Capteurs" },
   { href: "/subscriptions", label: "Abonnements" },
   { href: "/settings", label: "Réglages" },
+  { href: "/journal", label: "Journal des actions" },
 ];
 
 export function Sidebar() {

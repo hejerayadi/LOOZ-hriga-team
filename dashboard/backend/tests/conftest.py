@@ -57,6 +57,10 @@ class FakeQuery:
         self.rows = [r for r in self.rows if r.get(column) is not None and str(r.get(column)) >= str(value)]
         return self
 
+    def lt(self, column, value):
+        self.rows = [r for r in self.rows if r.get(column) is not None and r.get(column) < value]
+        return self
+
     def is_(self, column, value):
         assert value == "null"
         self.rows = [r for r in self.rows if r.get(column) is None]
@@ -102,6 +106,36 @@ class FakeRpc:
         return SimpleNamespace(data=handler(**self.params))
 
 
+class FakeBucket:
+    def __init__(self, storage: "FakeStorage", name: str):
+        self.storage, self.name = storage, name
+
+    def create_signed_url(self, path: str, seconds: int):
+        if path not in self.storage.files.get(self.name, set()):
+            raise RuntimeError("Object not found")
+        return {"signedURL": f"https://storage.test/{self.name}/{path}?token=t&expires={seconds}"}
+
+    def remove(self, paths: list[str]):
+        self.storage.removed.extend((self.name, p) for p in paths)
+        if self.storage.fail_remove:
+            raise RuntimeError("remove refused")
+        for p in paths:
+            self.storage.files.get(self.name, set()).discard(p)
+        return [{"name": p} for p in paths]
+
+
+class FakeStorage:
+    """files = {bucket: {path, ...}}. removed = the (bucket, path) asked."""
+
+    def __init__(self):
+        self.files: dict[str, set[str]] = {}
+        self.removed: list[tuple[str, str]] = []
+        self.fail_remove = False
+
+    def from_(self, bucket: str) -> FakeBucket:
+        return FakeBucket(self, bucket)
+
+
 class FakeDB:
     """rpcs = {function name: python function(**params) -> data, or raises
     postgrest APIError like the database}."""
@@ -111,6 +145,7 @@ class FakeDB:
         self.rpcs = rpcs or {}
         self.calls: list[str] = []
         self.rpc_calls: list[tuple[str, dict]] = []
+        self.storage = FakeStorage()
 
     def table(self, name: str) -> FakeQuery:
         return FakeQuery(self, name)

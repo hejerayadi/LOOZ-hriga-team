@@ -1,10 +1,18 @@
-import { EmptyPage } from "@/components/EmptyPage";
+// "Utilisateurs": the view reads ?state= with useSearchParams(): with
+// cacheComponents it must sit inside <Suspense>.
+import { Suspense } from "react";
 
-// Not built yet. "instant = false": the page appears only after the admin
-// check (AdminGuard, in the browser), so Next.js does not check "instant
-// navigation" here (node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md).
+import { UsersView } from "./UsersView";
+
+// The page appears only after the admin check (AdminGuard, in the browser):
+// Next.js cannot prerender it, so it does not check "instant navigation"
+// here (node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md).
 export const instant = false;
 
 export default function UsersPage() {
-  return <EmptyPage title="Utilisateurs" description="Agriculteurs, experts et administrateurs." />;
+  return (
+    <Suspense fallback={<p className="text-slate-500">Chargement…</p>}>
+      <UsersView />
+    </Suspense>
+  );
 }
