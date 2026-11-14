@@ -39,9 +39,5 @@ const fakeTreeMoisture = 62;
 const fakeTreeTemperature = 24;
 
 // ----- Photo diagnosis -----
-
-/// How sure the AI is: 3 dots out of 4 ("● ● ● ○").
-const fakeConfidence = 3;
-
-/// How long "جاري النظر…" stays on screen.
-const fakeThinkingTime = Duration(milliseconds: 1400);
+// Real now: the Edge Function "diagnose" (lib/data/diagnosis_service.dart,
+// migration 016).

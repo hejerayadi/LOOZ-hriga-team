@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/locale.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/zone_letters.dart';
 import '../../core/validators.dart';
 import '../../data/orchard_design.dart';
 import '../../shared/widgets/action_button.dart';
@@ -353,7 +354,7 @@ class ZoneDot extends StatelessWidget {
         borderRadius: BorderRadius.circular(size / 3),
       ),
       child: Text(
-        zone.letter,
+        zoneLetterOf(context, zone.letter), // أ ب ج د in Arabic
         textDirection: TextDirection.ltr,
         style: AppTextStyles.of(
           size * 0.45,
@@ -364,9 +365,11 @@ class ZoneDot extends StatelessWidget {
   }
 }
 
-/// "المنطقة A" or the farmer's name for it.
+/// "المنطقة أ" / "Zone A", or the farmer's name for it.
 String zoneTitle(AppLocalizations l10n, DesignZone zone) =>
-    zone.name.trim().isEmpty ? l10n.zoneName(zone.letter) : zone.name.trim();
+    zone.name.trim().isEmpty
+    ? l10n.zoneName(zoneLetterIn(zone.letter, l10n.localeName))
+    : zone.name.trim();
 
 /// A number typed by the farmer (Arabic digits too), or null.
 int? parseWhole(String text) => int.tryParse(westernDigits(text.trim()));

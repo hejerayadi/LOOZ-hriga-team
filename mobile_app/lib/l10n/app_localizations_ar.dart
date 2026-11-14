@@ -534,28 +534,141 @@ class AppLocalizationsAr extends AppLocalizations {
   String get looking => 'جاري النظر…';
 
   @override
-  String get resultTitle => 'وجدت شيئًا';
+  String get betaTag => 'تجريبي';
 
   @override
-  String get maybeAphids => 'قد تكون حشرة المنّ';
+  String get photoTipOneLeaf => 'ورقة لوز واحدة';
 
   @override
-  String get whatIsIt => 'ما هي؟';
+  String get photoTipClose => 'من قريب';
 
   @override
-  String get smallInsect => 'حشرة صغيرة';
+  String get photoTipLight => 'في الضوء';
 
   @override
-  String get why => 'لماذا؟';
+  String photosLeftToday(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'يمكنك إرسال $count صورة اليوم',
+      many: 'يمكنك إرسال $count صورة اليوم',
+      few: 'يمكنك إرسال $count صور اليوم',
+      two: 'يمكنك إرسال صورتين اليوم',
+      one: 'يمكنك إرسال صورة واحدة اليوم',
+      zero: 'لا يمكنك إرسال صور أخرى اليوم',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get warmWeather => 'جو دافئ';
+  String get photoPrivacyNote => 'تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.';
+
+  @override
+  String get verdictLikely => 'على الأرجح';
+
+  @override
+  String get verdictUnsure => 'غير متأكد';
+
+  @override
+  String get diseaseShotHole => 'ثقوب في الأوراق';
+
+  @override
+  String get diseaseLeafCurl => 'تجعّد الأوراق';
+
+  @override
+  String get diseaseLeafSpot => 'بقع على الأوراق';
+
+  @override
+  String get spotsMarked => 'الأماكن المريضة مُعلَّمة على الصورة';
+
+  @override
+  String get notFinalDiagnosis => 'هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير.';
+
+  @override
+  String get notFoundTitle => 'لم نجد هذه الأمراض الثلاثة.';
+
+  @override
+  String get notFoundTip => 'صوّر الورقة من قريب، في الضوء.';
+
+  @override
+  String get notFoundNotHealthy => 'هذا لا يعني أن الشجرة سليمة.';
+
+  @override
+  String get weLookFor => 'نبحث فقط عن: ثقوب، تجعّد، بقع.';
+
+  @override
+  String get takeAnotherPhoto => 'صوّر ورقة أخرى';
+
+  @override
+  String expertQuestionFound(String disease, String certainty) {
+    return 'صوّرت ورقة لوز. التطبيق يقول: $disease ($certainty). هل هذا صحيح؟';
+  }
+
+  @override
+  String get expertQuestionNothing =>
+      'صوّرت ورقة لوز ولم يجد التطبيق شيئًا. ما رأيك؟';
+
+  @override
+  String get adviceShotHole1 =>
+      'اجمع الأوراق المريضة والساقطة، وأبعدها عن البستان.';
+
+  @override
+  String get adviceShotHole2 => 'اسقِ عند الجذع، لا فوق الأوراق.';
+
+  @override
+  String get adviceShotHole3 => 'اسأل خبيرًا عن العلاج قبل المطر القادم.';
+
+  @override
+  String get adviceLeafCurl1 => 'انزع الأوراق المجعّدة وأبعدها عن البستان.';
+
+  @override
+  String get adviceLeafCurl2 =>
+      'راقب الأوراق الجديدة: الحرّ يوقف المرض غالبًا.';
+
+  @override
+  String get adviceLeafCurl3 =>
+      'اسأل خبيرًا: الوقاية تكون في الشتاء، قبل تفتّح البراعم.';
+
+  @override
+  String get adviceLeafSpot1 => 'اجمع الأوراق المصابة والساقطة تحت الشجرة.';
+
+  @override
+  String get adviceLeafSpot2 => 'في الشتاء، قلّم ليدخل الهواء والشمس.';
+
+  @override
+  String get adviceLeafSpot3 => 'اسأل خبيرًا ليعرف نوع البقع.';
+
+  @override
+  String get needInternet => 'تحتاج إلى الإنترنت';
+
+  @override
+  String limitReached(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'أرسلت اليوم $count صورة. هذا هو الحد. عُد غدًا.',
+      many: 'أرسلت اليوم $count صورة. هذا هو الحد. عُد غدًا.',
+      few: 'أرسلت اليوم $count صور. هذا هو الحد. عُد غدًا.',
+      two: 'أرسلت اليوم صورتين. هذا هو الحد. عُد غدًا.',
+      one: 'أرسلت اليوم صورة واحدة. هذا هو الحد. عُد غدًا.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diagnosisBusy => 'الفحص مشغول اليوم. حاول غدًا أو اسأل خبيرًا.';
+
+  @override
+  String get diagnosisUnavailable => 'الفحص غير متوفر الآن. اسأل خبيرًا.';
+
+  @override
+  String get photoUnreadable => 'لم نستطع قراءة الصورة. صوّر من جديد.';
+
+  @override
+  String get questionPublished => 'سؤالك في المجتمع';
 
   @override
   String get whatToDo => 'ماذا أفعل؟';
-
-  @override
-  String get rinseLeaf => 'اغسل الورقة';
 
   @override
   String get askAnExpert => 'اسأل خبيرًا';
@@ -861,6 +974,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String zoneName(String letter) {
     return 'المنطقة $letter';
   }
+
+  @override
+  String get zoneLetters => 'أ ب ج د ه و ز ح ط ي ك ل م ن س ع ف ص ق ر';
 
   @override
   String get devPlanSwitch => 'وضع التجربة: تغيير الخطة';

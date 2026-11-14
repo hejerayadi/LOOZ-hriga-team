@@ -12,10 +12,10 @@ Every screen and state of the design (`App.tsx`), its Flutter file, and the chec
 | 6 | `community` | `lib/features/community/community_page.dart` | [x] | [x] | [x] | [x] tab "المجتمع", "اسأل خبيرًا" (result) |
 | 7 | `ask` | `lib/features/ask/ask_screen.dart` | [x] | [x] | [x] | [x] Home "اسأل", Community "اسأل سؤالًا" |
 | 8 | `tips` | `lib/features/community/tips_screen.dart` | [x] | [x] | [x] | [x] speaker of the tip of the day |
-| 9 | `camera` | `lib/features/camera/camera_screen.dart` | [x] | [x] | [x] | [x] camera button, Ask "صورة" |
-| 10 | `thinking` | `lib/features/camera/thinking_screen.dart` | [x] | [x] | [x] | [x] shutter, end of the voice screen |
-| 11 | `result` | `lib/features/camera/result_screen.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
-| 12 | `voice` (listening, moving bars) | `lib/features/ask/voice_screen.dart` | [x] | [x] | [x] | [x] "اسأل المساعد", Ask "تكلّم" / "أرسل" |
+| 9 | `camera`, now REAL (photo diagnosis Bêta, line 76) | `lib/features/camera/camera_screen.dart` | [x] | [x] | [x] | [x] camera button, Ask "صورة" (paid pack; Free: locked) |
+| 10 | `thinking`: "جاري النظر…" while the REAL diagnosis runs (line 77) | `lib/features/camera/thinking_screen.dart` | [x] | [x] | [x] | [x] the round button / "اختر من الصور" |
+| 11 | `result`: the REAL result (line 78) | `lib/features/camera/result_screen.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
+| 12 | `voice` (listening, moving bars): at the end "قريبًا" (no fake answer any more) | `lib/features/ask/voice_screen.dart` | [x] | [x] | [x] | [x] "اسأل المساعد", Ask "تكلّم" / "أرسل" |
 | 13 | `alerts` with the REAL regional alerts (line 70) | `lib/features/alerts/alerts_page.dart` | [x] | [x] | [x] | [x] tab "التنبيهات" |
 | 14 | `alert` (needs water): removed (fake). A tree on the map says "قريبًا"; Home shows the real alert (line 75) | — | — | — | — | — |
 | 15 | `alert` (done: "أحسنت!", falling petals): now in the regional alert's "تمّ" (line 72) | `lib/shared/widgets/falling_petals.dart` | [x] | [x] | [x] | [x] "تمّ" |
@@ -158,6 +158,22 @@ Checked with `test/alerts_test.dart` (18 tests), `test/report_test.dart` (11 tes
 phone), `test/languages_test.dart`, `test/navigation_test.dart`, the real app in Chrome with the real
 Supabase (22 777 001, Arabic and French: `docs/screenshots/app-alerts/`) and
 `dashboard/backend/tests_live/test_live_app_alerts.py` (the jury scenario).
+
+## Photo diagnosis (Bêta, migration 016 + Edge Function "diagnose")
+
+| # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
+|---|---|---|---|---|---|---|
+| 76 | Camera: "تجريبي", the tips (ورقة لوز واحدة · من قريب · في الضوء), "يمكنك إرسال {n} صور اليوم", the privacy line, the round button (web: the photos), "اختر من الصور", "جاري تحضير الصورة…"; messages: no photo left, switched off, "تحتاج إلى الإنترنت", camera / photos refused | `lib/features/camera/camera_screen.dart`, `diagnosis_widgets.dart` | [x] | [x] | [x] | [x] camera button, Ask "صورة", "صوّر ورقة أخرى" |
+| 77 | "جاري النظر…" with the photo; failures: "تحتاج إلى الإنترنت" + "حاول مرة أخرى", the limit of the day (plural) + "اسأل خبيرًا", busy, unavailable, unreadable photo + "صوّر ورقة أخرى", "رجوع"; pack ended: the locked screen | `lib/features/camera/thinking_screen.dart` | [x] | [x] | [x] | [x] the round button, "اختر من الصور" |
+| 78 | Result: the disease + "على الأرجح" / "غير متأكد", "تجريبي", 🔊 ("قريبًا"), the photo with the spots framed, "ماذا أفعل؟" (3 steps, drafts), "هذا ليس تشخيصًا نهائيًا…", "اسأل خبيرًا", "صوّر ورقة أخرى" | `lib/features/camera/result_screen.dart`, `diagnosis_texts.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
+| 79 | Result "لم نجد هذه الأمراض الثلاثة.": the tip, "هذا لا يعني أن الشجرة سليمة.", "نبحث فقط عن: ثقوب، تجعّد، بقع.", no marks | `lib/features/camera/result_screen.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
+| 80 | "اسأل خبيرًا": the question screen with the photo and a ready question → "انشر" → the community + "سؤالك في المجتمع" | `lib/features/community/write_post_screen.dart` (`initialText`, `initialPhoto`, `onPublished`) | [x] | [x] | [x] | [x] the result, the failures |
+| 81 | Zone letters in Arabic: أ ب ج د… (abjad) in the designer and the 3D ("المنطقة أ") | `lib/core/zone_letters.dart` | [x] | [x] | [x] | [x] (every zone) |
+
+Checked with `test/diagnosis_test.dart` (24 tests), `test/languages_test.dart` (no Latin letter on an
+Arabic screen any more, zone letters included), `test/navigation_test.dart`, the Edge Function's local
+test (33 checks) and, once `diagnose` is deployed, the real app in Chrome and
+`dashboard/backend/tests_live/test_live_diagnosis.py`.
 
 ## How each box was checked
 

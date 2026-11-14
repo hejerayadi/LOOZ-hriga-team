@@ -1,23 +1,42 @@
 // "انشر في المجتمع": write a post for the community, with a photo if you
 // want (not in the design: the app's own screen, in its style). Opened by
-// "＋ انشر" of the community and by "كتابة" on the Ask screen. After
-// publishing, the community tab opens with the new post on top.
+// "＋ انشر" of the community, by "كتابة" on the Ask screen, and by "اسأل
+// خبيرًا" of the photo diagnosis (with its photo and a question ready, that
+// the farmer can change). After publishing, the community tab opens with
+// the new post on top.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/validators.dart';
+import '../../data/community_models.dart';
 import '../../data/community_photos.dart';
 import '../../data/community_service.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
+import '../../shared/widgets/soon_message.dart';
 import 'community_widgets.dart';
 
 class WritePostScreen extends StatefulWidget {
-  const WritePostScreen({super.key});
+  const WritePostScreen({
+    super.key,
+    this.initialText,
+    this.initialPhoto,
+    this.onPublished,
+  });
+
+  /// A question already written (the farmer can change it).
+  final String? initialText;
+
+  /// A photo already chosen (e.g. the photo of the diagnosis).
+  final PreparedPhoto? initialPhoto;
+
+  /// Called with the new post, before the community opens (e.g. to link
+  /// it to the diagnosis). Its errors are ignored: the post is published.
+  final Future<void> Function(Post post)? onPublished;
 
   @override
   State<WritePostScreen> createState() => _WritePostScreenState();
@@ -44,7 +63,9 @@ class _WritePostScreenState extends State<WritePostScreen> {
   @override
   void initState() {
     super.initState();
-    _recoverLostPhoto();
+    _text.text = widget.initialText ?? '';
+    _photo = widget.initialPhoto;
+    if (_photo == null) _recoverLostPhoto();
   }
 
   @override
@@ -116,15 +137,27 @@ class _WritePostScreenState extends State<WritePostScreen> {
       _failure = null;
     });
     try {
-      await communityService.writePost(
+      final post = await communityService.writePost(
         _text.text,
         photo: photo,
         onPhotoUploaded: () {
           if (mounted) setState(() => _step = _Step.publishing);
         },
       );
+      final onPublished = widget.onPublished;
+      if (onPublished != null) {
+        try {
+          await onPublished(post);
+        } catch (_) {
+          // The question is published: that is what matters.
+        }
+      }
       communityChanges.value++;
-      if (mounted) goToTab(context, AppTab.community);
+      if (!mounted) return;
+      if (onPublished != null) {
+        showMessage(context, context.l10n.questionPublished);
+      }
+      goToTab(context, AppTab.community);
     } catch (error) {
       // The text and the photo stay: the farmer can try again.
       if (mounted) {

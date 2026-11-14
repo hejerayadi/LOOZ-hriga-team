@@ -998,53 +998,221 @@ abstract class AppLocalizations {
   /// **'جاري النظر…'**
   String get looking;
 
-  /// No description provided for @resultTitle.
+  /// APP-ONLY. Photo diagnosis.
   ///
   /// In ar, this message translates to:
-  /// **'وجدت شيئًا'**
-  String get resultTitle;
+  /// **'تجريبي'**
+  String get betaTag;
 
-  /// No description provided for @maybeAphids.
+  /// APP-ONLY. Photo diagnosis.
   ///
   /// In ar, this message translates to:
-  /// **'قد تكون حشرة المنّ'**
-  String get maybeAphids;
+  /// **'ورقة لوز واحدة'**
+  String get photoTipOneLeaf;
 
-  /// No description provided for @whatIsIt.
+  /// APP-ONLY. Photo diagnosis.
   ///
   /// In ar, this message translates to:
-  /// **'ما هي؟'**
-  String get whatIsIt;
+  /// **'من قريب'**
+  String get photoTipClose;
 
-  /// No description provided for @smallInsect.
+  /// APP-ONLY. Photo diagnosis.
   ///
   /// In ar, this message translates to:
-  /// **'حشرة صغيرة'**
-  String get smallInsect;
+  /// **'في الضوء'**
+  String get photoTipLight;
 
-  /// No description provided for @why.
+  /// APP-ONLY. Photo diagnosis.
   ///
   /// In ar, this message translates to:
-  /// **'لماذا؟'**
-  String get why;
+  /// **'{count, plural, =0{لا يمكنك إرسال صور أخرى اليوم} =1{يمكنك إرسال صورة واحدة اليوم} =2{يمكنك إرسال صورتين اليوم} few{يمكنك إرسال {count} صور اليوم} many{يمكنك إرسال {count} صورة اليوم} other{يمكنك إرسال {count} صورة اليوم}}'**
+  String photosLeftToday(int count);
 
-  /// No description provided for @warmWeather.
+  /// APP-ONLY. Photo diagnosis.
   ///
   /// In ar, this message translates to:
-  /// **'جو دافئ'**
-  String get warmWeather;
+  /// **'تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.'**
+  String get photoPrivacyNote;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'على الأرجح'**
+  String get verdictLikely;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متأكد'**
+  String get verdictUnsure;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'ثقوب في الأوراق'**
+  String get diseaseShotHole;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'تجعّد الأوراق'**
+  String get diseaseLeafCurl;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'بقع على الأوراق'**
+  String get diseaseLeafSpot;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأماكن المريضة مُعلَّمة على الصورة'**
+  String get spotsMarked;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير.'**
+  String get notFinalDiagnosis;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نجد هذه الأمراض الثلاثة.'**
+  String get notFoundTitle;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّر الورقة من قريب، في الضوء.'**
+  String get notFoundTip;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا لا يعني أن الشجرة سليمة.'**
+  String get notFoundNotHealthy;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'نبحث فقط عن: ثقوب، تجعّد، بقع.'**
+  String get weLookFor;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّر ورقة أخرى'**
+  String get takeAnotherPhoto;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّرت ورقة لوز. التطبيق يقول: {disease} ({certainty}). هل هذا صحيح؟'**
+  String expertQuestionFound(String disease, String certainty);
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّرت ورقة لوز ولم يجد التطبيق شيئًا. ما رأيك؟'**
+  String get expertQuestionNothing;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'اجمع الأوراق المريضة والساقطة، وأبعدها عن البستان.'**
+  String get adviceShotHole1;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسقِ عند الجذع، لا فوق الأوراق.'**
+  String get adviceShotHole2;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسأل خبيرًا عن العلاج قبل المطر القادم.'**
+  String get adviceShotHole3;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'انزع الأوراق المجعّدة وأبعدها عن البستان.'**
+  String get adviceLeafCurl1;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'راقب الأوراق الجديدة: الحرّ يوقف المرض غالبًا.'**
+  String get adviceLeafCurl2;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسأل خبيرًا: الوقاية تكون في الشتاء، قبل تفتّح البراعم.'**
+  String get adviceLeafCurl3;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'اجمع الأوراق المصابة والساقطة تحت الشجرة.'**
+  String get adviceLeafSpot1;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'في الشتاء، قلّم ليدخل الهواء والشمس.'**
+  String get adviceLeafSpot2;
+
+  /// APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسأل خبيرًا ليعرف نوع البقع.'**
+  String get adviceLeafSpot3;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحتاج إلى الإنترنت'**
+  String get needInternet;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{أرسلت اليوم صورة واحدة. هذا هو الحد. عُد غدًا.} =2{أرسلت اليوم صورتين. هذا هو الحد. عُد غدًا.} few{أرسلت اليوم {count} صور. هذا هو الحد. عُد غدًا.} many{أرسلت اليوم {count} صورة. هذا هو الحد. عُد غدًا.} other{أرسلت اليوم {count} صورة. هذا هو الحد. عُد غدًا.}}'**
+  String limitReached(int count);
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفحص مشغول اليوم. حاول غدًا أو اسأل خبيرًا.'**
+  String get diagnosisBusy;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'الفحص غير متوفر الآن. اسأل خبيرًا.'**
+  String get diagnosisUnavailable;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نستطع قراءة الصورة. صوّر من جديد.'**
+  String get photoUnreadable;
+
+  /// APP-ONLY. Photo diagnosis.
+  ///
+  /// In ar, this message translates to:
+  /// **'سؤالك في المجتمع'**
+  String get questionPublished;
 
   /// No description provided for @whatToDo.
   ///
   /// In ar, this message translates to:
   /// **'ماذا أفعل؟'**
   String get whatToDo;
-
-  /// No description provided for @rinseLeaf.
-  ///
-  /// In ar, this message translates to:
-  /// **'اغسل الورقة'**
-  String get rinseLeaf;
 
   /// No description provided for @askAnExpert.
   ///
@@ -1591,6 +1759,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المنطقة {letter}'**
   String zoneName(String letter);
+
+  /// APP-ONLY. The letters of zones A to T, separated by spaces. Arabic: the ABJAD order (20), not أ ب ت ث (letters that differ only by dots are hard for weak readers).
+  ///
+  /// In ar, this message translates to:
+  /// **'أ ب ج د ه و ز ح ط ي ك ل م ن س ع ف ص ق ر'**
+  String get zoneLetters;
 
   /// APP-ONLY. Debug builds only.
   ///

@@ -526,28 +526,146 @@ class AppLocalizationsFr extends AppLocalizations {
   String get looking => 'Je regarde…';
 
   @override
-  String get resultTitle => 'J\'ai trouvé';
+  String get betaTag => 'Bêta';
 
   @override
-  String get maybeAphids => 'Peut-être des pucerons';
+  String get photoTipOneLeaf => 'Une seule feuille d\'amandier';
 
   @override
-  String get whatIsIt => 'Qu\'est-ce ?';
+  String get photoTipClose => 'De près';
 
   @override
-  String get smallInsect => 'Petit insecte';
+  String get photoTipLight => 'À la lumière';
 
   @override
-  String get why => 'Pourquoi ?';
+  String photosLeftToday(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Encore $count photos aujourd\'hui',
+      one: 'Encore 1 photo aujourd\'hui',
+      zero: 'Plus de photo aujourd\'hui',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get warmWeather => 'Temps chaud';
+  String get photoPrivacyNote =>
+      'La photo est envoyée pour l\'examen et gardée dans votre compte seulement.';
+
+  @override
+  String get verdictLikely => 'Probablement';
+
+  @override
+  String get verdictUnsure => 'Pas sûr';
+
+  @override
+  String get diseaseShotHole => 'Criblure (trous dans les feuilles)';
+
+  @override
+  String get diseaseLeafCurl => 'Cloque (feuilles frisées)';
+
+  @override
+  String get diseaseLeafSpot => 'Taches sur les feuilles';
+
+  @override
+  String get spotsMarked => 'Les zones malades sont marquées sur la photo';
+
+  @override
+  String get notFinalDiagnosis =>
+      'Ce n\'est pas un diagnostic final. Demandez l\'avis d\'un expert.';
+
+  @override
+  String get notFoundTitle => 'Nous n\'avons pas trouvé ces 3 maladies.';
+
+  @override
+  String get notFoundTip => 'Photographiez la feuille de près, à la lumière.';
+
+  @override
+  String get notFoundNotHealthy =>
+      'Cela ne veut pas dire que l\'arbre est sain.';
+
+  @override
+  String get weLookFor =>
+      'Nous cherchons seulement : trous, feuilles frisées, taches.';
+
+  @override
+  String get takeAnotherPhoto => 'Photographier une autre feuille';
+
+  @override
+  String expertQuestionFound(String disease, String certainty) {
+    return 'J\'ai photographié une feuille d\'amandier. L\'application dit : $disease ($certainty). Est-ce juste ?';
+  }
+
+  @override
+  String get expertQuestionNothing =>
+      'J\'ai photographié une feuille d\'amandier et l\'application n\'a rien trouvé. Qu\'en pensez-vous ?';
+
+  @override
+  String get adviceShotHole1 =>
+      'Ramassez les feuilles malades et tombées, loin du verger.';
+
+  @override
+  String get adviceShotHole2 => 'Arrosez au pied, pas sur les feuilles.';
+
+  @override
+  String get adviceShotHole3 =>
+      'Demandez à un expert le traitement avant la prochaine pluie.';
+
+  @override
+  String get adviceLeafCurl1 => 'Enlevez les feuilles frisées, loin du verger.';
+
+  @override
+  String get adviceLeafCurl2 =>
+      'Surveillez les nouvelles feuilles : la chaleur arrête souvent la maladie.';
+
+  @override
+  String get adviceLeafCurl3 =>
+      'Demandez à un expert : la prévention se fait en hiver, avant le débourrement.';
+
+  @override
+  String get adviceLeafSpot1 =>
+      'Ramassez les feuilles touchées et tombées sous l\'arbre.';
+
+  @override
+  String get adviceLeafSpot2 =>
+      'En hiver, taillez pour faire entrer l\'air et le soleil.';
+
+  @override
+  String get adviceLeafSpot3 =>
+      'Demandez à un expert quel type de taches c\'est.';
+
+  @override
+  String get needInternet => 'Connexion Internet nécessaire';
+
+  @override
+  String limitReached(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Vous avez envoyé $count photos aujourd\'hui : c\'est la limite. Revenez demain.',
+      one: 'Vous avez envoyé 1 photo aujourd\'hui : c\'est la limite. Revenez demain.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diagnosisBusy =>
+      'L\'examen est saturé aujourd\'hui. Réessayez demain ou demandez à un expert.';
+
+  @override
+  String get diagnosisUnavailable =>
+      'L\'examen n\'est pas disponible. Demandez à un expert.';
+
+  @override
+  String get photoUnreadable => 'Photo illisible. Reprenez la photo.';
+
+  @override
+  String get questionPublished => 'Votre question est dans la communauté';
 
   @override
   String get whatToDo => 'Que faire ?';
-
-  @override
-  String get rinseLeaf => 'Rincez la feuille';
 
   @override
   String get askAnExpert => 'Demander à un expert';
@@ -849,6 +967,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String zoneName(String letter) {
     return 'Zone $letter';
   }
+
+  @override
+  String get zoneLetters => 'A B C D E F G H I J K L M N O P Q R S T';
 
   @override
   String get devPlanSwitch => 'Mode test : changer d\'offre';

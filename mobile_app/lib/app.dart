@@ -104,7 +104,9 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _alertsTimer?.cancel();
-    clearAlerts(); // logged out: forget them
+    // Logged out: forget them. A moment later: the screens that show them
+    // are being closed now and can't be told during this.
+    scheduleMicrotask(clearAlerts);
     super.dispose();
   }
 

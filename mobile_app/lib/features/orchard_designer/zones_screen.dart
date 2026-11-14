@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/zone_letters.dart';
 import '../../data/auth_service.dart';
 import '../../data/orchard_design.dart';
 import '../../data/orchard_service.dart';
@@ -238,7 +239,11 @@ class _ZonesScreenState extends State<ZonesScreen> {
 
   List<CanvasZone> get _canvasZones => [
     for (final z in _zones)
-      CanvasZone(letter: z.letter, boundary: z.boundary, color: z.color),
+      CanvasZone(
+        letter: zoneLetterOf(context, z.letter), // أ ب ج د in Arabic
+        boundary: z.boundary,
+        color: z.color,
+      ),
   ];
 
   @override

@@ -14,6 +14,7 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart' show Locale;
 
 import '../../core/theme/app_theme.dart';
+import '../../core/zone_letters.dart';
 import '../../data/orchard_service.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -21,10 +22,11 @@ String _hex(int argb) =>
     '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 
 /// The name of a zone in a language ('ar' or 'fr'): its own name, or
-/// "المنطقة A" / "Zone A".
+/// "المنطقة أ" / "Zone A" (the abjad letters in Arabic).
 String zoneName(OrchardZone zone, String languageCode) => zone.name.isNotEmpty
     ? zone.name
-    : lookupAppLocalizations(Locale(languageCode)).zoneName(zone.letter);
+    : lookupAppLocalizations(Locale(languageCode))
+          .zoneName(zoneLetterIn(zone.letter, languageCode));
 
 /// The name of a zone type, in the language of [l10n].
 String zoneTypeName(AppLocalizations l10n, ZoneType type) => switch (type) {

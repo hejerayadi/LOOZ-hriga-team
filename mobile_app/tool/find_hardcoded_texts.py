@@ -55,8 +55,9 @@ SERVER_FILES = {
     'data/orchard_service.dart',  # tables and columns of the orchard (migration 011)
     'data/orchard_design.dart',  # the designer's draft: JSON values of migration 011 ('grid', 'auto', 'draw')
     'data/alerts_service.dart',  # functions, states and error codes of the regional alerts (migration 015)
+    'data/diagnosis_service.dart',  # Edge Function "diagnose", its codes and errors (migration 016)
 }
-SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_*.dart, alerts_service.dart)'
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_*.dart, alerts_service.dart, diagnosis_service.dart)'
 
 
 def without_comment(line):

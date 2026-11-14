@@ -11,6 +11,7 @@ import '../../core/navigation.dart';
 import '../../core/plans.dart';
 import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/zone_letters.dart';
 import '../../data/payment_service.dart';
 import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/app_icon.dart';
@@ -134,7 +135,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   zones: [
                     for (final z in session.design.zones)
                       CanvasZone(
-                        letter: z.letter,
+                        letter: zoneLetterOf(context, z.letter),
                         boundary: z.boundary,
                         color: z.color,
                       ),

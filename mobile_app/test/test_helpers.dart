@@ -9,6 +9,7 @@ import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/data/alerts_service.dart';
+import 'package:looz_mobile/data/diagnosis_service.dart';
 import 'package:looz_mobile/data/community_photos.dart';
 import 'package:looz_mobile/data/community_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
@@ -20,6 +21,7 @@ import 'package:looz_mobile/features/premium/payment_screen.dart';
 
 import 'fake_alerts_service.dart';
 import 'fake_auth_service.dart';
+import 'fake_diagnosis_service.dart';
 import 'fake_community_service.dart';
 import 'fake_orchard_service.dart';
 import 'fake_payment_service.dart';
@@ -63,6 +65,7 @@ void resetAppState() {
   currentUser.value = null;
   communityService = FakeCommunityService();
   alertsService = FakeAlertsService();
+  diagnosisService = FakeDiagnosisService();
   clearAlerts();
   photoPicker = FakePhotoPicker();
   paymentService = FakePaymentService();
@@ -77,6 +80,14 @@ FakeAlertsService useAlerts([FakeAlertsService? fake]) {
   alertsService = alerts;
   clearAlerts();
   return alerts;
+}
+
+/// Uses a fake photo diagnosis ([fake] = "shot hole, probably" by default):
+/// returns it, to change the answer, fail, or check what was linked.
+FakeDiagnosisService useDiagnosis([FakeDiagnosisService? fake]) {
+  final diagnosis = fake ?? FakeDiagnosisService();
+  diagnosisService = diagnosis;
+  return diagnosis;
 }
 
 /// Uses a fake orchard: [orchard] (null = none drawn yet). Returns it, to

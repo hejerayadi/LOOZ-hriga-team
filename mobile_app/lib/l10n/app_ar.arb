@@ -550,14 +550,165 @@
   "tipPhotoInsects": "صوّر أي حشرة غريبة",
   "photographLeaf": "صوّر الورقة",
   "looking": "جاري النظر…",
-  "resultTitle": "وجدت شيئًا",
-  "maybeAphids": "قد تكون حشرة المنّ",
-  "whatIsIt": "ما هي؟",
-  "smallInsect": "حشرة صغيرة",
-  "why": "لماذا؟",
-  "warmWeather": "جو دافئ",
+  "betaTag": "تجريبي",
+  "@betaTag": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "photoTipOneLeaf": "ورقة لوز واحدة",
+  "@photoTipOneLeaf": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "photoTipClose": "من قريب",
+  "@photoTipClose": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "photoTipLight": "في الضوء",
+  "@photoTipLight": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "photosLeftToday": "{count, plural, =0{لا يمكنك إرسال صور أخرى اليوم} =1{يمكنك إرسال صورة واحدة اليوم} =2{يمكنك إرسال صورتين اليوم} few{يمكنك إرسال {count} صور اليوم} many{يمكنك إرسال {count} صورة اليوم} other{يمكنك إرسال {count} صورة اليوم}}",
+  "@photosLeftToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "photoPrivacyNote": "تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.",
+  "@photoPrivacyNote": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "verdictLikely": "على الأرجح",
+  "@verdictLikely": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "verdictUnsure": "غير متأكد",
+  "@verdictUnsure": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "diseaseShotHole": "ثقوب في الأوراق",
+  "@diseaseShotHole": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "diseaseLeafCurl": "تجعّد الأوراق",
+  "@diseaseLeafCurl": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "diseaseLeafSpot": "بقع على الأوراق",
+  "@diseaseLeafSpot": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "spotsMarked": "الأماكن المريضة مُعلَّمة على الصورة",
+  "@spotsMarked": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "notFinalDiagnosis": "هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير.",
+  "@notFinalDiagnosis": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "notFoundTitle": "لم نجد هذه الأمراض الثلاثة.",
+  "@notFoundTitle": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "notFoundTip": "صوّر الورقة من قريب، في الضوء.",
+  "@notFoundTip": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "notFoundNotHealthy": "هذا لا يعني أن الشجرة سليمة.",
+  "@notFoundNotHealthy": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "weLookFor": "نبحث فقط عن: ثقوب، تجعّد، بقع.",
+  "@weLookFor": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "takeAnotherPhoto": "صوّر ورقة أخرى",
+  "@takeAnotherPhoto": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "expertQuestionFound": "صوّرت ورقة لوز. التطبيق يقول: {disease} ({certainty}). هل هذا صحيح؟",
+  "@expertQuestionFound": {
+    "placeholders": {
+      "disease": {
+        "type": "String"
+      },
+      "certainty": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "expertQuestionNothing": "صوّرت ورقة لوز ولم يجد التطبيق شيئًا. ما رأيك؟",
+  "@expertQuestionNothing": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "adviceShotHole1": "اجمع الأوراق المريضة والساقطة، وأبعدها عن البستان.",
+  "@adviceShotHole1": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceShotHole2": "اسقِ عند الجذع، لا فوق الأوراق.",
+  "@adviceShotHole2": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceShotHole3": "اسأل خبيرًا عن العلاج قبل المطر القادم.",
+  "@adviceShotHole3": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceLeafCurl1": "انزع الأوراق المجعّدة وأبعدها عن البستان.",
+  "@adviceLeafCurl1": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceLeafCurl2": "راقب الأوراق الجديدة: الحرّ يوقف المرض غالبًا.",
+  "@adviceLeafCurl2": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceLeafCurl3": "اسأل خبيرًا: الوقاية تكون في الشتاء، قبل تفتّح البراعم.",
+  "@adviceLeafCurl3": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceLeafSpot1": "اجمع الأوراق المصابة والساقطة تحت الشجرة.",
+  "@adviceLeafSpot1": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceLeafSpot2": "في الشتاء، قلّم ليدخل الهواء والشمس.",
+  "@adviceLeafSpot2": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "adviceLeafSpot3": "اسأل خبيرًا ليعرف نوع البقع.",
+  "@adviceLeafSpot3": {
+    "description": "APP-ONLY. Photo diagnosis. DRAFT advice: to validate by an agronomist (no pesticide names, no doses)."
+  },
+  "needInternet": "تحتاج إلى الإنترنت",
+  "@needInternet": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "limitReached": "{count, plural, =1{أرسلت اليوم صورة واحدة. هذا هو الحد. عُد غدًا.} =2{أرسلت اليوم صورتين. هذا هو الحد. عُد غدًا.} few{أرسلت اليوم {count} صور. هذا هو الحد. عُد غدًا.} many{أرسلت اليوم {count} صورة. هذا هو الحد. عُد غدًا.} other{أرسلت اليوم {count} صورة. هذا هو الحد. عُد غدًا.}}",
+  "@limitReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "diagnosisBusy": "الفحص مشغول اليوم. حاول غدًا أو اسأل خبيرًا.",
+  "@diagnosisBusy": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "diagnosisUnavailable": "الفحص غير متوفر الآن. اسأل خبيرًا.",
+  "@diagnosisUnavailable": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "photoUnreadable": "لم نستطع قراءة الصورة. صوّر من جديد.",
+  "@photoUnreadable": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
+  "questionPublished": "سؤالك في المجتمع",
+  "@questionPublished": {
+    "description": "APP-ONLY. Photo diagnosis."
+  },
   "whatToDo": "ماذا أفعل؟",
-  "rinseLeaf": "اغسل الورقة",
   "askAnExpert": "اسأل خبيرًا",
   "listening": "أنا أسمعك",
   "speakFreely": "تكلّم براحتك…",
@@ -816,6 +967,10 @@
       }
     },
     "description": "APP-ONLY. 3D orchard zones."
+  },
+  "zoneLetters": "أ ب ج د ه و ز ح ط ي ك ل م ن س ع ف ص ق ر",
+  "@zoneLetters": {
+    "description": "APP-ONLY. The letters of zones A to T, separated by spaces. Arabic: the ABJAD order (20), not أ ب ت ث (letters that differ only by dots are hard for weak readers)."
   },
   "devPlanSwitch": "وضع التجربة: تغيير الخطة",
   "@devPlanSwitch": {

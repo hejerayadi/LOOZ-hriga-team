@@ -1,5 +1,7 @@
 // Arabic selected = only Arabic on every screen; French = only French.
 // Run it with: flutter test
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,6 +10,7 @@ import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/data/alerts_service.dart';
+import 'package:looz_mobile/data/diagnosis_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/user_profile.dart';
 import 'package:looz_mobile/features/alerts/regional_screen.dart';
@@ -48,6 +51,7 @@ import 'package:looz_mobile/features/states/states_screen.dart';
 
 import 'fake_alerts_service.dart';
 import 'fake_community_service.dart';
+import 'fake_diagnosis_service.dart';
 import 'fake_orchard_service.dart';
 import 'fake_photo_picker.dart';
 import 'test_helpers.dart';
@@ -66,10 +70,6 @@ const sameInBoth = [
 ];
 
 final latin = RegExp('[A-Za-zÀ-ÖØ-öø-ÿ]');
-
-/// The letter of a zone ("المنطقة A", the 3D's labels): A to T in both
-/// languages, like the database (zones.letter).
-final zoneLetterAlone = RegExp('(?<![A-Za-z])[A-T](?![A-Za-z])');
 
 /// A bill of 4 zones (a new month) and one of 6 zones on a pack of 4.
 final monthQuote = OrchardQuote.fromRow({
@@ -281,8 +281,70 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
   ('ask', const AskScreen(), Plan.paid, AppTab.home, false),
   ('voice', const VoiceScreen(), Plan.paid, AppTab.home, false),
   ('camera', const CameraScreen(), Plan.paid, AppTab.home, false),
-  ('thinking', const ThinkingScreen(), Plan.paid, AppTab.home, false),
-  ('result', const ResultScreen(), Plan.paid, AppTab.home, false),
+  // The photo diagnosis (Bêta): looking, its failures, the 3 results.
+  (
+    'camera (no photo left today)',
+    const CameraScreen(),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis: looking',
+    ThinkingScreen(photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis fails: no internet',
+    ThinkingScreen(photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis fails: limit of the day',
+    ThinkingScreen(photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis fails: busy',
+    ThinkingScreen(photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis fails: bad image',
+    ThinkingScreen(photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis result: likely',
+    ResultScreen(diagnosis: sampleSick(), photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis result: unsure',
+    ResultScreen(diagnosis: sampleUnsure(), photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'diagnosis result: nothing',
+    ResultScreen(diagnosis: sampleNothing(), photo: _leaf),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
   // The regional alerts (written by the admins in both languages).
   ('alerts (free)', const MainShell(), Plan.free, AppTab.alerts, false),
   (
@@ -362,6 +424,25 @@ Future<List<String>> textsOf(
   useFakeCommunity(lang);
   usePayments().drawOrchard(4, areaHa: 2.37);
   useOrchard(name.contains('none drawn') ? null : demoOrchard());
+  final diagnosis = useDiagnosis();
+  if (name.contains('looking')) diagnosis.hold = Completer();
+  if (name.contains('no photo left')) {
+    diagnosis.quota = const DiagnosisQuota(
+      enabled: true,
+      paid: true,
+      perDay: 10,
+      usedToday: 10,
+    );
+  }
+  final failure = {
+    'no internet': DiagnosisFailure.noInternet,
+    'limit of the day': DiagnosisFailure.limitDay,
+    'busy': DiagnosisFailure.busy,
+    'bad image': DiagnosisFailure.badImage,
+  }.entries.where((e) => name.contains('fails: ${e.key}')).firstOrNull;
+  if (failure != null) {
+    diagnosis.failNext = DiagnosisError(failure.value, perDay: 10);
+  }
   useAlerts(
     name.contains('none in the region')
         ? FakeAlertsService()
@@ -375,9 +456,7 @@ Future<List<String>> textsOf(
   await tester.pump(); // the alerts are loaded
   final texts = [
     for (var text in textsOnScreen())
-      sameInBoth
-          .fold(text, (t, word) => t.replaceAll(word, ''))
-          .replaceAll(zoneLetterAlone, ''),
+      sameInBoth.fold(text, (t, word) => t.replaceAll(word, '')),
   ];
   await closeApp(tester);
   return texts;
@@ -402,6 +481,9 @@ RegionalAlert _endedAlert() {
     updatedAt: frost.updatedAt,
   );
 }
+
+/// A photo of a leaf, ready like the camera's (a small green JPEG).
+final _leaf = PreparedPhoto(bytes: testPhotoBytes(), width: 64, height: 48);
 
 /// The first question of the fake community (in the language of the test),
 /// with its answers.

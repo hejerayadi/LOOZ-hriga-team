@@ -6,15 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:looz_mobile/app.dart';
 import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/core/plans.dart';
-import 'package:looz_mobile/data/fake_data.dart';
 import 'package:looz_mobile/features/alerts/alerts_page.dart';
 import 'package:looz_mobile/features/alerts/regional_screen.dart';
 import 'package:looz_mobile/features/ask/ask_screen.dart';
 import 'package:looz_mobile/features/ask/voice_screen.dart';
 import 'package:looz_mobile/features/camera/camera_screen.dart';
 import 'package:looz_mobile/features/camera/result_screen.dart';
-import 'package:looz_mobile/features/camera/thinking_screen.dart';
-import 'package:looz_mobile/features/community/community_page.dart';
 import 'package:looz_mobile/features/community/tips_screen.dart';
 import 'package:looz_mobile/features/home/home_page.dart';
 import 'package:looz_mobile/features/journal/journal_screen.dart';
@@ -94,7 +91,9 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('Assistant bar: voice → thinking → answer', (tester) async {
+  testWidgets('Assistant bar: voice → "قريبًا" (no fake answer)', (
+    tester,
+  ) async {
     await startApp(tester);
     await tapAndWait(tester, find.byType(AssistantButton));
     expect(find.byType(VoiceScreen), findsOneWidget);
@@ -102,30 +101,26 @@ void main() {
 
     await tester.pump(listeningTime);
     await tester.pumpAndSettle();
-    expect(find.byType(ThinkingScreen), findsOneWidget);
-
-    await tester.pump(fakeThinkingTime);
-    await tester.pumpAndSettle();
-    expect(find.byType(ResultScreen), findsOneWidget);
-
-    // "اسأل خبيرًا" opens the community.
-    await tapAndWait(tester, find.text('اسأل خبيرًا'));
-    expect(find.byType(CommunityPage), findsOneWidget);
+    expect(find.byType(VoiceScreen), findsNothing);
+    expect(find.byType(ResultScreen), findsNothing);
+    expect(find.text('قريبًا'), findsOneWidget);
+    expect(find.byType(HomePage), findsOneWidget);
   });
 
   testWidgets('Camera: shutter → thinking → result, and × closes it', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     await startApp(tester);
+    usePhotoPicker();
+    useDiagnosis();
     await tapAndWait(tester, find.byType(CameraButton));
     expect(find.byType(CameraScreen), findsOneWidget);
     expect(find.text('صوّر الورقة'), findsOneWidget);
 
-    await tapAndWait(tester, find.bySemanticsLabel('الكاميرا'));
-    expect(find.byType(ThinkingScreen), findsOneWidget);
-    await tester.pump(fakeThinkingTime);
-    await tester.pumpAndSettle();
+    await tapAndWait(tester, find.bySemanticsLabel('التقط صورة').first);
     expect(find.byType(ResultScreen), findsOneWidget);
+    semantics.dispose();
 
     await tapAndWait(tester, find.byType(CameraButton));
     await tapAndWait(tester, find.text('×'));

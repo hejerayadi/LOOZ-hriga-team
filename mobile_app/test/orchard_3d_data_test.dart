@@ -76,7 +76,7 @@ void main() {
         'danger',
         'good',
       ]);
-      expect(zones[0]['names'], {'ar': 'المنطقة A', 'fr': 'Zone A'});
+      expect(zones[0]['names'], {'ar': 'المنطقة أ', 'fr': 'Zone A'});
       // A zone with its own name keeps it in both languages.
       expect(zones[2]['names'], {'ar': 'الجنان القبلي', 'fr': 'الجنان القبلي'});
       expect(page(null, 'fr')['zones'][0]['name'], 'Zone A');

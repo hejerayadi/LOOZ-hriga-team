@@ -1,22 +1,21 @@
-// "أنا أسمعك": the assistant listens (the orb breathes, the bars move),
-// then thinks ("جاري النظر…") and shows its answer.
+// "أنا أسمعك": the assistant listens (the orb breathes, the bars move).
 //
-// DEMO: the microphone is not used yet. After a few seconds (or a tap on
-// the orb) the app "has heard" the question.
+// DEMO: the microphone and the assistant are not ready yet. After a few
+// seconds (or a tap on the orb) the screen closes with "قريبًا": no fake
+// answer is ever shown.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
-import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/assistant_orb.dart';
 import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/shell.dart';
+import '../../shared/widgets/soon_message.dart';
 import '../../shared/widgets/speaker_button.dart';
 import '../../shared/widgets/symbol_text.dart';
-import '../camera/thinking_screen.dart';
 
 /// How long the demo "listens".
 const listeningTime = Duration(seconds: 4);
@@ -57,7 +56,8 @@ class _VoiceScreenState extends State<VoiceScreen>
   void _heard() {
     if (!mounted) return;
     _timer.cancel();
-    replaceWith(context, const ThinkingScreen());
+    showSoon(context);
+    Navigator.of(context).maybePop();
   }
 
   @override

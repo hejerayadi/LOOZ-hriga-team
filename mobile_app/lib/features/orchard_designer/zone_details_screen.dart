@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/zone_letters.dart';
 import '../../core/validators.dart';
 import '../../data/auth_service.dart';
 import '../../data/orchard_design.dart';
@@ -125,7 +126,7 @@ class _ZoneDetailsScreenState extends State<ZoneDetailsScreen> {
               zones: [
                 for (final z in _zones)
                   CanvasZone(
-                    letter: z.letter,
+                    letter: zoneLetterOf(context, z.letter),
                     boundary: z.boundary,
                     color: z.color,
                   ),
@@ -278,7 +279,7 @@ class _ZoneSheetState extends State<_ZoneSheet> {
                 ZoneDot(zone: widget.zone.copyWith(color: _color), size: 44),
                 const SizedBox(width: 12),
                 Text(
-                  l10n.zoneName(widget.zone.letter),
+                  l10n.zoneName(zoneLetterOf(context, widget.zone.letter)),
                   style: AppTextStyles.of(22, FontWeight.w800),
                 ),
               ],
@@ -347,7 +348,9 @@ class _ZoneSheetState extends State<_ZoneSheet> {
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
-                  hintText: l10n.zoneName(widget.zone.letter),
+                  hintText: l10n.zoneName(
+                    zoneLetterOf(context, widget.zone.letter),
+                  ),
                 ),
               ),
             ),

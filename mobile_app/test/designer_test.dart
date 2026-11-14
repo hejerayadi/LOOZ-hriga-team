@@ -471,10 +471,10 @@ void main() {
       );
       await scrollAndTap(tester, findTextWithSymbol('★ أكمل الرسم'));
       expect(find.byType(ZoneDetailsScreen), findsOneWidget); // where it was
-      expect(find.text('المنطقة A'), findsOneWidget);
+      expect(find.text('المنطقة أ'), findsOneWidget);
       expect(find.text('100 شجرة'), findsOneWidget);
 
-      await tester.tap(find.text('المنطقة A'));
+      await tester.tap(find.text('المنطقة أ'));
       await tester.pumpAndSettle();
       final sheet = find.byType(BottomSheet);
       final boxes = find.descendant(

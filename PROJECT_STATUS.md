@@ -1,6 +1,6 @@
 # Looz — project status
 
-Last update: 14 November 2026 (app module: the alerts tab, "Moi aussi", "تمّ" and "إبلاغ" built; migration 015 run).
+Last update: 14 November 2026 (photo diagnosis Bêta, Milestone 1 built: migration 016 run, Edge Function "diagnose" to deploy; zone letters أ ب ج د in Arabic).
 
 > **⚠ Before a real launch: turn the DEMO LOGIN off** (section 5). While it is on, anyone who types a
 > phone number can open that account: any 6-digit code works. Turn the **demo payment** off too
@@ -26,7 +26,8 @@ Last update: 14 November 2026 (app module: the alerts tab, "Moi aussi", "تمّ"
 | Community: questions, answers, delete, photos | Done | **Real** (Supabase + Storage) |
 | **Alerts** (section 15): the tab "التنبيهات" with the regional alerts of the farmer's governorate, the number on the bell, an alert's screen ("ماذا أفعل؟" in steps, until when, "أنا أيضًا", "تمّ"), the most important alert on Home | Done (Phase 1, 14 Nov 2026). Sensor alerts "بستاني" and voice / push: "قريبًا" | **Real** (Supabase, migration 015) |
 | **"إبلاغ / Signaler"** in the community (section 15): on the question and the answers of others, 4 reasons, "✓ أبلغت" | Done (14 Nov 2026) | **Real** (`report_content()` of 013) → Dashboard › Communauté › Signalements |
-| Home (weather), camera diagnosis, assistant, voice, map, journal, tips | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`). A tree on the map says "قريبًا" |
+| **Photo diagnosis (Bêta)** (section 16), paid pack: camera or photo → "جاري النظر…" → "على الأرجح" / "غير متأكد" / "لم نجد هذه الأمراض الثلاثة", the photo with the sick spots marked, 2-3 first steps (drafts), "اسأل خبيرًا" = a community question with the photo | Milestone 1 built (14 Nov 2026). History, zone choice: Milestone 2 | **Real**: Roboflow model through the Edge Function `diagnose` (migration 016) |
+| Home (weather), assistant and voice ("قريبًا" at the end, no fake answer), map, journal, tips | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`). A tree on the map says "قريبًا" |
 | **Sensor boxes → Supabase** (section 12): Node-RED of the farm (`iot/node-red/`) sends the readings once a minute to the Edge Function `iot-ingest` | Done (Milestone 1) with the **simulated** boxes NODE-01…04 of the IoT demo farmer | **Real** Supabase (migration 012), simulated boxes |
 | Admin dashboard (`dashboard/`), **in French** (section 14): login + "Connexion démo", Vue d'ensemble, Agriculteurs (live boxes, 3-day charts, accept / remove), Utilisateurs (expert badge, block), Communauté (hide / show again / delete, reports), Alertes (regional alerts in Arabic + French with the preview, sensor alert log), Vergers (plan), Capteurs, Abonnements (bills, payments, price), Réglages (the switches), Journal des actions | **Phases A–D built** (A: 12 Nov, B–D: 13 Nov 2026). Migration 014 (the database keeps the demo admin on demo data) run on 13 Nov | **Real** (Supabase, admin login; every change through a checked function + admin action log, migrations 013 and 014) |
 
@@ -219,6 +220,8 @@ Run the files in **Supabase > SQL Editor**, in this order. Every file can be run
     see …" rules).
 20. `supabase/migrations/015_app_alerts.sql` (check line: `true | false | false | true | true`): the
     alerts tab of the app (section 15). Run it after 014. Running 013 or 014 again does not undo it.
+21. `supabase/migrations/016_photo_diagnosis.sql` (check line: `true | false | false | true | 10 | 1000 | 0.65 | 0.4`):
+    the photo diagnosis (section 16). If you run 014 again after it, 014's second number is 28 (not 26).
 
 Then the **Edge Functions** (Edge Functions › Deploy a new function › Via Editor › paste the file ›
 name › Deploy function; then in its settings turn **"Verify JWT" off**; no secret to add):
@@ -227,6 +230,12 @@ name › Deploy function; then in its settings turn **"Verify JWT" off**; no sec
 | --- | --- | --- |
 | `demo-auth` | `supabase/functions/demo-auth/index.ts` | the app calls it before the login |
 | `iot-ingest` | `supabase/functions/iot-ingest/index.ts` | Node-RED has no Supabase login: the function checks the gateway key itself |
+
+And ONE function with **"Verify JWT" ON** (only logged-in users):
+
+| Name | File | Secret (Edge Functions › Secrets) |
+| --- | --- | --- |
+| `diagnose` | `supabase/functions/diagnose/index.ts` | `ROBOFLOW_API_KEY` = the **Private API Key** of the Roboflow workspace (never in the app, never in git). Optional: `ROBOFLOW_MODEL` (default `almond-diseases-detection-l7tfx/2`). Never add `ROBOFLOW_URL` (tests only) |
 
 All 12 SQL files and the demo orchard are in the real database, and `demo-auth` answers (checked on
 9 November 2026 by `test_live/database_check_test.dart`, `orchard_live_test.dart` and
@@ -241,7 +250,7 @@ From `mobile_app/`:
 | Command | What it checks | Last result |
 | --- | --- | --- |
 | `flutter analyze` | The code | No issues |
-| `flutter test` | All the screens and flows, with a fake login (also in demo mode), fake payment, fake orchard and fake community; the real login code with a fake web server (no internet). The designer: `test/geometry_test.dart` (area, clean-up of the drawing, crossing sides, automatic split, dividing lines) and `test/designer_test.dart` (every step, finger and mouse, resume, errors, French, a 360 x 640 phone). Tree numbers from the codes ("12", "TREE-012"): `test/orchard_3d_data_test.dart`. The alerts: `test/alerts_test.dart` (order, bell, "جديد", steps, "أنا أيضًا", "تمّ", ended while open, no alert, no internet, pull down, every minute, back to the app, French, Home). "إبلاغ": `test/report_test.dart` | 222 / 222 pass |
+| `flutter test` | All the screens and flows, with a fake login (also in demo mode), fake payment, fake orchard and fake community; the real login code with a fake web server (no internet). The designer: `test/geometry_test.dart` (area, clean-up of the drawing, crossing sides, automatic split, dividing lines) and `test/designer_test.dart` (every step, finger and mouse, resume, errors, French, a 360 x 640 phone). Tree numbers from the codes ("12", "TREE-012"): `test/orchard_3d_data_test.dart`. The alerts: `test/alerts_test.dart` (order, bell, "جديد", steps, "أنا أيضًا", "تمّ", ended while open, no alert, no internet, pull down, every minute, back to the app, French, Home). "إبلاغ": `test/report_test.dart`. The photo diagnosis: `test/diagnosis_test.dart` (camera, "جاري النظر…", the 3 results, the marks, "اسأل خبيرًا" → the question with the photo, every failure, the limits, Free = locked, French, the plurals, the assistant says "قريبًا", the zone letters أ ب ج د) | 246 / 246 pass |
 | `python tool/find_hardcoded_texts.py` | No text written in the code (all texts in `lib/l10n/*.arb`) | 0 |
 
 **Live tests**: against the real Supabase. They need internet and `mobile_app/.env`.
@@ -272,7 +281,7 @@ instead. To test them as new users again, delete them in Supabase > Authenticati
 | Command | What it checks | Last result |
 | --- | --- | --- |
 | `pytest` | No internet, fake tables and fake database functions (also "ouverte par / fait par" of the alerts, and the page without migration 015): only admins (401 / 403), the farmers list and page, the demo admin sees demo accounts only (and never a real admin's name), "Vue d'ensemble", the 3 days (window on the latest measure, alert log, sensor problems grouped, actions), Capteurs (waiting first, visits, gateways without key, log), every action calls its checked function and every refusal of the database becomes a French message (reason, device code, demo admin...), "Connexion démo" (switch, password only in `.env`, 127.0.0.1 only, other websites refused, not an admin → refused, one login per 3 s), CORS localhost + 127.0.0.1, a value the box flags as wrong is not drawn. **Phase B**: accounts (e-mail of admins only, "New user" never shown), expert badge, block, posts newest first with every answer, private photo link (5 min), hide / show again / delete (the photo removed from Storage), reports. **Phase C**: regional alerts (states, "Moi aussi", create / change / end, every check of the database in French), sensor alert log (filters). **Phase D**: orchards and their plan (drafts too), the bill (same rule as the app), subscriptions, payments, price, settings, the action log 100 lines at a time | 115 / 115 pass |
-| `pytest tests_live -v` | **Real Supabase, Node-RED running**: needs `LIVE_ADMIN_EMAIL` and `LIVE_ADMIN_PASSWORD` in `dashboard/backend/.env` (skipped otherwise). Phase 1 and **Phase A** (Milestone A: NODE-04 "Retirer" → refused → "Accepter" → received again). **Milestone B**: the demo expert 22 123 458 verified → the app shows "◆ خبير موثّق" (and next to an answer she writes, then deletes; she STAYS verified), a demo post hidden → gone from the app → shown again. **Milestone C**: a heat alert for Sfax → 22 777 001 reads it, 22 123 457 (Kairouan) does not → changed → ended. **Milestone D**: the price 8 → 9 DT → the app's bill and the dashboard's bill change, the log says 8 → 9 DT → back to 8 DT. **App module** (`test_live_app_alerts.py`): the jury scenario (section 15) with Connexion démo. `test_live_014.py` (after 014): the demo admin's own token reads demo rows only through the Supabase API, and "Vue d'ensemble" counts what its lists show | 39 / 39 pass (13 Nov 2026, Node-RED running): IoT 8, A 9, B 6, C 5, D 6, 014 5. 14 Nov 2026: app module 3 pass + 1 skipped (22 777 001 has no post of his own), C 5 and 014 5 again |
+| `pytest tests_live -v` | **Real Supabase, Node-RED running**: needs `LIVE_ADMIN_EMAIL` and `LIVE_ADMIN_PASSWORD` in `dashboard/backend/.env` (skipped otherwise). Phase 1 and **Phase A** (Milestone A: NODE-04 "Retirer" → refused → "Accepter" → received again). **Milestone B**: the demo expert 22 123 458 verified → the app shows "◆ خبير موثّق" (and next to an answer she writes, then deletes; she STAYS verified), a demo post hidden → gone from the app → shown again. **Milestone C**: a heat alert for Sfax → 22 777 001 reads it, 22 123 457 (Kairouan) does not → changed → ended. **Milestone D**: the price 8 → 9 DT → the app's bill and the dashboard's bill change, the log says 8 → 9 DT → back to 8 DT. **App module** (`test_live_app_alerts.py`): the jury scenario (section 15) with Connexion démo. `test_live_014.py` (after 014): the demo admin's own token reads demo rows only through the Supabase API, and "Vue d'ensemble" counts what its lists show | 39 / 39 pass (13 Nov 2026, Node-RED running): IoT 8, A 9, B 6, C 5, D 6, 014 5. 14 Nov 2026: app module 3 pass + 1 skipped (22 777 001 has no post of his own), C 5 and 014 5 again; photo diagnosis `test_live_diagnosis.py` 4 / 4 (with `LIVE_LEAF_PHOTO` / `LIVE_OTHER_PHOTO` paths, each photo = 1 of the 10 of the day of 22 777 001) |
 
 **Frontend** (from `dashboard/frontend`): `npx tsc --noEmit`, `npm run lint`, `npm run build`: no error.
 
@@ -281,7 +290,13 @@ real admins and the app read exactly what they read before, the demo admin only 
 table, view and photo, its overview counts its lists, a demo alert never reaches a real farmer)
 were tested on a local PostgreSQL 17, run the 3 ways of the SQL Editor and again. 015: 89 checks (the
 list = exactly what the rules of 014 show, for 10 kinds of users; order; new after a change; done;
-"Moi aussi" once; every refusal; reports; the jury scenario; 013 + 014 + 015 run again). The IoT part: the
+"Moi aussi" once; every refusal; reports; the jury scenario; 013 + 014 + 015 run again). 016: 73 checks
+(the app writes nothing; paid pack, switch, zone; the verdict from the thresholds; every wrong result
+refused; the limits of the day, two photos at once; 30 photos kept; who reads what; 013-016 again).
+The Edge Function `diagnose`: 33 checks under Deno with a fake Roboflow and a stand-in of Supabase
+(login, bad photos, Free farmer, a sick leaf with its boxes, nothing, a weak guess, no credits (402),
+busy once (503), down, nonsense, the photo not saved, switch off, limits, old photos deleted, 25 s
+timeout, the key never in the logs). The IoT part: the
 SQL of 012 and the seeds (91 checks), the Edge Function under Deno with a local stand-in of Supabase (14
 checks), and the real Node-RED flow sending to it (all readings accepted, the clock continues after
 a restart).
@@ -303,7 +318,7 @@ a restart).
   (`orchards.is_demo = true`). Its sensor boxes have no readings yet: the 3D shows "قريبًا" for
   soil moisture and temperature.
 - **The designer is real** (it saves in Supabase). Only its satellite map is "قريبًا" (Phase 5).
-- **Fake data**: Home (weather), diagnosis, assistant, map, journal and tips use
+- **Fake data**: Home (weather), assistant, map, journal and tips use
   `lib/data/fake_data.dart`.
 - **"Mode test : changer d'offre"** in Profile (debug builds only): switches Free / Premium in the
   app only (not in the database), to see the locked screens.
@@ -351,8 +366,12 @@ Users can't do any of these themselves: the database rules refuse it (checked by
    their governorates (a separate step); fix what you find when you test it.
 5. **App alerts, Phase 2** (Phase 1 done, section 15): the sensor alerts of a paid farmer in the tab
    ("بستاني / Mon verger": zone, level, simple advice, texts from the codes in the ARB files; a tap
-   opens the zone in the 3D) and the real readings in the 3D zone panel. A small migration 016 (the
-   state of the farmer's own boxes with the gateway's offline time). Zone names in Arabic with Arabic
+   opens the zone in the 3D) and the real readings in the 3D zone panel. A small migration **017**
+   (the state of the farmer's own boxes with the gateway's offline time; 016 is the diagnosis).
+6. **Photo diagnosis, Milestone 2** (section 16): "صوري السابقة" (history, on the camera screen and in
+   Profile), the zone of the photo (optional), the dashboard page "Diagnostics" (Bientôt). Later: our
+   own model trained on Roboflow (dataset v11 + Tunisian photos confirmed by experts, healthy and
+   olive leaves as "nothing" examples, RF-DETR = Apache 2.0), only with photos farmers said "yes" to. Zone names in Arabic with Arabic
    letters ("المنطقة ب"), never "المنطقة B". Later: push notifications and reading aloud.
 6. **Real sensor readings in the app** (the farmer's view): the 3D and alerts read
    `iot_node_status` / `node_alert_events` (the database rules already allow it), in place of
@@ -533,3 +552,73 @@ of the jury.
 
 Screenshots (real Supabase, 22 777 001, Arabic and French, and the dashboard):
 `docs/screenshots/app-alerts/`.
+
+## 16. Photo diagnosis (Bêta, paid pack — migration 016 + Edge Function `diagnose`)
+
+**What the farmer does** (camera button of the assistant bar, or Ask › "صورة"; Free: the locked screen):
+
+1. "صوّر الورقة" + "تجريبي": the tips (ورقة لوز واحدة · من قريب · في الضوء), "يمكنك إرسال 7 صور اليوم",
+   "تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.". The round button = the camera (web: the photos);
+   "اختر من الصور" under it. The photo is made small (1600 px, JPEG) and its GPS removed.
+2. "جاري النظر…" (the photo is sent; a few seconds).
+3. The result: "ثقوب في الأوراق" / "تجعّد الأوراق" / "بقع على الأوراق" with **"على الأرجح"** or **"غير
+   متأكد"** (never "متأكد"), the photo with the sick spots framed in red, "ماذا أفعل؟" with 3 steps,
+   "هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير.", 🔊 = "قريبًا".
+   Nothing found (or a weak guess, or not an almond leaf): **"لم نجد هذه الأمراض الثلاثة."** + "صوّر
+   الورقة من قريب، في الضوء." + "هذا لا يعني أن الشجرة سليمة." (never "your tree is healthy").
+4. **"اسأل خبيرًا"**: the question screen opens with the photo and a ready question ("صوّرت ورقة لوز.
+   التطبيق يقول: ثقوب في الأوراق (على الأرجح). هل هذا صحيح؟"), the farmer can change it, "انشر" → the
+   community; the question is linked to the diagnosis. A verified expert ("◆ خبير موثّق") answers.
+5. Messages: "تحتاج إلى الإنترنت" (+ "حاول مرة أخرى"), "أرسلت اليوم 10 صور. هذا هو الحد. عُد غدًا.", "الفحص
+   مشغول اليوم…" (the app's limit, or no Roboflow credits), "الفحص غير متوفر الآن. اسأل خبيرًا.", "لم
+   نستطع قراءة الصورة. صوّر من جديد.".
+
+**How it works**: the app → Edge Function `diagnose` (checks the login) → `diagnosis_begin()` (paid
+pack, switch, limits) → the photo in the private bucket `diagnoses` (folder = the farmer; the 30
+newest are kept) → Roboflow `almond-diseases-detection-l7tfx/2` (the key only in the secret
+`ROBOFLOW_API_KEY`; `disable_active_learning=true`) → `diagnosis_finish()` saves the codes and decides
+the verdict. The app gets codes only and writes the texts (ARB). The screens only know
+`DiagnosisService` (`mobile_app/lib/data/diagnosis_service.dart`): another model later = another class.
+
+**Settings** (Table Editor › `app_settings`, no new app needed): `diagnosis_enabled` (on/off),
+`diagnosis_per_day` 10 (per farmer), `diagnosis_app_per_day` 1000 (whole app: the Roboflow credits),
+`diagnosis_keep_photos` 30, `diagnosis_likely` 0.65 ("على الأرجح" from), `diagnosis_unsure` 0.40
+("غير متأكد" from; below: "لم نجد"). The thresholds must be checked with real photos.
+
+**Roboflow (checked 14 Nov 2026 on roboflow.com)**: Free Tier = 10 credits a month, no card: the API
+just stops when they are used (no bill). Object detection costs 0.125 to 0.3125 credits per 1,000
+photos: about 32,000 to 80,000 photos a month for free. "All Roboflow-hosted models come with a
+commercial license". In the workspace, "Data Licensing and Model Training" is turned OFF. Still to
+check on the Universe page: the dataset licence, the model's metrics, what version 11 adds.
+
+**First steps shown to farmers: DRAFTS — TO VALIDATE BY AN AGRONOMIST** before a real launch (no
+pesticide names, no doses; in the ARB files, keys `adviceShotHole1..3`, `adviceLeafCurl1..3`,
+`adviceLeafSpot1..3`):
+
+| Disease | Arabic | French |
+| --- | --- | --- |
+| ثقوب في الأوراق (shot hole) | اجمع الأوراق المريضة والساقطة، وأبعدها عن البستان. · اسقِ عند الجذع، لا فوق الأوراق. · اسأل خبيرًا عن العلاج قبل المطر القادم. | Ramassez les feuilles malades et tombées, loin du verger. · Arrosez au pied, pas sur les feuilles. · Demandez à un expert le traitement avant la prochaine pluie. |
+| تجعّد الأوراق (leaf curl) | انزع الأوراق المجعّدة وأبعدها عن البستان. · راقب الأوراق الجديدة: الحرّ يوقف المرض غالبًا. · اسأل خبيرًا: الوقاية تكون في الشتاء، قبل تفتّح البراعم. | Enlevez les feuilles frisées, loin du verger. · Surveillez les nouvelles feuilles : la chaleur arrête souvent la maladie. · Demandez à un expert : la prévention se fait en hiver, avant le débourrement. |
+| بقع على الأوراق (leaf spot) | اجمع الأوراق المصابة والساقطة تحت الشجرة. · في الشتاء، قلّم ليدخل الهواء والشمس. · اسأل خبيرًا ليعرف نوع البقع. | Ramassez les feuilles touchées et tombées sous l'arbre. · En hiver, taillez pour faire entrer l'air et le soleil. · Demandez à un expert quel type de taches c'est. |
+
+**Zone letters**: in Arabic the zones are أ ب ج د ه و ز ح ط ي ك ل م ن س ع ف ص ق ر (the abjad order, 20
+zones) everywhere (designer, 3D, and later the alerts and the diagnosis): "المنطقة ب", never "المنطقة
+B". The database keeps A to T. One place: `mobile_app/lib/core/zone_letters.dart` + the ARB text
+`zoneLetters`.
+
+**Live (14 Nov 2026, `diagnose` deployed with Verify JWT ON)**: `dashboard/backend/tests_live/test_live_diagnosis.py`
+4 / 4 (no login → 401 from Supabase; the public key alone → refused by the function itself; Free
+farmer → `not_paid`; a picture without a leaf → "nothing", saved, readable only by its owner, his
+photo in his private folder). The real app in Chrome, Arabic and French (22 123 456): camera, "جاري
+النظر…", result with the box, steps, "اسأل خبيرًا" → the question with the photo in the community,
+"لم نجد", no internet: `docs/screenshots/photo-diagnosis/` (photo credits: `CREDITS.md` there). The
+test questions were deleted afterwards.
+
+**⚠ What the public model said on 8 real photos (Wikimedia)**: shot-hole leaf → nothing; 2 shot-hole
+close-ups → nothing; leaf curl → nothing; autumn almond leaves → nothing (right); healthy almond twig
+→ nothing (right); green picture → nothing (right); **olive leaf → "غير متأكد: ثقوب في الأوراق" (0.49,
+a false alarm)**. The app works (the olive answer proves the photo reaches the model); the model
+`almond-diseases-detection-l7tfx/2` misses diseased leaves unlike its training photos. Before the
+jury: check the same photos on the model's Universe page ("browser test"), and use our own trained
+version (dataset v11 + Tunisian photos + healthy / olive leaves as "nothing" examples) or show the
+honest path ("لم نجد" → "اسأل خبيرًا").
