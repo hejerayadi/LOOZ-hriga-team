@@ -16,10 +16,10 @@ Every screen and state of the design (`App.tsx`), its Flutter file, and the chec
 | 10 | `thinking` | `lib/features/camera/thinking_screen.dart` | [x] | [x] | [x] | [x] shutter, end of the voice screen |
 | 11 | `result` | `lib/features/camera/result_screen.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
 | 12 | `voice` (listening, moving bars) | `lib/features/ask/voice_screen.dart` | [x] | [x] | [x] | [x] "اسأل المساعد", Ask "تكلّم" / "أرسل" |
-| 13 | `alerts` | `lib/features/alerts/alerts_page.dart` | [x] | [x] | [x] | [x] tab "التنبيهات" |
-| 14 | `alert` (needs water) | `lib/features/alerts/alert_screen.dart` | [x] | [x] | [x] | [x] Home alert, "الشجرة 18 عطشى", a tree on the map |
-| 15 | `alert` (done: "أحسنت!", falling petals) | `lib/features/alerts/alert_screen.dart` | [x] | [x] | [x] | [x] "تمّ" |
-| 16 | `regional` | `lib/features/alerts/regional_screen.dart` | [x] | [x] | [x] | [x] "حشرة قريبة" |
+| 13 | `alerts` with the REAL regional alerts (line 70) | `lib/features/alerts/alerts_page.dart` | [x] | [x] | [x] | [x] tab "التنبيهات" |
+| 14 | `alert` (needs water): removed (fake). A tree on the map says "قريبًا"; Home shows the real alert (line 75) | — | — | — | — | — |
+| 15 | `alert` (done: "أحسنت!", falling petals): now in the regional alert's "تمّ" (line 72) | `lib/shared/widgets/falling_petals.dart` | [x] | [x] | [x] | [x] "تمّ" |
+| 16 | `regional` with a REAL alert (line 71) | `lib/features/alerts/regional_screen.dart` | [x] | [x] | [x] | [x] a card of the tab, Home's alert card |
 | 17 | `locked` ("بستاني ★" without Premium) | `lib/features/orchard_3d/orchard_tab.dart` | [x] | [x] | [x] | [x] tab "بستاني ★", camera / map, the assistant bar and Ask "تكلّم" on Free, Premium "ليس الآن" |
 | 18 | My orchard in 3D (app's own, in the "بستاني ★" tab) with the farmer's **real** orchard (migration 011): outline, zone colours and types, names in Arabic / French, trees, one sensor box per zone (installed or "في انتظار التركيب", online / offline, battery), "قريبًا" for moisture and temperature; loading, error + "حاول مرة أخرى" | `lib/features/orchard_3d/orchard_tab.dart`, `orchard_3d_data.dart`, `lib/data/orchard_service.dart`, `assets/orchard_3d/index.html` | [x] | [x] | [x] | [x] tab "بستاني ★" with Premium and an orchard |
 | 19 | `premium` | `lib/features/premium/premium_screen.dart` | [x] | [x] | [x] | [x] "★ ابدأ بريميوم", Profile "خطتي" (*); "★ ابدأ بريميوم" / "★ جدّد باقتك" → the bill (line 54) or "ارسم بستانك" (line 53) |
@@ -142,6 +142,22 @@ languages, with a fake community), `test/languages_test.dart` and screenshots in
 Checked with `test/community_photo_test.dart` (fake community and fake camera),
 `test/languages_test.dart` and screenshots in both languages.
 `test_live/community_photo_live_test.dart` runs it against the real Supabase (users 01, 02).
+
+## Alerts and "إبلاغ" (connected to Supabase, migration 015)
+
+| # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
+|---|---|---|---|---|---|---|
+| 70 | The tab "التنبيهات": "{n} تحتاج انتباهك" / "لا تنبيه اليوم", "في منطقتك · صفاقس", the cards (face + bar by severity, icon of the kind, "جديد", the first step or the severity, a done one paler at the end), loading, no internet + "حاول مرة أخرى", "لا تنبيه في منطقتك. كل شيء هادئ.", pull down; Premium: "بستاني" + "قريبًا"; "الإشعارات على الهاتف — قريبًا" | `lib/features/alerts/alerts_page.dart`, `alert_widgets.dart`, `alerts_store.dart` | [x] | [x] | [x] | [x] tab "التنبيهات", Home's "كل شيء بخير" |
+| 71 | A regional alert: "تنبيه في منطقتك" + governorate, the card (icon, "خطر" / "انتباه" / "معلومة", the kind, title, text), "ماذا أفعل؟" with numbered steps and 🔊 ("قريبًا"), "صالح حتى …" / "صالح حتى إشعار آخر", the count | `lib/features/alerts/regional_screen.dart` | [x] | [x] | [x] | [x] a card of the tab, Home |
+| 72 | "أنا أيضًا" → "✓ أنا أيضًا" + "تراجع"; "تمّ" (with advice) → "أحسنت!" + petals + "تراجع"; ended while open: "انتهى هذا التنبيه." + "رجوع إلى التنبيهات"; a failed button: a short message | `regional_screen.dart` | [x] | [x] | [x] | [x] (on the alert's screen) |
+| 73 | The number of new alerts on the bell of the tab bar | `lib/shared/widgets/looz_tab_bar.dart` | [x] | [x] | [x] | [x] (every screen with the tab bar) |
+| 74 | "إبلاغ" on the question and the answers of others, "✓ أبلغت"; the sheet "لماذا تبلّغ؟" (4 reasons + "إلغاء"); "شكرًا. سيراجعه فريق لوز.", "بلغت الحد اليوم. حاول غدًا." | `lib/features/community/post_screen.dart`, `post_card.dart`, `community_widgets.dart` (`ReportButton`, `chooseReportReason`) | [x] | [x] | [x] | [x] a question of the community |
+| 75 | Home: the most important real alert (or "كل شيء بخير"), "انتبه: تنبيه في منطقتك" under the title | `lib/features/home/home_page.dart` | [x] | [x] | [x] | [x] tab "الرئيسية" |
+
+Checked with `test/alerts_test.dart` (18 tests), `test/report_test.dart` (11 tests, also a 360 x 640
+phone), `test/languages_test.dart`, `test/navigation_test.dart`, the real app in Chrome with the real
+Supabase (22 777 001, Arabic and French: `docs/screenshots/app-alerts/`) and
+`dashboard/backend/tests_live/test_live_app_alerts.py` (the jury scenario).
 
 ## How each box was checked
 

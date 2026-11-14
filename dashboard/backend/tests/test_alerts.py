@@ -72,6 +72,34 @@ def test_regional_alerts_with_their_state(client_with):
     assert [a["id"] for a in page["actions"]] == [9]
 
 
+def test_opened_and_done_counts_of_the_app(client_with):
+    asked = []
+
+    def reach(p_ids):
+        asked.append(p_ids)
+        return [{"alert": A_ACTIVE, "opened": 5, "done": 2}]
+
+    client = client_with(tables(), {"regional_alert_reach": reach})
+    page = client.get("/api/alerts/regional").json()
+    by_id = {a["id"]: a for a in page["alerts"]}
+    assert (by_id[A_ACTIVE]["opened_count"], by_id[A_ACTIVE]["done_count"]) == (5, 2)
+    assert (by_id[A_ENDED]["opened_count"], by_id[A_ENDED]["done_count"]) == (0, 0)
+    assert set(asked[0]) == {A_ACTIVE, A_PLANNED, A_EXPIRED, A_ENDED}   # one call for the whole list
+    d = client.get(f"/api/alerts/regional/{A_ACTIVE}").json()
+    assert (d["alert"]["opened_count"], d["alert"]["done_count"]) == (5, 2) and asked[-1] == [A_ACTIVE]
+
+
+def test_without_migration_015_the_counts_are_zero(client_with):
+    def missing(p_ids):
+        raise db_error("PGRST202", "Could not find the function public.regional_alert_reach")
+
+    client = client_with(tables(), {"regional_alert_reach": missing})
+    r = client.get("/api/alerts/regional")
+    assert r.status_code == 200
+    assert {(a["opened_count"], a["done_count"]) for a in r.json()["alerts"]} == {(0, 0)}
+    assert client.get(f"/api/alerts/regional/{A_ACTIVE}").status_code == 200
+
+
 def test_demo_admin_sees_its_demo_alerts_only(client_with):
     client = client_with(tables(), demo=True)
     page = client.get("/api/alerts/regional").json()

@@ -53,6 +53,10 @@ class AppColors {
   static const warning = Color(0xFF69A66F); // --orange (a medium green)
   static const danger = Color(0xFF28664A); // --red (a dark green)
 
+  /// Not in the design: a regional alert that is only an information
+  /// (blue, like the dashboard's preview).
+  static const info = Color(0xFF6E9FC4);
+
   /// The color of a status level.
   static Color forLevel(StatusLevel level) {
     switch (level) {

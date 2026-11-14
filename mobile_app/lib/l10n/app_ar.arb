@@ -34,9 +34,16 @@
       }
     }
   },
+  "homeSubtitleAlert": "{name}، انتبه: تنبيه في منطقتك",
+  "@homeSubtitleAlert": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Alerts."
+  },
   "goodDayToWater": "يوم مناسب للسقي",
-  "drySoil": "التربة جافة",
-  "waterToday": "اسقِ اليوم",
   "quickAsk": "اسأل",
   "quickJournal": "دفتر",
   "quickMap": "خريطة",
@@ -563,45 +570,182 @@
       }
     }
   },
-  "treeThirsty": "الشجرة {tree} عطشى",
-  "@treeThirsty": {
-    "placeholders": {
-      "tree": {
-        "type": "String"
-      }
-    }
-  },
-  "actNow": "تحرّك الآن",
-  "insectNearby": "حشرة قريبة",
-  "watchLeaves": "راقب الأوراق",
-  "restIsFine": "باقي البستان بخير",
-  "allGood": "كل شيء جيد",
   "treeName": "الشجرة A-18",
-  "needsWater": "تحتاج ماء",
   "wellDone": "أحسنت!",
-  "treeHappy": "الشجرة سعيدة الآن",
-  "waterLiters": "اسقِ {liters} لترًا",
-  "@waterLiters": {
-    "placeholders": {
-      "liters": {
-        "type": "String"
-      }
-    }
-  },
-  "noRainDays": "لم تمطر منذ {days} أيام",
-  "@noRainDays": {
-    "placeholders": {
-      "days": {
-        "type": "String"
-      }
-    }
-  },
   "done": "تمّ",
   "regionalTitle": "تنبيه في منطقتك",
-  "aphidsNearby": "حشرة المنّ قريبة",
-  "checkYourLeaves": "افحص أوراقك اليوم",
-  "farmersReported": "فلاحًا أبلغوا عنها",
-  "meToo": "أنا أراه أيضًا",
+  "meToo": "أنا أيضًا",
+  "alertsNoneSubtitle": "لا تنبيه اليوم",
+  "@alertsNoneSubtitle": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "alertsInRegion": "في منطقتك · {region}",
+  "@alertsInRegion": {
+    "placeholders": {
+      "region": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Alerts."
+  },
+  "alertsInRegionPlain": "في منطقتك",
+  "@alertsInRegionPlain": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "noAlertsInRegion": "لا تنبيه في منطقتك. كل شيء هادئ.",
+  "@noAlertsInRegion": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "alertNew": "جديد",
+  "@alertNew": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "sensorAlertsSoon": "تنبيهات حسّاسات بستانك",
+  "@sensorAlertsSoon": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "phoneNotificationsSoon": "الإشعارات على الهاتف",
+  "@phoneNotificationsSoon": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "a11yNewAlerts": "{count, plural, =1{تنبيه جديد} =2{تنبيهان جديدان} few{{count} تنبيهات جديدة} many{{count} تنبيهًا جديدًا} other{{count} تنبيه جديد}}",
+  "@a11yNewAlerts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Alerts."
+  },
+  "severityDanger": "خطر",
+  "@severityDanger": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "severityWarning": "انتباه",
+  "@severityWarning": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "severityInfo": "معلومة",
+  "@severityInfo": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "kindFrost": "صقيع",
+  "@kindFrost": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "kindHeat": "موجة حرّ",
+  "@kindHeat": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "kindDrought": "جفاف",
+  "@kindDrought": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "kindDisease": "مرض",
+  "@kindDisease": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "kindPest": "آفات",
+  "@kindPest": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "kindWind": "رياح قوية",
+  "@kindWind": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "kindRain": "أمطار غزيرة",
+  "@kindRain": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "alertValidUntil": "صالح حتى {date} على الساعة {time}",
+  "@alertValidUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    },
+    "description": "APP-ONLY. Alerts."
+  },
+  "alertNoEnd": "صالح حتى إشعار آخر",
+  "@alertNoEnd": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "meTooFirst": "كن أول من يقول: أنا أيضًا",
+  "@meTooFirst": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "meTooSaid": "{count, plural, =1{فلاح واحد قال: أنا أيضًا} =2{فلاحان قالا: أنا أيضًا} few{{count} فلاحين قالوا: أنا أيضًا} many{{count} فلاحًا قالوا: أنا أيضًا} other{{count} فلاح قالوا: أنا أيضًا}}",
+  "@meTooSaid": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Alerts."
+  },
+  "takeBack": "تراجع",
+  "@takeBack": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "alertDoneText": "قمت بما يلزم.",
+  "@alertDoneText": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "alertGone": "انتهى هذا التنبيه.",
+  "@alertGone": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "backToAlerts": "رجوع إلى التنبيهات",
+  "@backToAlerts": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "homeAllGood": "كل شيء بخير",
+  "@homeAllGood": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "homeNoAlert": "لا تنبيه في منطقتك",
+  "@homeNoAlert": {
+    "description": "APP-ONLY. Alerts."
+  },
+  "report": "إبلاغ",
+  "@report": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportedTag": "أبلغت",
+  "@reportedTag": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportWhy": "لماذا تبلّغ؟",
+  "@reportWhy": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportSpam": "إعلان أو إزعاج",
+  "@reportSpam": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportInsult": "كلام مسيء",
+  "@reportInsult": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportWrongAdvice": "نصيحة خاطئة أو خطيرة",
+  "@reportWrongAdvice": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportOther": "سبب آخر",
+  "@reportOther": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportThanks": "شكرًا. سيراجعه فريق لوز.",
+  "@reportThanks": {
+    "description": "APP-ONLY. Community report."
+  },
+  "reportLimit": "بلغت الحد اليوم. حاول غدًا.",
+  "@reportLimit": {
+    "description": "APP-ONLY. Community report."
+  },
   "myOrchard": "بستاني",
   "orchardInPocket": "بستانك في جيبك",
   "benefitTreeMap": "خريطة كل شجرة",

@@ -123,6 +123,12 @@ class FakeCommunityService implements CommunityService {
   /// The methods called, in order (e.g. "writeComment p1").
   final List<String> calls = [];
 
+  /// The texts the user reported (id -> reason), like content_reports.
+  final Map<String, ReportReason> reports = {};
+
+  /// Reports made today before the test (the limit is 10 a day).
+  int reportsToday = 0;
+
   var _nextId = 0;
 
   void _maybeFail() {
@@ -270,6 +276,42 @@ class FakeCommunityService implements CommunityService {
       return;
     }
     throw const CommunityError(CommunityFailure.notAllowed);
+  }
+
+  @override
+  Future<void> report(
+    ReportTarget target,
+    String id,
+    ReportReason reason,
+  ) async {
+    calls.add('report ${target.name} $id ${reason.name}');
+    _maybeFail();
+    // Like report_content(): a visible text of someone else, once, 10 a day.
+    final Author? author = target == ReportTarget.post
+        ? posts.where((p) => p.id == id).firstOrNull?.author
+        : comments.values
+              .expand((list) => list)
+              .where((c) => c.id == id)
+              .firstOrNull
+              ?.author;
+    if (author == null) throw const CommunityError(CommunityFailure.postGone);
+    if (author.id == _me.id) {
+      throw const CommunityError(CommunityFailure.notAllowed);
+    }
+    if (reports.containsKey(id)) {
+      throw const CommunityError(CommunityFailure.alreadyReported);
+    }
+    if (reportsToday + reports.length >= 10) {
+      throw const CommunityError(CommunityFailure.reportLimit);
+    }
+    reports[id] = reason;
+  }
+
+  @override
+  Future<Set<String>> loadMyReports() async {
+    calls.add('loadMyReports');
+    _maybeFail();
+    return reports.keys.toSet();
   }
 
   @override

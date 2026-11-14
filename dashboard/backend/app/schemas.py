@@ -635,6 +635,8 @@ class RegionalAlert(BaseModel):
     ended_by_name: str = ""
     status: str  # scheduled / active / expired / ended
     seen_count: int = 0  # "Moi aussi" of the farmers
+    opened_count: int = 0  # farmers who opened it in the app (migration 015)
+    done_count: int = 0  # farmers who tapped "Fait" (migration 015)
     is_demo: bool = False
 
 

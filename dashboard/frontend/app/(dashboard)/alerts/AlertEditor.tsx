@@ -43,6 +43,9 @@ function textProblem(value: string, max: number, arabic: boolean): string | null
   return null;
 }
 
+/** The app shows each line as a numbered step of "ماذا أفعل؟ / Que faire ?". */
+const ADVICE_HINT = "Une étape par ligne, courte et simple (l'application les numérote).";
+
 function Field({
   label,
   value,
@@ -51,6 +54,7 @@ function Field({
   arabic,
   rows = 1,
   problem,
+  hint,
 }: {
   label: string;
   value: string;
@@ -59,6 +63,7 @@ function Field({
   arabic: boolean;
   rows?: number;
   problem: string | null;
+  hint?: string;
 }) {
   const shown = problem && value.trim() ? problem : null;
   const props = {
@@ -72,6 +77,7 @@ function Field({
   return (
     <label className="block text-sm font-medium text-slate-700">
       {label}
+      {hint && <span className="block text-xs font-normal text-slate-500">{hint}</span>}
       {rows > 1 ? <textarea rows={rows} {...props} /> : <input type="text" {...props} />}
       <span className="flex justify-between text-xs font-normal">
         <span className="text-rose-700">{shown}</span>
@@ -243,8 +249,8 @@ export function AlertEditor({ alert, onSaved }: { alert?: RegionalAlert; onSaved
           </label>
           {withAdvice && (
             <div className="mt-3 grid gap-4 lg:grid-cols-2">
-              <Field label="Conseil en arabe" value={adviceAr} onChange={setAdviceAr} max={400} arabic rows={3} problem={problems.adviceAr} />
-              <Field label="Conseil en français" value={adviceFr} onChange={setAdviceFr} max={400} arabic={false} rows={3} problem={problems.adviceFr} />
+              <Field label="Conseil en arabe" hint={ADVICE_HINT} value={adviceAr} onChange={setAdviceAr} max={400} arabic rows={4} problem={problems.adviceAr} />
+              <Field label="Conseil en français" hint={ADVICE_HINT} value={adviceFr} onChange={setAdviceFr} max={400} arabic={false} rows={4} problem={problems.adviceFr} />
             </div>
           )}
         </Card>

@@ -43,6 +43,16 @@ enum AppIcon {
   scissors, // the dividing lines
   satellite, // the map mode (later)
   minus,
+  // Not in the design: the kinds of regional alerts (same line style).
+  snow, // frost
+  thermo, // heat
+  wind,
+  rain,
+  // Not in the design: "إبلاغ" in the community and its reasons.
+  flag,
+  megaphone, // spam, advertising
+  message, // insult (a speech bubble with ×)
+  dots, // another reason
 }
 
 class LoozIcon extends StatelessWidget {

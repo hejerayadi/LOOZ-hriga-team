@@ -17,6 +17,8 @@ class PostCard extends StatelessWidget {
     required this.post,
     this.onTap,
     this.onDelete,
+    this.onReport,
+    this.reported = false,
     this.full = false,
   });
 
@@ -27,6 +29,13 @@ class PostCard extends StatelessWidget {
 
   /// Shown only on your own question (null = no delete button).
   final VoidCallback? onDelete;
+
+  /// "إبلاغ", on the question of someone else (null = no button; never in
+  /// the list, only on the question's own screen).
+  final VoidCallback? onReport;
+
+  /// Already reported: "✓ أبلغت".
+  final bool reported;
 
   /// true = the whole text; false = the first 3 lines (in the list).
   final bool full;
@@ -77,7 +86,10 @@ class PostCard extends StatelessWidget {
                         style: AppTextStyles.of(16),
                       ),
                     ),
-                    if (onDelete != null) DeleteButton(onPressed: onDelete),
+                    if (onDelete != null)
+                      DeleteButton(onPressed: onDelete)
+                    else if (onReport != null || reported)
+                      ReportButton(reported: reported, onPressed: onReport),
                   ],
                 ),
                 if (post.hasExpertAnswer) ...[

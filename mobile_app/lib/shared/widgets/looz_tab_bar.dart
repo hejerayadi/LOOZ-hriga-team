@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
+import '../../features/alerts/alerts_store.dart';
 import 'app_icon.dart';
 import 'symbol_text.dart';
 
@@ -39,12 +40,24 @@ class LoozTabBar extends StatelessWidget {
           children: [
             for (final (tab, icon, label) in tabs)
               Expanded(
-                child: _TabButton(
-                  icon: icon,
-                  label: label,
-                  selected: tab == selected,
-                  onTap: () => goToTab(context, tab),
-                ),
+                child: tab == AppTab.alerts
+                    // The number of new alerts on the bell.
+                    ? ValueListenableBuilder<AlertsState>(
+                        valueListenable: regionalAlerts,
+                        builder: (context, state, _) => _TabButton(
+                          icon: icon,
+                          label: label,
+                          selected: tab == selected,
+                          badge: state.unreadCount,
+                          onTap: () => goToTab(context, tab),
+                        ),
+                      )
+                    : _TabButton(
+                        icon: icon,
+                        label: label,
+                        selected: tab == selected,
+                        onTap: () => goToTab(context, tab),
+                      ),
               ),
           ],
         ),
@@ -59,12 +72,16 @@ class _TabButton extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.badge = 0,
   });
 
   final AppIcon icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
+
+  /// A number in a small circle on the icon (0 = none).
+  final int badge;
 
   @override
   Widget build(BuildContext context) {
@@ -73,9 +90,12 @@ class _TabButton extends StatelessWidget {
         : AppSpacing.isSmallPhone(context)
         ? AppTextStyles.tabLabelSmallPhone
         : AppTextStyles.tabLabel;
+    final badge = this.badge;
     return Semantics(
       button: true,
       selected: selected,
+      // "التنبيهات، 2 تنبيهات جديدة".
+      value: badge > 0 ? context.l10n.a11yNewAlerts(badge) : null,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
@@ -86,19 +106,30 @@ class _TabButton extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 44,
-                  height: 38,
-                  alignment: Alignment.center,
-                  decoration: ShapeDecoration(
-                    color: selected ? AppColors.leaf : null,
-                    shape: const OvalBorder(),
-                  ),
-                  child: LoozIcon(
-                    icon,
-                    size: 27,
-                    color: selected ? AppColors.green : AppColors.white,
-                  ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 38,
+                      alignment: Alignment.center,
+                      decoration: ShapeDecoration(
+                        color: selected ? AppColors.leaf : null,
+                        shape: const OvalBorder(),
+                      ),
+                      child: LoozIcon(
+                        icon,
+                        size: 27,
+                        color: selected ? AppColors.green : AppColors.white,
+                      ),
+                    ),
+                    if (badge > 0)
+                      PositionedDirectional(
+                        top: -4,
+                        end: -6,
+                        child: _Badge(badge),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 1),
                 // One line, never cut (like the design).
@@ -106,6 +137,37 @@ class _TabButton extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The number of new alerts: white on light green, a white ring (9+ above 9).
+class _Badge extends StatelessWidget {
+  const _Badge(this.count);
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 22),
+        height: 22,
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.leaf,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(color: AppColors.white, width: 2),
+        ),
+        child: Text(
+          count > 9 ? '9+' : '$count',
+          style: AppTextStyles.of(
+            12,
+            FontWeight.w800,
+          ).copyWith(color: AppColors.green, height: 1.1),
         ),
       ),
     );

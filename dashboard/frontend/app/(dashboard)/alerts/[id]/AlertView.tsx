@@ -39,6 +39,9 @@ function Header({ d, onChanged }: { d: RegionalAlertDetail; onChanged: () => voi
       <div className="text-sm text-slate-500">
         {a.seen_count} agriculteur{a.seen_count > 1 ? "s ont" : " a"} répondu « Moi aussi »{a.created_by_name ? ` · créée par ${a.created_by_name}` : ""}
       </div>
+      <div className="text-sm text-slate-500">
+        Ouverte par {a.opened_count} agriculteur{a.opened_count > 1 ? "s" : ""} dans l&apos;application · « Fait » : {a.done_count}
+      </div>
     </div>
   );
 }

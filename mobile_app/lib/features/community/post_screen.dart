@@ -1,6 +1,8 @@
 // A question of the community with its answers (not in the design: the
 // app's own screen, in the design's style). The logged-in farmer can write
-// an answer, and delete his own answers and his own question.
+// an answer, and delete his own answers and his own question. On the
+// question and the answers of others: "إبلاغ" (a reason, then "✓ أبلغت";
+// the Looz team decides in the dashboard, the text stays visible).
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
@@ -13,6 +15,7 @@ import '../../shared/widgets/action_button.dart';
 import '../../shared/widgets/app_icon.dart';
 import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/shell.dart';
+import '../../shared/widgets/soon_message.dart';
 import 'community_texts.dart';
 import 'community_widgets.dart';
 import 'post_card.dart';
@@ -41,10 +44,54 @@ class _PostScreenState extends State<PostScreen> {
   CommunityFailure? _failure;
   bool _sending = false;
 
+  /// The ids of the question / answers this farmer reported.
+  final Set<String> _reported = {};
+
+  /// The id being reported (its button is faded).
+  String? _reporting;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadReports();
+  }
+
+  Future<void> _loadReports() async {
+    try {
+      final ids = await Future.sync(communityService.loadMyReports);
+      if (mounted) setState(() => _reported.addAll(ids));
+    } catch (_) {
+      // Not known (no internet): the buttons stay; the database refuses a
+      // second report anyway.
+    }
+  }
+
+  Future<void> _report(ReportTarget target, String id) async {
+    final l10n = context.l10n;
+    final reason = await chooseReportReason(context);
+    if (reason == null || !mounted || _reporting != null) return;
+    setState(() => _reporting = id);
+    var message = l10n.reportThanks;
+    try {
+      await communityService.report(target, id, reason);
+      _reported.add(id);
+    } catch (error) {
+      final failure = communityFailureOf(error);
+      if (failure == CommunityFailure.alreadyReported) _reported.add(id);
+      message = communityFailureMessage(l10n, failure);
+    } finally {
+      if (mounted) setState(() => _reporting = null);
+    }
+    if (mounted) showMessage(context, message);
+  }
+
+  /// The "إبلاغ" of a text: null on your own text or once reported
+  /// ("✓ أبلغت"); one report at a time.
+  VoidCallback? _reportAction(ReportTarget target, String id, Author author) {
+    if (_isMine(author) || _reported.contains(id)) return null;
+    if (_reporting != null) return () {}; // one at a time
+    return () => _report(target, id);
   }
 
   @override
@@ -152,6 +199,8 @@ class _PostScreenState extends State<PostScreen> {
           post: _post,
           full: true,
           onDelete: _isMine(_post.author) ? _deletePost : null,
+          onReport: _reportAction(ReportTarget.post, _post.id, _post.author),
+          reported: _reported.contains(_post.id),
         ),
         const SizedBox(height: 24),
         Semantics(
@@ -181,6 +230,12 @@ class _PostScreenState extends State<PostScreen> {
               onDelete: _isMine(comment.author)
                   ? () => _deleteComment(comment)
                   : null,
+              onReport: _reportAction(
+                ReportTarget.comment,
+                comment.id,
+                comment.author,
+              ),
+              reported: _reported.contains(comment.id),
             ),
           ],
         const SizedBox(height: 18),
@@ -208,12 +263,23 @@ class _PostScreenState extends State<PostScreen> {
 
 /// An answer: the name (and the expert badge), where and when, the text.
 class _CommentCard extends StatelessWidget {
-  const _CommentCard({required this.comment, required this.onDelete});
+  const _CommentCard({
+    required this.comment,
+    required this.onDelete,
+    required this.onReport,
+    required this.reported,
+  });
 
   final Comment comment;
 
   /// Only on your own answers (null = no delete button).
   final VoidCallback? onDelete;
+
+  /// "إبلاغ" on the answer of someone else (null = no button).
+  final VoidCallback? onReport;
+
+  /// Already reported: "✓ أبلغت".
+  final bool reported;
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +323,10 @@ class _CommentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onDelete != null) DeleteButton(onPressed: onDelete),
+              if (onDelete != null)
+                DeleteButton(onPressed: onDelete)
+              else if (onReport != null || reported)
+                ReportButton(reported: reported, onPressed: onReport),
             ],
           ),
           const SizedBox(height: 10),

@@ -53,7 +53,8 @@ def _names(db: Client, ids: set[str]) -> dict[str, str]:
     return {r["id"]: display_name(r) for r in rows}
 
 
-def _alert(row: dict, names: dict[str, str], seen: dict[str, int], now: datetime, demo_only: bool) -> RegionalAlert:
+def _alert(row: dict, names: dict[str, str], seen: dict[str, int], now: datetime, demo_only: bool,
+           reach: dict[str, tuple[int, int]] | None = None) -> RegionalAlert:
     def who(uid: str | None) -> str:
         if not uid:
             return ""
@@ -64,10 +65,13 @@ def _alert(row: dict, names: dict[str, str], seen: dict[str, int], now: datetime
 
     return RegionalAlert(
         **{k: v for k, v in row.items()
-           if k in RegionalAlert.model_fields and k not in ("status", "seen_count", "governorates")},
+           if k in RegionalAlert.model_fields
+           and k not in ("status", "seen_count", "opened_count", "done_count", "governorates")},
         governorates=row.get("governorates") or [],
         status=alert_status(row, now),
         seen_count=seen.get(row["id"], 0),
+        opened_count=(reach or {}).get(row["id"], (0, 0))[0],
+        done_count=(reach or {}).get(row["id"], (0, 0))[1],
         created_by_name=who(row.get("created_by")),
         ended_by_name=who(row.get("ended_by")),
     )
@@ -83,6 +87,20 @@ def _seen(db: Client, ids: list[str]) -> dict[str, int]:
     return counts
 
 
+def _reach(db: Client, ids: list[str]) -> dict[str, tuple[int, int]]:
+    """How many farmers opened each alert in the app, and tapped "Fait"
+    (regional_alert_reach() of migration 015, with the admin's token; the
+    demo admin gets its demo alerts only). Without 015: zeros, the page
+    still works."""
+    if not ids:
+        return {}
+    try:
+        rows = db.rpc("regional_alert_reach", {"p_ids": ids}).execute().data or []
+    except Exception:  # noqa: BLE001 - a counter must never break the page
+        return {}
+    return {r["alert"]: (r.get("opened") or 0, r.get("done") or 0) for r in rows}
+
+
 def regional_alerts(db: Client, demo_only: bool) -> RegionalAlertsPage:
     """Every regional alert (newest first) and the latest actions on them.
     The demo admin: its demo alerts only."""
@@ -92,7 +110,8 @@ def regional_alerts(db: Client, demo_only: bool) -> RegionalAlertsPage:
         rows = [r for r in rows if r.get("is_demo")]
     names = _names(db, {r.get("created_by") for r in rows} | {r.get("ended_by") for r in rows})
     seen = _seen(db, [r["id"] for r in rows])
-    page = RegionalAlertsPage(alerts=[_alert(r, names, seen, now, demo_only) for r in rows], server_time=now)
+    reach = _reach(db, [r["id"] for r in rows])
+    page = RegionalAlertsPage(alerts=[_alert(r, names, seen, now, demo_only, reach) for r in rows], server_time=now)
     lines = (
         db.table("admin_actions").select(ACTION_COLUMNS).eq("target_type", "regional_alert")
         .order("id", desc=True).limit(ACTIONS_SHOWN * 2).execute().data
@@ -112,7 +131,7 @@ def regional_alert(db: Client, alert_id: str, demo_only: bool) -> RegionalAlertD
     row = rows[0]
     names = _names(db, {row.get("created_by"), row.get("ended_by")})
     return RegionalAlertDetail(
-        alert=_alert(row, names, _seen(db, [alert_id]), now, demo_only),
+        alert=_alert(row, names, _seen(db, [alert_id]), now, demo_only, _reach(db, [alert_id])),
         actions=actions_on(db, [alert_id], demo_only),
         server_time=now,
     )

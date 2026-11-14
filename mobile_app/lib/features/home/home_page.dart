@@ -1,13 +1,17 @@
-// Tab 1 — Home ("الرئيسية"): good morning, the weather, today's alert,
-// and 3 big tiles (ask, journal, map).
+// Tab 1 — Home ("الرئيسية"): good morning, the weather, the most important
+// REAL alert of the region (or "كل شيء بخير"), and 3 big tiles (ask,
+// journal, map).
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
 import '../../core/navigation.dart';
+import '../../core/plans.dart';
+import '../../core/enums.dart';
 import '../../core/session.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/alerts_service.dart';
 import '../../data/fake_data.dart';
 import '../../shared/widgets/alert_card.dart';
 import '../../shared/widgets/app_icon.dart';
@@ -18,8 +22,10 @@ import '../../shared/widgets/orchard_scene.dart';
 import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
 import '../../shared/widgets/speaker_button.dart';
-import '../../core/plans.dart';
-import '../alerts/alert_screen.dart';
+import '../alerts/alert_widgets.dart';
+import '../alerts/alerts_store.dart';
+import '../alerts/regional_screen.dart';
+import '../community/community_widgets.dart' show LoadingCard;
 import '../ask/ask_screen.dart';
 import '../journal/journal_screen.dart';
 import '../map/map_screen.dart';
@@ -33,23 +39,23 @@ class HomePage extends StatelessWidget {
     return ShellContent(
       children: [
         const LoozHeader(),
-        // "<first name>، أشجارك بخير اليوم", with the name of the farmer.
+        // "<first name>، أشجارك بخير اليوم", with the name of the farmer, or
+        // "<first name>، انتبه: تنبيه في منطقتك" when an alert is not done.
         ValueListenableBuilder(
           valueListenable: currentUser,
-          builder: (context, user, _) => ScreenTitle(
-            title: l10n.homeTitle,
-            subtitle: l10n.homeSubtitle(user?.firstName ?? ''),
+          builder: (context, user, _) => ValueListenableBuilder<AlertsState>(
+            valueListenable: regionalAlerts,
+            builder: (context, alerts, _) => ScreenTitle(
+              title: l10n.homeTitle,
+              subtitle: alerts.top != null
+                  ? l10n.homeSubtitleAlert(user?.firstName ?? '')
+                  : l10n.homeSubtitle(user?.firstName ?? ''),
+            ),
           ),
         ),
         const _WeatherCard(),
         const SizedBox(height: 16),
-        AlertCard(
-          level: fakeHomeAlertLevel,
-          title: l10n.drySoil,
-          text: l10n.waterToday,
-          icon: AppIcon.arrow,
-          onTap: () => openScreen(context, const AlertScreen()),
-        ),
+        const _AlertOfTheDay(),
         const SizedBox(height: 18),
         Row(
           children: [
@@ -84,6 +90,51 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The most important regional alert not done yet (the alerts of the tab),
+/// or "كل شيء بخير" (a tap opens the tab). No internet: "حاول مرة أخرى".
+class _AlertOfTheDay extends StatelessWidget {
+  const _AlertOfTheDay();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ValueListenableBuilder<AlertsState>(
+      valueListenable: regionalAlerts,
+      builder: (context, state, _) {
+        final top = state.top;
+        final failure = state.failure;
+        if (top != null) {
+          return RegionalAlertCard(
+            alert: top,
+            onTap: () => openScreen(context, RegionalScreen(alert: top)),
+          );
+        }
+        if (state.alerts == null && failure != null) {
+          return AlertCard(
+            level: StatusLevel.warning,
+            title: failure == AlertsFailure.noInternet
+                ? l10n.noInternet
+                : l10n.somethingWrong,
+            text: l10n.tryAgain,
+            icon: failure == AlertsFailure.noInternet
+                ? AppIcon.wifi
+                : AppIcon.warning,
+            onTap: refreshAlerts,
+          );
+        }
+        if (state.alerts == null) return const LoadingCard(photo: false);
+        return AlertCard(
+          level: StatusLevel.good,
+          title: l10n.homeAllGood,
+          text: l10n.homeNoAlert,
+          icon: AppIcon.check,
+          onTap: () => goToTab(context, AppTab.alerts),
+        );
+      },
     );
   }
 }

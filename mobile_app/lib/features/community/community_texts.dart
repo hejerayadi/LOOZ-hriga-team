@@ -34,6 +34,10 @@ String communityFailureMessage(
       return l10n.galleryDenied;
     case CommunityFailure.noCamera:
       return l10n.noCamera;
+    case CommunityFailure.alreadyReported:
+      return l10n.reportThanks;
+    case CommunityFailure.reportLimit:
+      return l10n.reportLimit;
     case CommunityFailure.invalidText:
     case CommunityFailure.unknown:
       return l10n.somethingWrong;

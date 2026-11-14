@@ -7,10 +7,9 @@ import 'package:looz_mobile/app.dart';
 import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
-import 'package:looz_mobile/data/fake_data.dart';
+import 'package:looz_mobile/data/alerts_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/user_profile.dart';
-import 'package:looz_mobile/features/alerts/alert_screen.dart';
 import 'package:looz_mobile/features/alerts/regional_screen.dart';
 import 'package:looz_mobile/features/ask/ask_screen.dart';
 import 'package:looz_mobile/features/ask/voice_screen.dart';
@@ -47,6 +46,7 @@ import 'package:looz_mobile/features/premium/premium_screen.dart';
 import 'package:looz_mobile/features/premium/qr_screen.dart';
 import 'package:looz_mobile/features/states/states_screen.dart';
 
+import 'fake_alerts_service.dart';
 import 'fake_community_service.dart';
 import 'fake_orchard_service.dart';
 import 'fake_photo_picker.dart';
@@ -283,9 +283,50 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
   ('camera', const CameraScreen(), Plan.paid, AppTab.home, false),
   ('thinking', const ThinkingScreen(), Plan.paid, AppTab.home, false),
   ('result', const ResultScreen(), Plan.paid, AppTab.home, false),
-  ('alert', const AlertScreen(), Plan.paid, AppTab.home, false),
-  ('alert done', const AlertScreen(), Plan.paid, AppTab.home, true),
-  ('regional', const RegionalScreen(), Plan.paid, AppTab.home, false),
+  // The regional alerts (written by the admins in both languages).
+  ('alerts (free)', const MainShell(), Plan.free, AppTab.alerts, false),
+  (
+    'alerts (none in the region)',
+    const MainShell(),
+    Plan.paid,
+    AppTab.alerts,
+    false,
+  ),
+  (
+    'regional alert (frost)',
+    RegionalScreen(alert: sampleFrost()),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'regional alert (frost, Moi aussi + done)',
+    RegionalScreen(alert: sampleFrost().copyWith(meToo: true, done: true)),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'regional alert (heat)',
+    RegionalScreen(alert: sampleHeat()),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  (
+    'regional alert (rain, no advice)',
+    RegionalScreen(alert: sampleRain()),
+    Plan.free,
+    AppTab.home,
+    false,
+  ),
+  (
+    'regional alert (ended while open)',
+    RegionalScreen(alert: _endedAlert()),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
   ('premium', const PremiumScreen(), Plan.paid, AppTab.home, false),
   (
     'payment (Premium, a month)',
@@ -314,19 +355,24 @@ Future<List<String>> textsOf(
   (String, Widget, Plan, AppTab, bool) screen,
   String lang,
 ) async {
-  final (name, widget, plan, tab, done) = screen;
+  final (name, widget, plan, tab, _) = screen;
   // A farmer whose name is written in this language, and a community
   // whose farmers write in this language.
   logInTestUser(lang);
   useFakeCommunity(lang);
   usePayments().drawOrchard(4, areaHa: 2.37);
   useOrchard(name.contains('none drawn') ? null : demoOrchard());
+  useAlerts(
+    name.contains('none in the region')
+        ? FakeAlertsService()
+        : FakeAlertsService.sample(),
+  );
   appLocale.value = Locale(lang);
   currentPlan.value = plan;
   currentTab.value = tab;
-  fakeTreeWatered.value = done;
   await tester.pumpWidget(LoozApp(home: widget));
   await tester.pump();
+  await tester.pump(); // the alerts are loaded
   final texts = [
     for (var text in textsOnScreen())
       sameInBoth
@@ -335,6 +381,26 @@ Future<List<String>> textsOf(
   ];
   await closeApp(tester);
   return texts;
+}
+
+/// An alert that an admin ended before it was opened (it is not in the
+/// fake list any more): "انتهى هذا التنبيه.".
+RegionalAlert _endedAlert() {
+  final frost = sampleFrost();
+  return RegionalAlert(
+    id: 'ended',
+    kind: frost.kind,
+    severity: frost.severity,
+    titleAr: frost.titleAr,
+    titleFr: frost.titleFr,
+    bodyAr: frost.bodyAr,
+    bodyFr: frost.bodyFr,
+    adviceAr: frost.adviceAr,
+    adviceFr: frost.adviceFr,
+    startsAt: frost.startsAt,
+    endsAt: frost.endsAt,
+    updatedAt: frost.updatedAt,
+  );
 }
 
 /// The first question of the fake community (in the language of the test),

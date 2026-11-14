@@ -121,21 +121,32 @@ export type PreviewAlert = {
 };
 
 // The colours of the app (mobile_app/lib/core/theme/app_colors.dart).
-const APP = { green: "#0F3D2B", yellow: "#E5F3DA", peach: "#DFF1D5", mint: "#C8EFD9", cream: "#FAF8F3" };
-const PILL: Record<string, string> = { info: "#dbeafe", warning: "#fde68a", danger: "#fecaca" };
+const APP = { green: "#0F3D2B", yellow: "#E5F3DA", peach: "#DFF1D5", mint: "#C8EFD9", cream: "#FAF8F3", softGreen: "#D8EFC9", lightGreen: "#B8DF9B" };
+// The severity pill of the app: dark green, medium green, blue (white text).
+const PILL: Record<string, string> = { info: "#6E9FC4", warning: "#69A66F", danger: "#28664A" };
 
-const shortDay = new Intl.DateTimeFormat("fr-FR", { timeZone: "Africa/Tunis", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const dayMonth = new Intl.DateTimeFormat("fr-FR", { timeZone: "Africa/Tunis", day: "numeric", month: "numeric" });
+const hourMinute = new Intl.DateTimeFormat("fr-FR", { timeZone: "Africa/Tunis", hour: "2-digit", minute: "2-digit" });
+
+/** Like the app: one step per line; a single line is cut after each sentence. */
+export function adviceSteps(advice: string | null): string[] {
+  let steps = (advice ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+  if (steps.length === 1) steps = steps[0].split(/(?<=[.!?؟؛])\s+/).map((l) => l.trim()).filter(Boolean);
+  return steps;
+}
 
 function Phone({ lang, a, seen }: { lang: "ar" | "fr"; a: PreviewAlert; seen: number }) {
   const ar = lang === "ar";
   const t = ar ? PREVIEW_AR : PREVIEW_FR;
   const title = (ar ? a.title_ar : a.title_fr).trim();
   const body = (ar ? a.body_ar : a.body_fr).trim();
-  const advice = ((ar ? a.advice_ar : a.advice_fr) ?? "").trim();
+  const steps = adviceSteps(ar ? a.advice_ar : a.advice_fr);
   const kind = ar ? PREVIEW_AR.kind[a.kind] ?? "" : label(ALERT_KIND, a.kind);
   const severity = ar ? PREVIEW_AR.severity[a.severity] ?? "" : label(SEVERITY, a.severity);
   const region = a.governorates[0];
   const regionName = region ? (ar ? PREVIEW_AR.governorates[region] : label(GOVERNORATES, region)) : "";
+  const end = a.ends_at ? new Date(a.ends_at) : null;
+  const validity = end ? t.validUntil(dayMonth.format(end), hourMinute.format(end)) : t.noEnd;
   return (
     <figure className="w-full max-w-[300px]">
       <figcaption className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">{ar ? "Écran en arabe" : "Écran en français"}</figcaption>
@@ -147,34 +158,39 @@ function Phone({ lang, a, seen }: { lang: "ar" | "fr"; a: PreviewAlert; seen: nu
             {ALERT_KIND_ICON[a.kind] ?? "⚠️"}
           </div>
           <div className="mt-2 flex flex-wrap justify-center gap-1.5 text-[11px] font-semibold">
-            <span className="rounded-full px-2 py-0.5" style={{ background: PILL[a.severity] ?? PILL.info }}>
+            <span className="rounded-full px-2 py-0.5 text-white" style={{ background: PILL[a.severity] ?? PILL.info }}>
               {severity}
             </span>
             {kind && <span className="rounded-full bg-white/70 px-2 py-0.5">{kind}</span>}
           </div>
           <div className="mt-2 text-xl font-bold leading-snug">{title || "…"}</div>
           <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{body || "…"}</div>
-          {advice && (
-            <div className="mt-3 w-full rounded-2xl bg-white/70 px-3 py-2 text-start text-sm">
-              <span className="font-bold">
-                {t.advice}
-                {ar ? ": " : " : "}
-              </span>
-              {advice}
-            </div>
-          )}
-          {a.ends_at && (
-            <div className="mt-2 text-xs opacity-70">
-              {t.until} {shortDay.format(new Date(a.ends_at)).replace(",", "")}
-            </div>
-          )}
         </div>
-        <div className="mt-3 text-center text-sm">
-          👥 <b>{seen}</b> {t.reported}
-        </div>
-        <div className="mt-3 rounded-full py-2.5 text-center font-bold" style={{ background: APP.mint }}>
+        {steps.length > 0 && (
+          <div className="mt-3 rounded-2xl bg-white px-3 py-3 text-start text-sm shadow-sm">
+            <div className="mb-2 font-bold">{t.whatToDo}</div>
+            <ol className="space-y-1.5">
+              {steps.map((step, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold" style={{ background: APP.mint }}>
+                    {i + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+        <div className="mt-3 text-xs">🕒 {validity}</div>
+        <div className="mt-1 text-sm font-semibold">👥 {t.meTooText(seen)}</div>
+        <div className="mt-3 rounded-full py-2.5 text-center font-bold" style={{ background: APP.lightGreen }}>
           {t.meToo}
         </div>
+        {steps.length > 0 && (
+          <div className="mt-2 rounded-full py-2.5 text-center font-bold" style={{ background: APP.softGreen }}>
+            {t.done}
+          </div>
+        )}
       </div>
     </figure>
   );
@@ -189,8 +205,8 @@ export function AlertPreview({ alert, seen = 0 }: { alert: PreviewAlert; seen?: 
         <Phone lang="fr" a={alert} seen={seen} />
       </div>
       <p className="mt-3 text-center text-xs text-slate-500">
-        Aperçu. L&apos;onglet « Alertes » de l&apos;application affichera ces alertes avec le prochain module de l&apos;application (bientôt).
-        Notifications push : bientôt.
+        Aperçu de l&apos;écran de l&apos;application (onglet « التنبيهات / Alertes »). Les agriculteurs des gouvernorats choisis
+        voient l&apos;alerte dans la minute (ou en tirant la liste vers le bas). Notifications push : bientôt.
       </p>
     </div>
   );

@@ -1,10 +1,10 @@
 // "خريطة البستان": the trees of the orchard as faces on a green map.
-// Tap a tree to open its alert. The card below shows tree A-18.
+// Tapping a tree says "قريبًا" (the alerts of a tree come with the sensors
+// and the photo diagnosis). The card below shows tree A-18.
 import 'package:flutter/material.dart';
 
 import '../../core/enums.dart';
 import '../../core/locale.dart';
-import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/fake_data.dart';
 import '../../shared/widgets/app_icon.dart';
@@ -12,7 +12,7 @@ import '../../shared/widgets/css_box.dart';
 import '../../shared/widgets/mood_face.dart';
 import '../../shared/widgets/screen_title.dart';
 import '../../shared/widgets/shell.dart';
-import '../alerts/alert_screen.dart';
+import '../../shared/widgets/soon_message.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -86,7 +86,7 @@ class MapScreen extends StatelessWidget {
                       child: Semantics(
                         button: true,
                         child: GestureDetector(
-                          onTap: () => openScreen(context, const AlertScreen()),
+                          onTap: () => showSoon(context),
                           child: MoodFace(
                             level: fakeMapTrees[i],
                             small: true,

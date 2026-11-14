@@ -31,6 +31,8 @@ enum CommunityFailure {
   cameraDenied, // the farmer did not allow the camera
   galleryDenied, // ... or the photos
   noCamera, // no camera on this phone
+  alreadyReported, // "إبلاغ" a second time on the same text
+  reportLimit, // 10 reports a day
   unknown,
 }
 
@@ -77,6 +79,14 @@ abstract class CommunityService {
 
   /// The bytes of a photo of the "community" bucket (Post.photoPath).
   Future<Uint8List> loadPhoto(String path);
+
+  /// "إبلاغ": reports a post or an answer of someone else (migration 013,
+  /// report_content). Once per text (alreadyReported), 10 a day
+  /// (reportLimit), never your own text.
+  Future<void> report(ReportTarget target, String id, ReportReason reason);
+
+  /// The ids of the posts and answers the user already reported.
+  Future<Set<String>> loadMyReports();
 }
 
 CommunityService? _communityService;
@@ -274,6 +284,48 @@ class SupabaseCommunityService implements CommunityService {
       throw CommunityError(communityFailureOf(error), error);
     }
   }
+
+  @override
+  Future<void> report(ReportTarget target, String id, ReportReason reason) =>
+      _run(() async {
+        try {
+          await _client.rpc(
+            'report_content',
+            params: {
+              'p_type': target == ReportTarget.post ? 'post' : 'comment',
+              'p_id': id,
+              'p_reason': reason == ReportReason.wrongAdvice
+                  ? 'wrong_advice'
+                  : reason.name,
+            },
+          );
+        } on PostgrestException catch (error) {
+          final failure = switch (error.code) {
+            '23505' => CommunityFailure.alreadyReported, // once per text
+            'PT429' => CommunityFailure.reportLimit, // 10 a day
+            'P0002' => CommunityFailure.postGone, // hidden or deleted
+            '22023' => CommunityFailure.notAllowed, // your own text
+            _ => null,
+          };
+          if (failure == null) rethrow;
+          throw CommunityError(failure, error);
+        }
+      });
+
+  @override
+  Future<Set<String>> loadMyReports() => _run(() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return <String>{};
+    // The rules only give the user his own reports.
+    final rows = await _client
+        .from('content_reports')
+        .select('post_id, comment_id')
+        .eq('reporter_id', user.id);
+    return {
+      for (final row in rows)
+        if ((row['post_id'] ?? row['comment_id']) case final String id) id,
+    };
+  });
 
   /// The app checks the text first (the database checks it again).
   void _check(String text) {

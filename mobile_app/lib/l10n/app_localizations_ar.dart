@@ -71,13 +71,12 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String homeSubtitleAlert(String name) {
+    return '$name، انتبه: تنبيه في منطقتك';
+  }
+
+  @override
   String get goodDayToWater => 'يوم مناسب للسقي';
-
-  @override
-  String get drySoil => 'التربة جافة';
-
-  @override
-  String get waterToday => 'اسقِ اليوم';
 
   @override
   String get quickAsk => 'اسأل';
@@ -576,46 +575,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String treeThirsty(String tree) {
-    return 'الشجرة $tree عطشى';
-  }
-
-  @override
-  String get actNow => 'تحرّك الآن';
-
-  @override
-  String get insectNearby => 'حشرة قريبة';
-
-  @override
-  String get watchLeaves => 'راقب الأوراق';
-
-  @override
-  String get restIsFine => 'باقي البستان بخير';
-
-  @override
-  String get allGood => 'كل شيء جيد';
-
-  @override
   String get treeName => 'الشجرة A-18';
 
   @override
-  String get needsWater => 'تحتاج ماء';
-
-  @override
   String get wellDone => 'أحسنت!';
-
-  @override
-  String get treeHappy => 'الشجرة سعيدة الآن';
-
-  @override
-  String waterLiters(String liters) {
-    return 'اسقِ $liters لترًا';
-  }
-
-  @override
-  String noRainDays(String days) {
-    return 'لم تمطر منذ $days أيام';
-  }
 
   @override
   String get done => 'تمّ';
@@ -624,16 +587,144 @@ class AppLocalizationsAr extends AppLocalizations {
   String get regionalTitle => 'تنبيه في منطقتك';
 
   @override
-  String get aphidsNearby => 'حشرة المنّ قريبة';
+  String get meToo => 'أنا أيضًا';
 
   @override
-  String get checkYourLeaves => 'افحص أوراقك اليوم';
+  String get alertsNoneSubtitle => 'لا تنبيه اليوم';
 
   @override
-  String get farmersReported => 'فلاحًا أبلغوا عنها';
+  String alertsInRegion(String region) {
+    return 'في منطقتك · $region';
+  }
 
   @override
-  String get meToo => 'أنا أراه أيضًا';
+  String get alertsInRegionPlain => 'في منطقتك';
+
+  @override
+  String get noAlertsInRegion => 'لا تنبيه في منطقتك. كل شيء هادئ.';
+
+  @override
+  String get alertNew => 'جديد';
+
+  @override
+  String get sensorAlertsSoon => 'تنبيهات حسّاسات بستانك';
+
+  @override
+  String get phoneNotificationsSoon => 'الإشعارات على الهاتف';
+
+  @override
+  String a11yNewAlerts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تنبيه جديد',
+      many: '$count تنبيهًا جديدًا',
+      few: '$count تنبيهات جديدة',
+      two: 'تنبيهان جديدان',
+      one: 'تنبيه جديد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get severityDanger => 'خطر';
+
+  @override
+  String get severityWarning => 'انتباه';
+
+  @override
+  String get severityInfo => 'معلومة';
+
+  @override
+  String get kindFrost => 'صقيع';
+
+  @override
+  String get kindHeat => 'موجة حرّ';
+
+  @override
+  String get kindDrought => 'جفاف';
+
+  @override
+  String get kindDisease => 'مرض';
+
+  @override
+  String get kindPest => 'آفات';
+
+  @override
+  String get kindWind => 'رياح قوية';
+
+  @override
+  String get kindRain => 'أمطار غزيرة';
+
+  @override
+  String alertValidUntil(String date, String time) {
+    return 'صالح حتى $date على الساعة $time';
+  }
+
+  @override
+  String get alertNoEnd => 'صالح حتى إشعار آخر';
+
+  @override
+  String get meTooFirst => 'كن أول من يقول: أنا أيضًا';
+
+  @override
+  String meTooSaid(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count فلاح قالوا: أنا أيضًا',
+      many: '$count فلاحًا قالوا: أنا أيضًا',
+      few: '$count فلاحين قالوا: أنا أيضًا',
+      two: 'فلاحان قالا: أنا أيضًا',
+      one: 'فلاح واحد قال: أنا أيضًا',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get takeBack => 'تراجع';
+
+  @override
+  String get alertDoneText => 'قمت بما يلزم.';
+
+  @override
+  String get alertGone => 'انتهى هذا التنبيه.';
+
+  @override
+  String get backToAlerts => 'رجوع إلى التنبيهات';
+
+  @override
+  String get homeAllGood => 'كل شيء بخير';
+
+  @override
+  String get homeNoAlert => 'لا تنبيه في منطقتك';
+
+  @override
+  String get report => 'إبلاغ';
+
+  @override
+  String get reportedTag => 'أبلغت';
+
+  @override
+  String get reportWhy => 'لماذا تبلّغ؟';
+
+  @override
+  String get reportSpam => 'إعلان أو إزعاج';
+
+  @override
+  String get reportInsult => 'كلام مسيء';
+
+  @override
+  String get reportWrongAdvice => 'نصيحة خاطئة أو خطيرة';
+
+  @override
+  String get reportOther => 'سبب آخر';
+
+  @override
+  String get reportThanks => 'شكرًا. سيراجعه فريق لوز.';
+
+  @override
+  String get reportLimit => 'بلغت الحد اليوم. حاول غدًا.';
 
   @override
   String get myOrchard => 'بستاني';

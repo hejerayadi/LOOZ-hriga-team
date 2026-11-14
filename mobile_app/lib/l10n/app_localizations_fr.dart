@@ -71,13 +71,12 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String homeSubtitleAlert(String name) {
+    return '$name, attention : une alerte dans votre région';
+  }
+
+  @override
   String get goodDayToWater => 'Bon jour pour arroser';
-
-  @override
-  String get drySoil => 'Sol sec';
-
-  @override
-  String get waterToday => 'Arrosez aujourd\'hui';
 
   @override
   String get quickAsk => 'Question';
@@ -568,46 +567,10 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String treeThirsty(String tree) {
-    return 'L\'arbre $tree a soif';
-  }
-
-  @override
-  String get actNow => 'Agissez maintenant';
-
-  @override
-  String get insectNearby => 'Insecte à proximité';
-
-  @override
-  String get watchLeaves => 'Regardez les feuilles';
-
-  @override
-  String get restIsFine => 'Le reste va bien';
-
-  @override
-  String get allGood => 'Tout va bien';
-
-  @override
   String get treeName => 'Arbre A-18';
 
   @override
-  String get needsWater => 'Besoin d\'eau';
-
-  @override
   String get wellDone => 'Bravo !';
-
-  @override
-  String get treeHappy => 'L\'arbre est heureux';
-
-  @override
-  String waterLiters(String liters) {
-    return 'Arrosez $liters litres';
-  }
-
-  @override
-  String noRainDays(String days) {
-    return 'Pas de pluie depuis $days jours';
-  }
 
   @override
   String get done => 'Fait';
@@ -616,16 +579,140 @@ class AppLocalizationsFr extends AppLocalizations {
   String get regionalTitle => 'Alerte régionale';
 
   @override
-  String get aphidsNearby => 'Pucerons à proximité';
-
-  @override
-  String get checkYourLeaves => 'Vérifiez vos feuilles';
-
-  @override
-  String get farmersReported => 'agriculteurs l\'ont signalé';
-
-  @override
   String get meToo => 'Moi aussi';
+
+  @override
+  String get alertsNoneSubtitle => 'Aucune alerte aujourd\'hui';
+
+  @override
+  String alertsInRegion(String region) {
+    return 'Dans votre région · $region';
+  }
+
+  @override
+  String get alertsInRegionPlain => 'Dans votre région';
+
+  @override
+  String get noAlertsInRegion =>
+      'Aucune alerte dans votre région. Tout est calme.';
+
+  @override
+  String get alertNew => 'Nouveau';
+
+  @override
+  String get sensorAlertsSoon => 'Les alertes des capteurs de votre verger';
+
+  @override
+  String get phoneNotificationsSoon => 'Les notifications sur le téléphone';
+
+  @override
+  String a11yNewAlerts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nouvelles alertes',
+      one: '1 nouvelle alerte',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get severityDanger => 'Danger';
+
+  @override
+  String get severityWarning => 'Vigilance';
+
+  @override
+  String get severityInfo => 'Information';
+
+  @override
+  String get kindFrost => 'Gel';
+
+  @override
+  String get kindHeat => 'Vague de chaleur';
+
+  @override
+  String get kindDrought => 'Sécheresse';
+
+  @override
+  String get kindDisease => 'Maladie';
+
+  @override
+  String get kindPest => 'Ravageurs';
+
+  @override
+  String get kindWind => 'Vent fort';
+
+  @override
+  String get kindRain => 'Fortes pluies';
+
+  @override
+  String alertValidUntil(String date, String time) {
+    return 'Valable jusqu\'au $date à $time';
+  }
+
+  @override
+  String get alertNoEnd => 'Valable jusqu\'à nouvel ordre';
+
+  @override
+  String get meTooFirst => 'Soyez le premier à dire « Moi aussi »';
+
+  @override
+  String meTooSaid(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count agriculteurs ont dit « Moi aussi »',
+      one: '1 agriculteur a dit « Moi aussi »',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get takeBack => 'Annuler';
+
+  @override
+  String get alertDoneText => 'Vous avez fait le nécessaire.';
+
+  @override
+  String get alertGone => 'Cette alerte est terminée.';
+
+  @override
+  String get backToAlerts => 'Retour aux alertes';
+
+  @override
+  String get homeAllGood => 'Tout va bien';
+
+  @override
+  String get homeNoAlert => 'Aucune alerte dans votre région';
+
+  @override
+  String get report => 'Signaler';
+
+  @override
+  String get reportedTag => 'Signalé';
+
+  @override
+  String get reportWhy => 'Pourquoi signaler ?';
+
+  @override
+  String get reportSpam => 'Publicité ou spam';
+
+  @override
+  String get reportInsult => 'Propos insultants';
+
+  @override
+  String get reportWrongAdvice => 'Conseil faux ou dangereux';
+
+  @override
+  String get reportOther => 'Autre raison';
+
+  @override
+  String get reportThanks => 'Merci. L\'équipe LOOZ va vérifier.';
+
+  @override
+  String get reportLimit =>
+      'Limite atteinte pour aujourd\'hui. Réessayez demain.';
 
   @override
   String get myOrchard => 'Mon verger';

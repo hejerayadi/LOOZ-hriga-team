@@ -1,10 +1,13 @@
 // The root of the app: theme, languages, and the main screen with 5 tabs.
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'core/locale.dart';
 import 'core/navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'features/alerts/alerts_page.dart';
+import 'features/alerts/alerts_store.dart';
 import 'features/community/community_page.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/sign_up_flow.dart';
@@ -81,10 +84,46 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   // A tab is built the first time it is shown (so the 3D orchard only
   // starts when the user opens it), then kept alive.
   final Set<AppTab> _opened = {};
+
+  /// Loads the regional alerts every minute while the app is open (the
+  /// number on the bell, the card of Home).
+  Timer? _alertsTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _watchAlerts();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _alertsTimer?.cancel();
+    clearAlerts(); // logged out: forget them
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _watchAlerts(); // back to the app: at once, then every minute
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _alertsTimer?.cancel(); // nothing in the background
+      _alertsTimer = null;
+    }
+  }
+
+  void _watchAlerts() {
+    refreshAlerts();
+    _alertsTimer?.cancel();
+    _alertsTimer = Timer.periodic(alertsRefreshEvery, (_) => refreshAlerts());
+  }
 
   Widget _page(AppTab tab) {
     switch (tab) {

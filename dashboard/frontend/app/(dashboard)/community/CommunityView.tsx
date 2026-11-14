@@ -131,8 +131,9 @@ export function Reports({ reports, onChanged }: { reports: ReportRow[]; onChange
   return (
     <>
       <p className="mb-3 rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-900">
-        Le bouton « Signaler » de l&apos;application arrive <b>bientôt</b> (module de l&apos;application après celui-ci). Les signalements
-        des agriculteurs apparaîtront ici : masquez le texte, ou classez le signalement si rien n&apos;est à corriger.
+        Les agriculteurs signalent une question ou une réponse avec le bouton « Signaler » de l&apos;application (publicité, insulte,
+        conseil faux ou dangereux, autre ; un signalement par personne et par texte, 10 par jour au plus). Masquez le texte, ou classez
+        le signalement si rien n&apos;est à corriger.
       </p>
       {!reports.length ? (
         <Empty>Aucun signalement pour l&apos;instant.</Empty>

@@ -212,23 +212,17 @@ abstract class AppLocalizations {
   /// **'{name}، أشجارك بخير اليوم'**
   String homeSubtitle(String name);
 
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'{name}، انتبه: تنبيه في منطقتك'**
+  String homeSubtitleAlert(String name);
+
   /// No description provided for @goodDayToWater.
   ///
   /// In ar, this message translates to:
   /// **'يوم مناسب للسقي'**
   String get goodDayToWater;
-
-  /// No description provided for @drySoil.
-  ///
-  /// In ar, this message translates to:
-  /// **'التربة جافة'**
-  String get drySoil;
-
-  /// No description provided for @waterToday.
-  ///
-  /// In ar, this message translates to:
-  /// **'اسقِ اليوم'**
-  String get waterToday;
 
   /// No description provided for @quickAsk.
   ///
@@ -1082,77 +1076,17 @@ abstract class AppLocalizations {
   /// **'{count} تحتاج انتباهك'**
   String alertsSubtitle(String count);
 
-  /// No description provided for @treeThirsty.
-  ///
-  /// In ar, this message translates to:
-  /// **'الشجرة {tree} عطشى'**
-  String treeThirsty(String tree);
-
-  /// No description provided for @actNow.
-  ///
-  /// In ar, this message translates to:
-  /// **'تحرّك الآن'**
-  String get actNow;
-
-  /// No description provided for @insectNearby.
-  ///
-  /// In ar, this message translates to:
-  /// **'حشرة قريبة'**
-  String get insectNearby;
-
-  /// No description provided for @watchLeaves.
-  ///
-  /// In ar, this message translates to:
-  /// **'راقب الأوراق'**
-  String get watchLeaves;
-
-  /// No description provided for @restIsFine.
-  ///
-  /// In ar, this message translates to:
-  /// **'باقي البستان بخير'**
-  String get restIsFine;
-
-  /// No description provided for @allGood.
-  ///
-  /// In ar, this message translates to:
-  /// **'كل شيء جيد'**
-  String get allGood;
-
   /// No description provided for @treeName.
   ///
   /// In ar, this message translates to:
   /// **'الشجرة A-18'**
   String get treeName;
 
-  /// No description provided for @needsWater.
-  ///
-  /// In ar, this message translates to:
-  /// **'تحتاج ماء'**
-  String get needsWater;
-
   /// No description provided for @wellDone.
   ///
   /// In ar, this message translates to:
   /// **'أحسنت!'**
   String get wellDone;
-
-  /// No description provided for @treeHappy.
-  ///
-  /// In ar, this message translates to:
-  /// **'الشجرة سعيدة الآن'**
-  String get treeHappy;
-
-  /// No description provided for @waterLiters.
-  ///
-  /// In ar, this message translates to:
-  /// **'اسقِ {liters} لترًا'**
-  String waterLiters(String liters);
-
-  /// No description provided for @noRainDays.
-  ///
-  /// In ar, this message translates to:
-  /// **'لم تمطر منذ {days} أيام'**
-  String noRainDays(String days);
 
   /// No description provided for @done.
   ///
@@ -1166,29 +1100,233 @@ abstract class AppLocalizations {
   /// **'تنبيه في منطقتك'**
   String get regionalTitle;
 
-  /// No description provided for @aphidsNearby.
-  ///
-  /// In ar, this message translates to:
-  /// **'حشرة المنّ قريبة'**
-  String get aphidsNearby;
-
-  /// No description provided for @checkYourLeaves.
-  ///
-  /// In ar, this message translates to:
-  /// **'افحص أوراقك اليوم'**
-  String get checkYourLeaves;
-
-  /// No description provided for @farmersReported.
-  ///
-  /// In ar, this message translates to:
-  /// **'فلاحًا أبلغوا عنها'**
-  String get farmersReported;
-
   /// No description provided for @meToo.
   ///
   /// In ar, this message translates to:
-  /// **'أنا أراه أيضًا'**
+  /// **'أنا أيضًا'**
   String get meToo;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تنبيه اليوم'**
+  String get alertsNoneSubtitle;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'في منطقتك · {region}'**
+  String alertsInRegion(String region);
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'في منطقتك'**
+  String get alertsInRegionPlain;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تنبيه في منطقتك. كل شيء هادئ.'**
+  String get noAlertsInRegion;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'جديد'**
+  String get alertNew;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنبيهات حسّاسات بستانك'**
+  String get sensorAlertsSoon;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات على الهاتف'**
+  String get phoneNotificationsSoon;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{تنبيه جديد} =2{تنبيهان جديدان} few{{count} تنبيهات جديدة} many{{count} تنبيهًا جديدًا} other{{count} تنبيه جديد}}'**
+  String a11yNewAlerts(int count);
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'خطر'**
+  String get severityDanger;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتباه'**
+  String get severityWarning;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'معلومة'**
+  String get severityInfo;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'صقيع'**
+  String get kindFrost;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'موجة حرّ'**
+  String get kindHeat;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'جفاف'**
+  String get kindDrought;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرض'**
+  String get kindDisease;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'آفات'**
+  String get kindPest;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'رياح قوية'**
+  String get kindWind;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'أمطار غزيرة'**
+  String get kindRain;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'صالح حتى {date} على الساعة {time}'**
+  String alertValidUntil(String date, String time);
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'صالح حتى إشعار آخر'**
+  String get alertNoEnd;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'كن أول من يقول: أنا أيضًا'**
+  String get meTooFirst;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{فلاح واحد قال: أنا أيضًا} =2{فلاحان قالا: أنا أيضًا} few{{count} فلاحين قالوا: أنا أيضًا} many{{count} فلاحًا قالوا: أنا أيضًا} other{{count} فلاح قالوا: أنا أيضًا}}'**
+  String meTooSaid(int count);
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'تراجع'**
+  String get takeBack;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'قمت بما يلزم.'**
+  String get alertDoneText;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى هذا التنبيه.'**
+  String get alertGone;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'رجوع إلى التنبيهات'**
+  String get backToAlerts;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل شيء بخير'**
+  String get homeAllGood;
+
+  /// APP-ONLY. Alerts.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تنبيه في منطقتك'**
+  String get homeNoAlert;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'إبلاغ'**
+  String get report;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'أبلغت'**
+  String get reportedTag;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'لماذا تبلّغ؟'**
+  String get reportWhy;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعلان أو إزعاج'**
+  String get reportSpam;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلام مسيء'**
+  String get reportInsult;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'نصيحة خاطئة أو خطيرة'**
+  String get reportWrongAdvice;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب آخر'**
+  String get reportOther;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'شكرًا. سيراجعه فريق لوز.'**
+  String get reportThanks;
+
+  /// APP-ONLY. Community report.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلغت الحد اليوم. حاول غدًا.'**
+  String get reportLimit;
 
   /// No description provided for @myOrchard.
   ///

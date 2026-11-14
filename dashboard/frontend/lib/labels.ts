@@ -269,12 +269,24 @@ export const ALERT_STATUS: Record<string, string> = {
  * ONLY for the preview of what farmers see in the app (Arabic screen): the
  * same words as the app (mobile_app/lib/l10n/app_ar.arb).
  */
+// The app's own words (mobile_app/lib/l10n/app_ar.arb): keep them the same.
 export const PREVIEW_AR = {
   screenTitle: "تنبيه في منطقتك",
-  advice: "نصيحة",
-  meToo: "أنا أراه أيضًا",
-  reported: "فلاحًا أبلغوا عنها",
-  until: "إلى غاية",
+  whatToDo: "ماذا أفعل؟",
+  meToo: "أنا أيضًا",
+  done: "تمّ",
+  validUntil: (date: string, time: string) => `صالح حتى ${date} على الساعة ${time}`,
+  noEnd: "صالح حتى إشعار آخر",
+  /** The Arabic plural of the app ("meTooFirst" / "meTooSaid"). */
+  meTooText: (n: number) => {
+    if (n === 0) return "كن أول من يقول: أنا أيضًا";
+    if (n === 1) return "فلاح واحد قال: أنا أيضًا";
+    if (n === 2) return "فلاحان قالا: أنا أيضًا";
+    const m = n % 100;
+    if (m >= 3 && m <= 10) return `${n} فلاحين قالوا: أنا أيضًا`;
+    if (m >= 11) return `${n} فلاحًا قالوا: أنا أيضًا`;
+    return `${n} فلاح قالوا: أنا أيضًا`;
+  },
   kind: {
     frost: "صقيع",
     heat: "موجة حرّ",
@@ -316,10 +328,13 @@ export const PREVIEW_AR = {
 /** The French screen of the app (mobile_app/lib/l10n/app_fr.arb). */
 export const PREVIEW_FR = {
   screenTitle: "Alerte régionale",
-  advice: "Conseil",
+  whatToDo: "Que faire ?",
   meToo: "Moi aussi",
-  reported: "agriculteurs l'ont signalé",
-  until: "jusqu'au",
+  done: "Fait",
+  validUntil: (date: string, time: string) => `Valable jusqu'au ${date} à ${time}`,
+  noEnd: "Valable jusqu'à nouvel ordre",
+  meTooText: (n: number) =>
+    n === 0 ? "Soyez le premier à dire « Moi aussi »" : n === 1 ? "1 agriculteur a dit « Moi aussi »" : `${n} agriculteurs ont dit « Moi aussi »`,
 };
 
 // ---------- Packs and payments (Phase D) ----------

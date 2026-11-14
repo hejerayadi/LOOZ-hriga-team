@@ -43,6 +43,12 @@ class Author {
 
 enum PostType { question, tip }
 
+/// What is reported with "إبلاغ": a post or an answer.
+enum ReportTarget { post, comment }
+
+/// Why ("إعلان أو إزعاج", "كلام مسيء", "نصيحة خاطئة أو خطيرة", "سبب آخر").
+enum ReportReason { spam, insult, wrongAdvice, other }
+
 class Post {
   const Post({
     required this.id,

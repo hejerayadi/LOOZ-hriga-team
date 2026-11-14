@@ -8,15 +8,17 @@ import 'package:looz_mobile/core/locale.dart';
 import 'package:looz_mobile/core/navigation.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/session.dart';
+import 'package:looz_mobile/data/alerts_service.dart';
 import 'package:looz_mobile/data/community_photos.dart';
 import 'package:looz_mobile/data/community_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
-import 'package:looz_mobile/data/fake_data.dart';
 import 'package:looz_mobile/data/orchard_service.dart';
+import 'package:looz_mobile/features/alerts/alerts_store.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_tab.dart';
 import 'package:looz_mobile/features/premium/demo_card_form.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 
+import 'fake_alerts_service.dart';
 import 'fake_auth_service.dart';
 import 'fake_community_service.dart';
 import 'fake_orchard_service.dart';
@@ -58,13 +60,23 @@ void resetAppState() {
   currentPlan.value = Plan.paid;
   currentTab.value = AppTab.home;
   orchardPanelOpen.value = false;
-  fakeTreeWatered.value = false;
   currentUser.value = null;
   communityService = FakeCommunityService();
+  alertsService = FakeAlertsService();
+  clearAlerts();
   photoPicker = FakePhotoPicker();
   paymentService = FakePaymentService();
   orchardService = FakeOrchardService(demoOrchard());
   SharedPreferences.setMockInitialValues({});
+}
+
+/// Uses fake regional alerts ([fake] = the 3 sample alerts by default):
+/// returns them, to publish or end one, or to check what was saved.
+FakeAlertsService useAlerts([FakeAlertsService? fake]) {
+  final alerts = fake ?? FakeAlertsService.sample();
+  alertsService = alerts;
+  clearAlerts();
+  return alerts;
 }
 
 /// Uses a fake orchard: [orchard] (null = none drawn yet). Returns it, to

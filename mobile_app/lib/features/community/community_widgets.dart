@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../core/locale.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/validators.dart';
+import '../../data/community_models.dart';
 import '../../data/community_photos.dart';
 import '../../data/community_service.dart';
 import '../../shared/widgets/action_button.dart';
@@ -69,6 +70,68 @@ class DeleteButton extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const LoozIcon(AppIcon.trash, size: 22),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "إبلاغ" (a flag) on the post or the answer of someone else (not in the
+/// design), or "✓ أبلغت" once reported (not a button any more).
+class ReportButton extends StatelessWidget {
+  const ReportButton({
+    super.key,
+    required this.reported,
+    required this.onPressed,
+  });
+
+  final bool reported;
+
+  /// null = being sent (faded).
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    if (reported) {
+      return Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.mint,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        child: SymbolText(
+          '✓ ${l10n.reportedTag}',
+          style: AppTextStyles.of(15, FontWeight.w800),
+        ),
+      );
+    }
+    return Semantics(
+      button: true,
+      label: l10n.report,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onPressed,
+        child: Opacity(
+          opacity: onPressed == null ? 0.5 : 1,
+          child: Container(
+            height: 40,
+            padding: const EdgeInsetsDirectional.fromSTEB(12, 0, 14, 0),
+            decoration: BoxDecoration(
+              color: AppColors.mintWhite,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const LoozIcon(AppIcon.flag, size: 20),
+                const SizedBox(width: 6),
+                Text(l10n.report, style: AppTextStyles.of(15, FontWeight.w800)),
+              ],
+            ),
           ),
         ),
       ),
@@ -702,6 +765,109 @@ Future<bool> confirmDelete(BuildContext context, String question) async {
     ),
   );
   return answer ?? false;
+}
+
+/// "لماذا تبلّغ؟": the 4 reasons, big rows with an icon (null = closed or
+/// "إلغاء").
+Future<ReportReason?> chooseReportReason(BuildContext context) {
+  final l10n = context.l10n;
+  final reasons = [
+    (ReportReason.spam, AppIcon.megaphone, l10n.reportSpam),
+    (ReportReason.insult, AppIcon.message, l10n.reportInsult),
+    (ReportReason.wrongAdvice, AppIcon.warning, l10n.reportWrongAdvice),
+    (ReportReason.other, AppIcon.dots, l10n.reportOther),
+  ];
+  return showModalBottomSheet<ReportReason>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    // Taller than half the screen on small phones: it may scroll.
+    isScrollControlled: true,
+    builder: (context) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: CssBox(
+          color: AppColors.mintWhite,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          shadows: AppShadows.card,
+          padding: const EdgeInsets.fromLTRB(14, 20, 14, 14),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text(
+                    l10n.reportWhy,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.of(20, FontWeight.w800),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                for (final (reason, icon, label) in reasons) ...[
+                  _ReasonChoice(
+                    icon: icon,
+                    label: label,
+                    onTap: () => Navigator.of(context).pop(reason),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                const SizedBox(height: 4),
+                ActionButton(
+                  label: l10n.cancelAction,
+                  secondary: true,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// One reason of "لماذا تبلّغ؟": a white row with an icon blob and a word.
+class _ReasonChoice extends StatelessWidget {
+  const _ReasonChoice({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final AppIcon icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: CssBox(
+          minHeight: 70,
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          shadows: AppShadows.card,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              IconBlob(icon: icon, size: 48, iconSize: 26),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.of(19, FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Asks where the new photo comes from, in a white sheet at the bottom:

@@ -480,6 +480,9 @@ export type RegionalAlert = {
   status: "scheduled" | "active" | "expired" | "ended" | string;
   /** "Moi aussi" of the farmers. */
   seen_count: number;
+  /** Farmers who opened it in the app, and who tapped "Fait" (migration 015). */
+  opened_count: number;
+  done_count: number;
   is_demo: boolean;
 };
 

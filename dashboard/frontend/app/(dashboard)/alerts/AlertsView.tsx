@@ -34,7 +34,7 @@ function AlertCard({ a, onChanged }: { a: RegionalAlert; onChanged: () => void }
         <AlertStatusBadge status={a.status} />
         {a.is_demo && <DemoTag />}
         <span className="ml-auto text-xs text-slate-500">
-          {a.seen_count} « Moi aussi »
+          {a.seen_count} « Moi aussi » · ouverte par {a.opened_count} · fait par {a.done_count}
         </span>
       </div>
       <div className="mt-2 font-semibold text-slate-900">{a.title_fr}</div>

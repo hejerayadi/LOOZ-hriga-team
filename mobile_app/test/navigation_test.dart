@@ -7,7 +7,6 @@ import 'package:looz_mobile/app.dart';
 import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/data/fake_data.dart';
-import 'package:looz_mobile/features/alerts/alert_screen.dart';
 import 'package:looz_mobile/features/alerts/alerts_page.dart';
 import 'package:looz_mobile/features/alerts/regional_screen.dart';
 import 'package:looz_mobile/features/ask/ask_screen.dart';
@@ -40,6 +39,9 @@ Future<void> startApp(WidgetTester tester, {Plan plan = Plan.paid}) async {
   noAnimations(tester);
   currentPlan.value = plan;
   useFakeCommunity();
+  // A farmer of Sfax, with the 3 sample alerts of his region.
+  if (currentUser.value == null) logInTestUser();
+  useAlerts();
   await tester.pumpWidget(const LoozApp(home: MainShell()));
   await tester.pumpAndSettle();
 }
@@ -67,8 +69,9 @@ void main() {
 
   testWidgets('Home: the alert, "اسأل", "دفتر" and "خريطة"', (tester) async {
     await startApp(tester);
-    await tapAndWait(tester, find.text('التربة جافة'));
-    expect(find.byType(AlertScreen), findsOneWidget);
+    // The most important real alert of the region.
+    await tapAndWait(tester, find.text('صقيع الليلة'));
+    expect(find.byType(RegionalScreen), findsOneWidget);
 
     await openTab(tester, 'الرئيسية');
     await tapAndWait(tester, find.text('اسأل'));
@@ -83,9 +86,12 @@ void main() {
 
     await tapAndWait(tester, find.text('خريطة'));
     expect(find.byType(MapScreen), findsOneWidget);
-    // A tree on the map opens its alert.
-    await tapAndWait(tester, find.byType(MoodFace).first);
-    expect(find.byType(AlertScreen), findsOneWidget);
+    // A tree on the map: its alerts come later ("قريبًا"), no fake alert.
+    await tester.tap(find.byType(MoodFace).first);
+    await tester.pump();
+    expect(find.text('قريبًا'), findsOneWidget);
+    expect(find.byType(MapScreen), findsOneWidget);
+    await closeApp(tester);
   });
 
   testWidgets('Assistant bar: voice → thinking → answer', (tester) async {
@@ -154,25 +160,20 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('Alerts: the thirsty tree (and "تمّ"), the insect nearby', (
-    tester,
-  ) async {
+  testWidgets('Alerts: a regional alert, "أنا أيضًا", "تمّ"', (tester) async {
     await startApp(tester);
     await openTab(tester, 'التنبيهات');
     expect(find.byType(AlertsPage), findsOneWidget);
 
-    await tapAndWait(tester, find.text('الشجرة 18 عطشى'));
-    expect(find.text('تحتاج ماء'), findsOneWidget);
+    await tapAndWait(tester, find.text('صقيع الليلة'));
+    expect(find.byType(RegionalScreen), findsOneWidget);
+    expect(find.text('3 فلاحين قالوا: أنا أيضًا'), findsOneWidget);
+    await scrollDown(tester);
+    await tapAndWait(tester, find.text('أنا أيضًا'));
+    expect(find.text('4 فلاحين قالوا: أنا أيضًا'), findsOneWidget);
+    await scrollDown(tester);
     await tapAndWait(tester, find.text('تمّ'));
     expect(find.text('أحسنت!'), findsOneWidget);
-    expect(fakeTreeWatered.value, isTrue);
-
-    await openTab(tester, 'التنبيهات');
-    await tapAndWait(tester, find.text('حشرة قريبة'));
-    expect(find.byType(RegionalScreen), findsOneWidget);
-    expect(find.text('34'), findsOneWidget);
-    await tapAndWait(tester, find.text('أنا أراه أيضًا'));
-    expect(find.text('35'), findsOneWidget);
     await closeApp(tester);
   });
 
