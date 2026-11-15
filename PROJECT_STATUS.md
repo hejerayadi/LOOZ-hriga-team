@@ -622,3 +622,17 @@ a false alarm)**. The app works (the olive answer proves the photo reaches the m
 jury: check the same photos on the model's Universe page ("browser test"), and use our own trained
 version (dataset v11 + Tunisian photos + healthy / olive leaves as "nothing" examples) or show the
 honest path ("لم نجد" → "اسأل خبيرًا").
+
+**Model comparison (15 Nov 2026)** — the same 9 photos (3 shot hole, 1 leaf curl, healthy almond,
+autumn almond, olive, 2 "not a leaf"), a result counting from 0.40; tool:
+`dashboard/backend/tools/diagnosis_eval.py` (photos in `tools/test_photos/`, not in git):
+
+| Option | Diseases found | False alarms | Speed | Cost (credits / 1,000 photos) | Jury rule |
+| --- | --- | --- | --- | --- | --- |
+| A — public model `l7tfx/2` | 0 / 4 | 1 / 5 (olive) | ~0.5 s (1.1 s in the app) | 0.125–0.19 | FAIL |
+| B — workflow `general-segmentation-api-2` (SAM 3), prompts = the 3 class names | 2 / 4 (both as "leaf_spot") | 0 / 5 | ~1.8 s | 0.5 | FAIL |
+| B — same, plain words ("holes in leaf", "brown spots on leaf", "curled red leaf") | 1 / 4 | 1 / 5 (blossoms) | ~1.7 s | 0.5 | FAIL |
+
+Jury rule: at least 3 of 4 diseases found (as some disease), at most 1 false alarm. **Decision:
+Milestone 3, our own RF-DETR model** — the steps for Roboflow: `docs/milestone3_own_model.md`. Once
+it passes, only the secret `ROBOFLOW_MODEL` changes (no new app, no new deployment).

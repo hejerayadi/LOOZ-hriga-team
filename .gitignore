@@ -54,6 +54,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # ---------- Python (dashboard/backend) ----------
+# The test photos of tools/diagnosis_eval.py (downloaded from Wikimedia when needed).
+dashboard/backend/tools/test_photos/
 __pycache__/
 *.pyc
 .venv/
