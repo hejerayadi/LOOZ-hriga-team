@@ -15,7 +15,7 @@ Every screen and state of the design (`App.tsx`), its Flutter file, and the chec
 | 9 | `camera`, now REAL (photo diagnosis Bêta, line 76) | `lib/features/camera/camera_screen.dart` | [x] | [x] | [x] | [x] camera button, Ask "صورة" (paid pack; Free: locked) |
 | 10 | `thinking`: "جاري النظر…" while the REAL diagnosis runs (line 77) | `lib/features/camera/thinking_screen.dart` | [x] | [x] | [x] | [x] the round button / "اختر من الصور" |
 | 11 | `result`: the REAL result (line 78) | `lib/features/camera/result_screen.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
-| 12 | `voice` (listening, moving bars): at the end "قريبًا" (no fake answer any more) | `lib/features/ask/voice_screen.dart` | [x] | [x] | [x] | [x] "اسأل المساعد", Ask "تكلّم" / "أرسل" |
+| 12 | `voice` = the voice assistant "لوز" (Bêta, real Gemini Live): first-time message, "يسمع… / يفكّر… / يحكي…", the texts of both sides, stop, the clock, the messages (PROJECT_STATUS section 17) | `lib/features/ask/voice_screen.dart` | [x] | [x] | [x] | [x] "اسأل المساعد", Ask "تكلّم" / "أرسل" |
 | 13 | `alerts` with the REAL regional alerts (line 70) | `lib/features/alerts/alerts_page.dart` | [x] | [x] | [x] | [x] tab "التنبيهات" |
 | 14 | `alert` (needs water): removed (fake). A tree on the map says "قريبًا"; Home shows the real alert (line 75) | — | — | — | — | — |
 | 15 | `alert` (done: "أحسنت!", falling petals): now in the regional alert's "تمّ" (line 72) | `lib/shared/widgets/falling_petals.dart` | [x] | [x] | [x] | [x] "تمّ" |

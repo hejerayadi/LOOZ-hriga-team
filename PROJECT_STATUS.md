@@ -1,10 +1,19 @@
 # Looz — project status
 
-Last update: 14 November 2026 (photo diagnosis Bêta, Milestone 1 built: migration 016 run, Edge Function "diagnose" to deploy; zone letters أ ب ج د in Arabic).
+Last update: 15 November 2026 (voice assistant "لوز" Bêta, Milestone 1 built: migration 017 to run, Edge Function "voice-token" to deploy, section 17).
 
 > **⚠ Before a real launch: turn the DEMO LOGIN off** (section 5). While it is on, anyone who types a
 > phone number can open that account: any 6-digit code works. Turn the **demo payment** off too
 > (section 9) once a real payment provider is set up.
+
+> **⚠ Before real farmers use the voice assistant "لوز": switch the Gemini API to the PAID tier**
+> (section 17). On the Free tier, Google may use the farmers' voices and the answers to improve its
+> products. Steps: aistudio.google.com › Billing › set up Cloud billing on the project of the key
+> `GEMINI_API_KEY` (Prepay, $5 minimum) and add the Google AI Pro monthly credits ($10, Google
+> Developer Program › My benefits, on the SAME billing account); check that the project says
+> "Paid" on aistudio.google.com/api-keys; set a monthly spend cap (aistudio.google.com/spend, e.g.
+> $20); then Table Editor › `app_settings` › `voice_google_free_tier` = **false** (the first-time
+> message then stops saying "وقد تستعمله غوغل لتحسين خدماتها"). Until then: demo accounts only.
 
 > **⚠ Supabase Free pauses a project after 1 week without activity — check it before the jury.**
 > Open the Supabase dashboard a few days before: if the project says "Paused", click "Restore"
@@ -27,7 +36,8 @@ Last update: 14 November 2026 (photo diagnosis Bêta, Milestone 1 built: migrati
 | **Alerts** (section 15): the tab "التنبيهات" with the regional alerts of the farmer's governorate, the number on the bell, an alert's screen ("ماذا أفعل؟" in steps, until when, "أنا أيضًا", "تمّ"), the most important alert on Home | Done (Phase 1, 14 Nov 2026). Sensor alerts "بستاني" and voice / push: "قريبًا" | **Real** (Supabase, migration 015) |
 | **"إبلاغ / Signaler"** in the community (section 15): on the question and the answers of others, 4 reasons, "✓ أبلغت" | Done (14 Nov 2026) | **Real** (`report_content()` of 013) → Dashboard › Communauté › Signalements |
 | **Photo diagnosis (Bêta)** (section 16), paid pack: camera or photo → "جاري النظر…" → "على الأرجح" / "غير متأكد" / "لم نجد هذه الأمراض الثلاثة", the photo with the sick spots marked, 2-3 first steps (drafts), "اسأل خبيرًا" = a community question with the photo | Milestone 1 built (14 Nov 2026). History, zone choice: Milestone 2 | **Real**: Roboflow model through the Edge Function `diagnose` (migration 016) |
-| Home (weather), assistant and voice ("قريبًا" at the end, no fake answer), map, journal, tips | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`). A tree on the map says "قريبًا" |
+| **Voice assistant "لوز" (Bêta)** (section 17), paid pack: "تكلّم" / the assistant bar → the farmer speaks (Derja or French), "لوز" answers with its voice, the texts on the screen; it reads his orchard (zones + last sensor readings) | Milestone 1 built (15 Nov 2026), to deploy. Alerts, photos, community question: Milestone 2 | **Real**: Gemini Live (`gemini-3.8-live`) with a short-lived locked token from the Edge Function `voice-token` (migration 017) |
+| Home (weather), map, journal, tips; 🔊 buttons ("قريبًا") | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`). A tree on the map says "قريبًا" |
 | **Sensor boxes → Supabase** (section 12): Node-RED of the farm (`iot/node-red/`) sends the readings once a minute to the Edge Function `iot-ingest` | Done (Milestone 1) with the **simulated** boxes NODE-01…04 of the IoT demo farmer | **Real** Supabase (migration 012), simulated boxes |
 | Admin dashboard (`dashboard/`), **in French** (section 14): login + "Connexion démo", Vue d'ensemble, Agriculteurs (live boxes, 3-day charts, accept / remove), Utilisateurs (expert badge, block), Communauté (hide / show again / delete, reports), Alertes (regional alerts in Arabic + French with the preview, sensor alert log), Vergers (plan), Capteurs, Abonnements (bills, payments, price), Réglages (the switches), Journal des actions | **Phases A–D built** (A: 12 Nov, B–D: 13 Nov 2026). Migration 014 (the database keeps the demo admin on demo data) run on 13 Nov | **Real** (Supabase, admin login; every change through a checked function + admin action log, migrations 013 and 014) |
 
@@ -222,6 +232,8 @@ Run the files in **Supabase > SQL Editor**, in this order. Every file can be run
     alerts tab of the app (section 15). Run it after 014. Running 013 or 014 again does not undo it.
 21. `supabase/migrations/016_photo_diagnosis.sql` (check line: `true | false | false | true | 10 | 1000 | 0.65 | 0.4`):
     the photo diagnosis (section 16). If you run 014 again after it, 014's second number is 28 (not 26).
+22. `supabase/migrations/017_voice_assistant.sql` (check line: `true | false | false | 5 | 60 | 180 | gemini-3.8-live`):
+    the voice assistant "لوز" (section 17). If you run 014 again after it, 014's second number is 30.
 
 Then the **Edge Functions** (Edge Functions › Deploy a new function › Via Editor › paste the file ›
 name › Deploy function; then in its settings turn **"Verify JWT" off**; no secret to add):
@@ -236,6 +248,7 @@ And ONE function with **"Verify JWT" ON** (only logged-in users):
 | Name | File | Secret (Edge Functions › Secrets) |
 | --- | --- | --- |
 | `diagnose` | `supabase/functions/diagnose/index.ts` | `ROBOFLOW_API_KEY` = the **Private API Key** of the Roboflow workspace (never in the app, never in git). Optional: `ROBOFLOW_MODEL` (default `almond-diseases-detection-l7tfx/2`). Never add `ROBOFLOW_URL` (tests only) |
+| `voice-token` | `supabase/functions/voice-token/index.ts` | `GEMINI_API_KEY` = the Gemini API key (never in the app, never in git). Never add `GEMINI_URL` (tests only) |
 
 All 12 SQL files and the demo orchard are in the real database, and `demo-auth` answers (checked on
 9 November 2026 by `test_live/database_check_test.dart`, `orchard_live_test.dart` and
@@ -250,7 +263,7 @@ From `mobile_app/`:
 | Command | What it checks | Last result |
 | --- | --- | --- |
 | `flutter analyze` | The code | No issues |
-| `flutter test` | All the screens and flows, with a fake login (also in demo mode), fake payment, fake orchard and fake community; the real login code with a fake web server (no internet). The designer: `test/geometry_test.dart` (area, clean-up of the drawing, crossing sides, automatic split, dividing lines) and `test/designer_test.dart` (every step, finger and mouse, resume, errors, French, a 360 x 640 phone). Tree numbers from the codes ("12", "TREE-012"): `test/orchard_3d_data_test.dart`. The alerts: `test/alerts_test.dart` (order, bell, "جديد", steps, "أنا أيضًا", "تمّ", ended while open, no alert, no internet, pull down, every minute, back to the app, French, Home). "إبلاغ": `test/report_test.dart`. The photo diagnosis: `test/diagnosis_test.dart` (camera, "جاري النظر…", the 3 results, the marks, "اسأل خبيرًا" → the question with the photo, every failure, the limits, Free = locked, French, the plurals, the assistant says "قريبًا", the zone letters أ ب ج د) | 246 / 246 pass |
+| `flutter test` | All the screens and flows, with a fake login (also in demo mode), fake payment, fake orchard and fake community; the real login code with a fake web server (no internet). The designer: `test/geometry_test.dart` (area, clean-up of the drawing, crossing sides, automatic split, dividing lines) and `test/designer_test.dart` (every step, finger and mouse, resume, errors, French, a 360 x 640 phone). Tree numbers from the codes ("12", "TREE-012"): `test/orchard_3d_data_test.dart`. The alerts: `test/alerts_test.dart` (order, bell, "جديد", steps, "أنا أيضًا", "تمّ", ended while open, no alert, no internet, pull down, every minute, back to the app, French, Home). "إبلاغ": `test/report_test.dart`. The photo diagnosis: `test/diagnosis_test.dart` (camera, "جاري النظر…", the 3 results, the marks, "اسأل خبيرًا" → the question with the photo, every failure, the limits, Free = locked, French, the plurals, the zone letters أ ب ج د). The voice assistant: `test/voice_test.dart` (section 17) | 270 / 270 pass |
 | `python tool/find_hardcoded_texts.py` | No text written in the code (all texts in `lib/l10n/*.arb`) | 0 |
 
 **Live tests**: against the real Supabase. They need internet and `mobile_app/.env`.
@@ -366,8 +379,9 @@ Users can't do any of these themselves: the database rules refuse it (checked by
    their governorates (a separate step); fix what you find when you test it.
 5. **App alerts, Phase 2** (Phase 1 done, section 15): the sensor alerts of a paid farmer in the tab
    ("بستاني / Mon verger": zone, level, simple advice, texts from the codes in the ARB files; a tap
-   opens the zone in the 3D) and the real readings in the 3D zone panel. A small migration **017**
-   (the state of the farmer's own boxes with the gateway's offline time; 016 is the diagnosis).
+   opens the zone in the 3D) and the real readings in the 3D zone panel. A small migration **018**
+   (the state of the farmer's own boxes with the gateway's offline time; 016 is the diagnosis, 017
+   the voice assistant).
 6. **Photo diagnosis, Milestone 2** (section 16): "صوري السابقة" (history, on the camera screen and in
    Profile), the zone of the photo (optional), the dashboard page "Diagnostics" (Bientôt). Later: our
    own model trained on Roboflow (dataset v11 + Tunisian photos confirmed by experts, healthy and
@@ -636,3 +650,72 @@ autumn almond, olive, 2 "not a leaf"), a result counting from 0.40; tool:
 Jury rule: at least 3 of 4 diseases found (as some disease), at most 1 false alarm. **Decision:
 Milestone 3, our own RF-DETR model** — the steps for Roboflow: `docs/milestone3_own_model.md`. Once
 it passes, only the secret `ROBOFLOW_MODEL` changes (no new app, no new deployment).
+
+## 17. Voice assistant "لوز" (Bêta, paid pack — migration 017 + Edge Function `voice-token`)
+
+**What the farmer does** ("تكلّم" on the Ask screen, or the assistant bar; Free: the locked screen):
+
+1. The first time only: **"قبل أن تتكلّم"** — "صوتك يُرسل إلى غوغل ليفهمه لوز ويجيبك. لوز لا يسجّل
+   صوتك ولا يحفظ كلامك. نحفظ فقط مدّة المحادثة." (+ "وقد تستعمله غوغل لتحسين خدماتها." while the key
+   is on Google's free tier) → "موافق" / "لا، شكرًا". Saved in the database (`voice_consents`).
+2. "لوز" + "تجريبي", the big microphone, "اضغط وقل سؤالك", "بقيت 5 دقائق اليوم", the button "تكلّم".
+3. He talks: "لحظة…" → **"يسمع…"** (the clock of the conversation: 3:00) → "يفكّر…" + "ينظر في
+   بستانك…" while it reads his orchard → **"يحكي…"** (its voice; "اضغط على لوز لتقاطعه") → "يسمع…"
+   again. The texts appear: "أنت: شنوّة حال السانية؟" / "لوز: السانية لاباس…". The microphone is
+   paused while "لوز" speaks (it must not hear itself).
+4. "توقّف" (or 3 minutes, or the app hidden) → "انتهت المحادثة", "تكلّم من جديد".
+5. Messages: "تحتاج إلى الإنترنت", "انتهى وقتك مع لوز اليوم. ارجع غدًا.", "لوز مشغول اليوم. حاول
+   لاحقًا." (the whole app's minutes), "المساعد متوقف الآن.", "لوز لا يجيب الآن." (+ "حاول مرة أخرى"),
+   "اسمح باستعمال الميكروفون لتتكلّم مع لوز.". Always at the bottom: "لوز يمكن أن يخطئ. للأدوية اسأل
+   خبيرًا."
+
+**How it works**: the app → Edge Function `voice-token` (checks the login) → `voice_begin()` (switch,
+paid pack, "yes", minutes of the farmer and of the whole app; opens a conversation) → Google gives a
+**short-lived, single-use token, LOCKED** to the model, the instructions of "لوز", its voice and its
+tools (the app can't change them; it stops after the conversation's length) → the app talks
+**directly** to Gemini Live (the voice never goes through LOOZ). When Gemini needs data it asks the
+app for `get_my_orchard`: the app reads the farmer's zones and the last reading of each sensor box
+**with his own login** (database rules) and sends a short JSON. At the end the app calls `voice_end()`:
+the **database clock** measures the time (at least 20 s, at most the conversation's length; a
+conversation never ended counts its whole length).
+App files: `lib/data/voice_service.dart`, `gemini_live.dart`, `voice_audio.dart` (microphone:
+package `record`; voice: `flutter_soloud`, + the script line in `web/index.html`; Android:
+RECORD_AUDIO), `voice_tools.dart`; `lib/features/ask/voice_session.dart`, `voice_screen.dart`.
+
+**The rules of "لوز"** (its instructions, Arabic, in `supabase/functions/voice-token/index.ts`):
+simple Tunisian Derja, short sentences; French if the farmer speaks French; almonds in Sfax, Sidi
+Bouzid, Kasserine; always `get_my_orchard` before talking about his orchard, never an invented
+number; zones as "المنطقة ب" / "Zone B"; old readings or offline boxes said clearly. **Never a
+pesticide / medicine / chemical fertiliser / product name, never a quantity, dose, mixture or homemade
+recipe, even if the farmer insists or names a product himself → "هذا لازم يقولهولك خبير. اسأل خبير، ولا
+اسأل المجتمع في تطبيق لوز."** (French: "Il faut demander à un expert."); not sure → "ما نيش متأكد" + an expert; no medical, legal or money
+advice; never asks his name, phone or exact place. Google only gets his governorate and the app
+language (no name, no phone, no id).
+
+**Settings** (Table Editor › `app_settings`, no new app needed): `voice_enabled`, `voice_model`
+(`gemini-3.8-live`), `voice_speaker` (`Kore`; other voices: listen in Google AI Studio › Live),
+`voice_minutes_per_day` 5 (per farmer), `voice_app_minutes_per_day` 60 (whole app: protects the
+money), `voice_session_seconds` 180 (one conversation), `voice_google_free_tier` true (set to false
+after the switch to the paid tier, see the warning at the top).
+
+**Privacy**: no voice and no words are saved anywhere by LOOZ. `voice_sessions` keeps only: start,
+end, seconds counted, why it ended, number of questions / tool calls, Google's token counts.
+
+**Cost (Gemini 3.8 Live, Google prices of Nov 2026)**: voice in $3 / 1M tokens (≈ $0.005 a minute),
+voice out $12 / 1M (≈ $0.018 a minute). One question + answer ≈ $0.01 (≈ 0.03 DT); safe upper bound
+$0.03 per minute of conversation. With the app limit of 60 minutes a day: at most ≈ $54 a month.
+Free tier: $0 (but Google may use the data). The real token counts are in `voice_sessions`.
+
+**Ephemeral tokens are a Google "Preview" feature** (API v1beta): if Google changes them, the voice
+stops (nothing else) until `voice-token` is updated.
+
+**Tests**: `mobile_app/test/voice_test.dart` (24: the Milestone 1 scenario with a fake Google, the
+first-time message, time over, connection lost, interruptions, every failure, French, the messages
+of Google, `get_my_orchard`); SQL 017 on the laptop (68 checks); the function `voice-token` with a
+fake Google (36 checks). Live (after the deployment): `dashboard/backend/tests_live/test_live_voice.py`
+(22 777 001 asks "شنوّة حال السانية؟" by text, the real Gemini, its answer printed and its voice saved
+as a WAV file).
+
+**Milestone 2**: the tools "regional alerts", "my photo diagnoses", "a question for the community"
+(shown on the screen first, published only after "إيه" or the button "انشر"); in Profile "أوقف إرسال
+صوتي" (takes the consent back); the dashboard page "Assistant vocal" (minutes and cost per day).

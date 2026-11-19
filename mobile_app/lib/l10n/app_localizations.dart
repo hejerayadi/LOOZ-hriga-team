@@ -944,6 +944,144 @@ abstract class AppLocalizations {
   /// **'اضغط وقل سؤالك'**
   String get speakHint;
 
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوز'**
+  String get voiceName;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'لحظة…'**
+  String get voiceConnecting;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'يسمع…'**
+  String get voiceListening;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'يفكّر…'**
+  String get voiceThinking;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'يحكي…'**
+  String get voiceSpeaking;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط على لوز لتقاطعه'**
+  String get voiceTapToInterrupt;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'ينظر في بستانك…'**
+  String get voiceLookingOrchard;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنت'**
+  String get voiceYou;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'توقّف'**
+  String get voiceStop;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت المحادثة'**
+  String get voiceEnded;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'تكلّم من جديد'**
+  String get voiceTalkAgain;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{لم يبق وقت اليوم} =1{بقيت دقيقة واحدة اليوم} =2{بقيت دقيقتان اليوم} few{بقيت {count} دقائق اليوم} many{بقيت {count} دقيقة اليوم} other{بقيت {count} دقيقة اليوم}}'**
+  String voiceMinutesLeft(int count);
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى وقتك مع لوز اليوم. ارجع غدًا.'**
+  String get voiceLimitReached;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوز مشغول اليوم. حاول لاحقًا.'**
+  String get voiceBusy;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'المساعد متوقف الآن.'**
+  String get voiceOff;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوز لا يجيب الآن.'**
+  String get voiceUnavailable;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسمح باستعمال الميكروفون لتتكلّم مع لوز.'**
+  String get voiceMicNeeded;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل أن تتكلّم'**
+  String get voiceConsentTitle;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوتك يُرسل إلى غوغل ليفهمه لوز ويجيبك. لوز لا يسجّل صوتك ولا يحفظ كلامك. نحفظ فقط مدّة المحادثة.'**
+  String get voiceConsentBody;
+
+  /// APP-ONLY. Voice assistant. Shown only while the Gemini key is on Google's free tier (app_settings.voice_google_free_tier).
+  ///
+  /// In ar, this message translates to:
+  /// **'وقد تستعمله غوغل لتحسين خدماتها.'**
+  String get voiceConsentFreeTier;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'موافق'**
+  String get voiceConsentAccept;
+
+  /// APP-ONLY. Voice assistant.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا، شكرًا'**
+  String get voiceConsentRefuse;
+
+  /// APP-ONLY. Voice assistant. The strict rule: never pesticide names or doses.
+  ///
+  /// In ar, this message translates to:
+  /// **'لوز يمكن أن يخطئ. للأدوية اسأل خبيرًا.'**
+  String get voiceAdvice;
+
   /// No description provided for @photo.
   ///
   /// In ar, this message translates to:
@@ -1219,18 +1357,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اسأل خبيرًا'**
   String get askAnExpert;
-
-  /// No description provided for @listening.
-  ///
-  /// In ar, this message translates to:
-  /// **'أنا أسمعك'**
-  String get listening;
-
-  /// No description provided for @speakFreely.
-  ///
-  /// In ar, this message translates to:
-  /// **'تكلّم براحتك…'**
-  String get speakFreely;
 
   /// No description provided for @alertsTitle.
   ///

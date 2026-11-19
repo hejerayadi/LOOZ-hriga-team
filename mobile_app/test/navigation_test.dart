@@ -91,20 +91,17 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('Assistant bar: voice → "قريبًا" (no fake answer)', (
+  testWidgets('Assistant bar: the voice assistant "لوز" (no fake answer)', (
     tester,
   ) async {
     await startApp(tester);
     await tapAndWait(tester, find.byType(AssistantButton));
     expect(find.byType(VoiceScreen), findsOneWidget);
-    expect(find.text('أنا أسمعك'), findsOneWidget);
-
-    await tester.pump(listeningTime);
-    await tester.pumpAndSettle();
-    expect(find.byType(VoiceScreen), findsNothing);
+    expect(find.text('اضغط وقل سؤالك'), findsOneWidget);
+    expect(find.text('تكلّم'), findsOneWidget);
     expect(find.byType(ResultScreen), findsNothing);
-    expect(find.text('قريبًا'), findsOneWidget);
-    expect(find.byType(HomePage), findsOneWidget);
+    expect(find.text('قريبًا'), findsNothing);
+    await closeApp(tester);
   });
 
   testWidgets('Camera: shutter → thinking → result, and × closes it', (

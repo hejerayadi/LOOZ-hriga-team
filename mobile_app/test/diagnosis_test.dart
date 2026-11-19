@@ -467,21 +467,19 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('the assistant bar: "قريبًا", never a fake answer', (
-    tester,
-  ) async {
+  testWidgets('the assistant bar: the real voice assistant, never a fake '
+      'answer', (tester) async {
     await startApp(tester);
     await tester.tap(find.text('اسأل المساعد'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(VoiceScreen), findsOneWidget);
-    await tester.pump(listeningTime);
-    await tester.pumpAndSettle();
-    expect(find.byType(VoiceScreen), findsNothing);
+    expect(find.text('اضغط وقل سؤالك'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    expect(find.byType(VoiceScreen), findsOneWidget);
     expect(find.byType(ResultScreen), findsNothing);
-    expect(find.text('قريبًا'), findsOneWidget);
+    expect(find.text('قريبًا'), findsNothing);
     expect(find.text('قد تكون حشرة المنّ'), findsNothing);
-    await tester.pump(const Duration(seconds: 3));
     await closeApp(tester);
   });
 

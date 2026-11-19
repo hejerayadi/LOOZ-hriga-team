@@ -26,6 +26,7 @@ import 'fake_community_service.dart';
 import 'fake_orchard_service.dart';
 import 'fake_payment_service.dart';
 import 'fake_photo_picker.dart';
+import 'fake_voice.dart';
 
 /// Tests use a font where every letter is a square: load Cairo instead,
 /// so the screens are laid out like in the app (call it in setUpAll).
@@ -66,6 +67,7 @@ void resetAppState() {
   communityService = FakeCommunityService();
   alertsService = FakeAlertsService();
   diagnosisService = FakeDiagnosisService();
+  FakeVoice(); // the voice assistant: fake Google, microphone, loudspeaker
   clearAlerts();
   photoPicker = FakePhotoPicker();
   paymentService = FakePaymentService();

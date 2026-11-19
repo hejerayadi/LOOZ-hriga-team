@@ -499,6 +499,89 @@ class AppLocalizationsFr extends AppLocalizations {
   String get speakHint => 'Appuyez et parlez';
 
   @override
+  String get voiceName => 'Looz';
+
+  @override
+  String get voiceConnecting => 'Un instant…';
+
+  @override
+  String get voiceListening => 'Il écoute…';
+
+  @override
+  String get voiceThinking => 'Il réfléchit…';
+
+  @override
+  String get voiceSpeaking => 'Il parle…';
+
+  @override
+  String get voiceTapToInterrupt => 'Touchez Looz pour l\'interrompre';
+
+  @override
+  String get voiceLookingOrchard => 'Il regarde votre verger…';
+
+  @override
+  String get voiceYou => 'Vous';
+
+  @override
+  String get voiceStop => 'Arrêter';
+
+  @override
+  String get voiceEnded => 'Conversation terminée';
+
+  @override
+  String get voiceTalkAgain => 'Parler encore';
+
+  @override
+  String voiceMinutesLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Encore $count minutes aujourd\'hui',
+      one: 'Encore 1 minute aujourd\'hui',
+      zero: 'Plus de temps aujourd\'hui',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get voiceLimitReached =>
+      'Votre temps avec Looz est fini pour aujourd\'hui. Revenez demain.';
+
+  @override
+  String get voiceBusy =>
+      'Looz est très occupé aujourd\'hui. Réessayez plus tard.';
+
+  @override
+  String get voiceOff => 'L\'assistant est arrêté pour le moment.';
+
+  @override
+  String get voiceUnavailable => 'Looz ne répond pas pour le moment.';
+
+  @override
+  String get voiceMicNeeded => 'Autorisez le micro pour parler à Looz.';
+
+  @override
+  String get voiceConsentTitle => 'Avant de parler';
+
+  @override
+  String get voiceConsentBody =>
+      'Votre voix est envoyée à Google pour que Looz comprenne et réponde. Looz n\'enregistre pas votre voix et ne garde pas vos paroles. Nous gardons seulement la durée de la conversation.';
+
+  @override
+  String get voiceConsentFreeTier =>
+      'Google peut aussi l\'utiliser pour améliorer ses services.';
+
+  @override
+  String get voiceConsentAccept => 'J\'accepte';
+
+  @override
+  String get voiceConsentRefuse => 'Non merci';
+
+  @override
+  String get voiceAdvice =>
+      'Looz peut se tromper. Pour les traitements, demandez à un expert.';
+
+  @override
   String get photo => 'Photo';
 
   @override
@@ -669,12 +752,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get askAnExpert => 'Demander à un expert';
-
-  @override
-  String get listening => 'Je vous écoute';
-
-  @override
-  String get speakFreely => 'Parlez tranquillement…';
 
   @override
   String get alertsTitle => 'Alertes';

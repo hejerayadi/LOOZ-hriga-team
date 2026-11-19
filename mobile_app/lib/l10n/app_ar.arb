@@ -541,6 +541,103 @@
   "askSubtitle": "اختر الأسهل لك",
   "speak": "تكلّم",
   "speakHint": "اضغط وقل سؤالك",
+  "voiceName": "لوز",
+  "@voiceName": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceConnecting": "لحظة…",
+  "@voiceConnecting": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceListening": "يسمع…",
+  "@voiceListening": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceThinking": "يفكّر…",
+  "@voiceThinking": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceSpeaking": "يحكي…",
+  "@voiceSpeaking": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceTapToInterrupt": "اضغط على لوز لتقاطعه",
+  "@voiceTapToInterrupt": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceLookingOrchard": "ينظر في بستانك…",
+  "@voiceLookingOrchard": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceYou": "أنت",
+  "@voiceYou": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceStop": "توقّف",
+  "@voiceStop": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceEnded": "انتهت المحادثة",
+  "@voiceEnded": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceTalkAgain": "تكلّم من جديد",
+  "@voiceTalkAgain": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceMinutesLeft": "{count, plural, =0{لم يبق وقت اليوم} =1{بقيت دقيقة واحدة اليوم} =2{بقيت دقيقتان اليوم} few{بقيت {count} دقائق اليوم} many{بقيت {count} دقيقة اليوم} other{بقيت {count} دقيقة اليوم}}",
+  "@voiceMinutesLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceLimitReached": "انتهى وقتك مع لوز اليوم. ارجع غدًا.",
+  "@voiceLimitReached": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceBusy": "لوز مشغول اليوم. حاول لاحقًا.",
+  "@voiceBusy": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceOff": "المساعد متوقف الآن.",
+  "@voiceOff": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceUnavailable": "لوز لا يجيب الآن.",
+  "@voiceUnavailable": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceMicNeeded": "اسمح باستعمال الميكروفون لتتكلّم مع لوز.",
+  "@voiceMicNeeded": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceConsentTitle": "قبل أن تتكلّم",
+  "@voiceConsentTitle": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceConsentBody": "صوتك يُرسل إلى غوغل ليفهمه لوز ويجيبك. لوز لا يسجّل صوتك ولا يحفظ كلامك. نحفظ فقط مدّة المحادثة.",
+  "@voiceConsentBody": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceConsentFreeTier": "وقد تستعمله غوغل لتحسين خدماتها.",
+  "@voiceConsentFreeTier": {
+    "description": "APP-ONLY. Voice assistant. Shown only while the Gemini key is on Google's free tier (app_settings.voice_google_free_tier)."
+  },
+  "voiceConsentAccept": "موافق",
+  "@voiceConsentAccept": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceConsentRefuse": "لا، شكرًا",
+  "@voiceConsentRefuse": {
+    "description": "APP-ONLY. Voice assistant."
+  },
+  "voiceAdvice": "لوز يمكن أن يخطئ. للأدوية اسأل خبيرًا.",
+  "@voiceAdvice": {
+    "description": "APP-ONLY. Voice assistant. The strict rule: never pesticide names or doses."
+  },
   "photo": "صورة",
   "text": "كتابة",
   "send": "أرسل",
@@ -710,8 +807,6 @@
   },
   "whatToDo": "ماذا أفعل؟",
   "askAnExpert": "اسأل خبيرًا",
-  "listening": "أنا أسمعك",
-  "speakFreely": "تكلّم براحتك…",
   "alertsTitle": "التنبيهات",
   "alertsSubtitle": "{count} تحتاج انتباهك",
   "@alertsSubtitle": {

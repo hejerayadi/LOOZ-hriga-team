@@ -507,6 +507,88 @@ class AppLocalizationsAr extends AppLocalizations {
   String get speakHint => 'اضغط وقل سؤالك';
 
   @override
+  String get voiceName => 'لوز';
+
+  @override
+  String get voiceConnecting => 'لحظة…';
+
+  @override
+  String get voiceListening => 'يسمع…';
+
+  @override
+  String get voiceThinking => 'يفكّر…';
+
+  @override
+  String get voiceSpeaking => 'يحكي…';
+
+  @override
+  String get voiceTapToInterrupt => 'اضغط على لوز لتقاطعه';
+
+  @override
+  String get voiceLookingOrchard => 'ينظر في بستانك…';
+
+  @override
+  String get voiceYou => 'أنت';
+
+  @override
+  String get voiceStop => 'توقّف';
+
+  @override
+  String get voiceEnded => 'انتهت المحادثة';
+
+  @override
+  String get voiceTalkAgain => 'تكلّم من جديد';
+
+  @override
+  String voiceMinutesLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'بقيت $count دقيقة اليوم',
+      many: 'بقيت $count دقيقة اليوم',
+      few: 'بقيت $count دقائق اليوم',
+      two: 'بقيت دقيقتان اليوم',
+      one: 'بقيت دقيقة واحدة اليوم',
+      zero: 'لم يبق وقت اليوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get voiceLimitReached => 'انتهى وقتك مع لوز اليوم. ارجع غدًا.';
+
+  @override
+  String get voiceBusy => 'لوز مشغول اليوم. حاول لاحقًا.';
+
+  @override
+  String get voiceOff => 'المساعد متوقف الآن.';
+
+  @override
+  String get voiceUnavailable => 'لوز لا يجيب الآن.';
+
+  @override
+  String get voiceMicNeeded => 'اسمح باستعمال الميكروفون لتتكلّم مع لوز.';
+
+  @override
+  String get voiceConsentTitle => 'قبل أن تتكلّم';
+
+  @override
+  String get voiceConsentBody =>
+      'صوتك يُرسل إلى غوغل ليفهمه لوز ويجيبك. لوز لا يسجّل صوتك ولا يحفظ كلامك. نحفظ فقط مدّة المحادثة.';
+
+  @override
+  String get voiceConsentFreeTier => 'وقد تستعمله غوغل لتحسين خدماتها.';
+
+  @override
+  String get voiceConsentAccept => 'موافق';
+
+  @override
+  String get voiceConsentRefuse => 'لا، شكرًا';
+
+  @override
+  String get voiceAdvice => 'لوز يمكن أن يخطئ. للأدوية اسأل خبيرًا.';
+
+  @override
   String get photo => 'صورة';
 
   @override
@@ -672,12 +754,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get askAnExpert => 'اسأل خبيرًا';
-
-  @override
-  String get listening => 'أنا أسمعك';
-
-  @override
-  String get speakFreely => 'تكلّم براحتك…';
 
   @override
   String get alertsTitle => 'التنبيهات';

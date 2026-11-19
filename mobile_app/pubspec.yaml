@@ -50,6 +50,14 @@ dependencies:
   image: ^4.12.0
   # Remembers the language chosen on the first screen (before the login).
   shared_preferences: ^2.5.6
+  # The voice assistant "لوز" (Gemini Live): the microphone as a stream of
+  # sound (16-bit PCM, Android + web, echo cancelling), the voice of "لوز"
+  # played while it arrives (24 kHz PCM; on web: the script in
+  # web/index.html), and the connection to Google.
+  # Exact versions for the 2 audio packages: a new release is tried first.
+  record: 7.1.2
+  flutter_soloud: 5.2.2
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:

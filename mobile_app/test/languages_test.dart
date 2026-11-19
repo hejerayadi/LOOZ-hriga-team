@@ -13,6 +13,7 @@ import 'package:looz_mobile/data/alerts_service.dart';
 import 'package:looz_mobile/data/diagnosis_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/user_profile.dart';
+import 'package:looz_mobile/data/voice_service.dart';
 import 'package:looz_mobile/features/alerts/regional_screen.dart';
 import 'package:looz_mobile/features/ask/ask_screen.dart';
 import 'package:looz_mobile/features/ask/voice_screen.dart';
@@ -54,6 +55,7 @@ import 'fake_community_service.dart';
 import 'fake_diagnosis_service.dart';
 import 'fake_orchard_service.dart';
 import 'fake_photo_picker.dart';
+import 'fake_voice.dart';
 import 'test_helpers.dart';
 
 // Words the design shows the same in both languages.
@@ -280,6 +282,17 @@ final screens = <(String, Widget, Plan, AppTab, bool)>[
   ('tips', const TipsScreen(), Plan.paid, AppTab.home, false),
   ('ask', const AskScreen(), Plan.paid, AppTab.home, false),
   ('voice', const VoiceScreen(), Plan.paid, AppTab.home, false),
+  // The voice assistant: the first-time message, the limit of the day, no
+  // internet.
+  ('voice (first time)', const VoiceScreen(), Plan.paid, AppTab.home, false),
+  (
+    'voice (limit of the day)',
+    const VoiceScreen(),
+    Plan.paid,
+    AppTab.home,
+    false,
+  ),
+  ('voice (no internet)', const VoiceScreen(), Plan.paid, AppTab.home, false),
   ('camera', const CameraScreen(), Plan.paid, AppTab.home, false),
   // The photo diagnosis (Bêta): looking, its failures, the 3 results.
   (
@@ -442,6 +455,22 @@ Future<List<String>> textsOf(
   }.entries.where((e) => name.contains('fails: ${e.key}')).firstOrNull;
   if (failure != null) {
     diagnosis.failNext = DiagnosisError(failure.value, perDay: 10);
+  }
+  final voice = FakeVoice();
+  if (name.contains('voice (')) {
+    final first = name.contains('first time');
+    voice.service.quota = VoiceQuota(
+      enabled: true,
+      paid: true,
+      consent: !first,
+      perDaySeconds: 300,
+      leftSeconds: name.contains('limit') ? 0 : 300,
+      sessionSeconds: 180,
+      appOpen: true,
+    );
+    if (name.contains('no internet')) {
+      voice.service.failQuota = const VoiceError(VoiceFailure.noInternet);
+    }
   }
   useAlerts(
     name.contains('none in the region')

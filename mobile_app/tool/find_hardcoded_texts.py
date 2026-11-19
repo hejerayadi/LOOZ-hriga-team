@@ -56,8 +56,12 @@ SERVER_FILES = {
     'data/orchard_design.dart',  # the designer's draft: JSON values of migration 011 ('grid', 'auto', 'draw')
     'data/alerts_service.dart',  # functions, states and error codes of the regional alerts (migration 015)
     'data/diagnosis_service.dart',  # Edge Function "diagnose", its codes and errors (migration 016)
+    'data/voice_service.dart',  # Edge Function "voice-token", its codes and errors (migration 017)
+    'data/voice_tools.dart',  # the tools of "لوز": tables, columns and JSON keys for Gemini
+    'data/gemini_live.dart',  # the messages of Google's Gemini Live API (JSON keys, address)
+    'data/voice_audio.dart',  # microphone / loudspeaker settings (no text)
 }
-SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_*.dart, alerts_service.dart, diagnosis_service.dart)'
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_*.dart, alerts_service.dart, diagnosis_service.dart, voice_*.dart, gemini_live.dart)'
 
 
 def without_comment(line):
