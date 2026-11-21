@@ -1,0 +1,14 @@
+# The ML worker (dashboard/backend/ml): the frost + stress models.
+# Install with:  pip install -r requirements-ml.txt
+# The versions are PINNED: the bundles (AI_modules_time_series/*.joblib) were
+# saved with scikit-learn 1.6.1 (both bundles say so) and need the same
+# major versions to load and predict exactly like the notebooks.
+-r requirements.txt
+scikit-learn==1.6.1         # the two pipelines (scaler, imputer, logistic regression)
+lightgbm==4.6.0             # the stress model is a tuned LightGBM (its own TreeSHAP = the SHAP values)
+numpy==2.2.6                # (the bundles were pickled with numpy 2: numpy._core)
+pandas==2.2.3               # the features, and the IQR fences inside the stress pipeline
+joblib==1.5.2               # loads the .joblib files
+# Optional, not needed by the saved models:
+#   xgboost   (the notebook's BalancedXGBClassifier; the saved stress model is LightGBM)
+#   shap      (only to cross-check our SHAP values: the tests use it when it is installed)

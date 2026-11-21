@@ -1,6 +1,51 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-cairo);
   --font-mono: var(--font-geist-mono);
+}
+
+/* The colours of the LOOZ app (mobile_app/lib/core/theme/app_colors.dart).
+   The "emerald" scale of Tailwind is replaced by the app's greens, so every
+   page (buttons, links, tags) wears the same colours as the app. */
+@theme {
+  --color-looz-green: #0f3d2b;     /* text, tab bar */
+  --color-looz-leaf: #8ed04a;      /* active tab, "ok" */
+  --color-looz-light: #b8dF9b;     /* main buttons */
+  --color-looz-mid: #72ae4f;       /* premium star */
+  --color-looz-mint: #c8efd9;      /* tiles */
+  --color-looz-mintwhite: #eaf8f0; /* page background */
+  --color-looz-cream: #faf8f3;     /* page background */
+  --color-looz-warning: #69a66f;   /* "watch" (a medium green) */
+  --color-looz-danger: #28664a;    /* "act now" (a dark green) */
+  --color-looz-info: #6e9fc4;      /* information, cold (frost) */
+  --color-looz-nodata: #9aa8a0;    /* no prediction */
+
+  --color-emerald-50: #eaf8f0;
+  --color-emerald-100: #c8efd9;
+  --color-emerald-200: #b8df9b;
+  --color-emerald-300: #8ed04a;
+  --color-emerald-400: #72ae4f;
+  --color-emerald-500: #5e9b5f;
+  --color-emerald-600: #3e7f58;
+  --color-emerald-700: #28664a;
+  --color-emerald-800: #0f3d2b;
+  --color-emerald-900: #0a2c1f;
+  --color-emerald-950: #061a12;
+}
+
+/* Readable tables everywhere: a light header, a hover line, numbers aligned. */
+@layer base {
+  table thead th {
+    @apply text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+  table tbody tr {
+    @apply transition-colors;
+  }
+  table tbody tr:hover {
+    @apply bg-emerald-50/60;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-emerald-400;
+  }
 }

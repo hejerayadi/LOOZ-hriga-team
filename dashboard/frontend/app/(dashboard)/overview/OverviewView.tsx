@@ -6,6 +6,9 @@
 import Link from "next/link";
 
 import { useAdmin } from "@/components/AdminGuard";
+import { DayBars, Kpi } from "@/components/charts";
+import { Card } from "@/components/ui";
+import { STATE, getMl, getTrends } from "@/lib/insights";
 import { Empty, ErrorBox } from "@/components/ui";
 import { errorMessage, getOverview } from "@/lib/api";
 import { date, money, timeAgo } from "@/lib/format";
@@ -29,11 +32,11 @@ function Tile({
   children?: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="group rounded-xl border border-slate-200 bg-white p-4 hover:border-emerald-300 hover:shadow-sm">
-      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <Link href={href} className="group rounded-2xl border border-emerald-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,61,43,0.06)] transition hover:-translate-y-0.5 hover:border-emerald-300">
+      <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-emerald-700">
         {title}
       </div>
-      <div className="mt-1 text-3xl font-bold tabular-nums text-slate-900">{value}</div>
+      <div className="mt-1 text-3xl font-extrabold tabular-nums text-emerald-900">{value}</div>
       <div className="mt-1 text-sm text-slate-600">{children}</div>
     </Link>
   );
@@ -141,8 +144,8 @@ function Todo({ o, now }: { o: Overview; now: number }) {
   const t = o.todo;
   const total = t.boxes_waiting.length + t.sensor_problems.length + t.experts.length + t.reports.length + o.visits_open;
   return (
-    <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">À faire</h2>
+    <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,61,43,0.06)]">
+      <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-700">À faire</h2>
       {total === 0 ? (
         <div className="mt-3">
           <Empty>Rien à faire pour l&apos;instant.</Empty>
@@ -189,6 +192,58 @@ function Todo({ o, now }: { o: Overview; now: number }) {
   );
 }
 
+/** The last 30 days: the activity of the app, and what the predictions say now. */
+function Trends() {
+  const trends = usePolling(() => getTrends(30), 120_000);
+  const ml = usePolling(getMl, 30_000);
+  const t = trends.data;
+  if (!t) return trends.error ? null : <p className="mt-6 text-slate-500">Chargement des tendances…</p>;
+  const sum = (k: keyof typeof t.series) => t.series[k].reduce((a, b) => a + b, 0);
+  const preds = ml.data?.predictions ?? [];
+  const frostRisk = preds.filter((p) => p.state === "frost_risk").length;
+  const stressed = preds.filter((p) => p.model === "stress" && p.status === "ok" && p.state !== "none");
+  return (
+    <>
+      <h2 className="mt-8 text-lg font-extrabold text-emerald-800">Les 30 derniers jours</h2>
+      <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <Kpi label="Inscriptions" value={sum("signups")} icon="userPlus" trend={t.series.signups} href="/users" />
+        <Kpi label="Paiements démo" value={`${sum("payments_dt")} DT`} icon="subscriptions" trend={t.series.payments_dt} href="/subscriptions?tab=payments" />
+        <Kpi label="Problèmes (IA)" value={sum("problems")} icon="predictions" trend={t.series.problems} href="/predictions" />
+        <Kpi label="Diagnostics photo" value={sum("diagnoses")} icon="camera" trend={t.series.diagnoses} href="/diagnoses" />
+        <Kpi label="Minutes de voix" value={Math.round(sum("voice_minutes"))} icon="voice" trend={t.series.voice_minutes} href="/voice" />
+        <Kpi label="Questions publiées" value={sum("posts")} icon="community" trend={t.series.posts} href="/community" />
+      </div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <Card title="Inscriptions par jour">
+          <DayBars days={t.days} values={t.series.signups} label="Inscriptions par jour" />
+        </Card>
+        <Card title="Prédictions IA en ce moment" action={<Link href="/predictions" className="text-sm font-semibold text-emerald-800 hover:underline">Ouvrir →</Link>}>
+          {preds.length === 0 ? (
+            <p className="text-sm text-slate-500">Aucune prédiction pour l&apos;instant.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              <li className="flex justify-between"><span>Risque de gel cette nuit</span><b className="tabular-nums">{frostRisk}</b></li>
+              <li className="flex justify-between"><span>Zones avec un stress</span><b className="tabular-nums">{stressed.length}</b></li>
+              {stressed.slice(0, 4).map((p) => (
+                <li key={p.node_id} className="truncate text-xs text-slate-600">
+                  {p.farmer.name} · zone {p.zone.letter} : {STATE[p.state ?? ""] ?? p.state}
+                </li>
+              ))}
+              <li className="flex justify-between"><span>Notifications ouvertes</span><b className="tabular-nums">{ml.data?.open_problems ?? 0}</b></li>
+            </ul>
+          )}
+        </Card>
+        <Card title="Problèmes détectés par jour (IA)">
+          <DayBars days={t.days} values={t.series.problems} label="Problèmes détectés par jour" color="#69a66f" />
+        </Card>
+        <Card title="Minutes de l'assistant vocal">
+          <DayBars days={t.days} values={t.series.voice_minutes} unit=" min" label="Minutes de voix par jour" color="#72ae4f" />
+        </Card>
+      </div>
+    </>
+  );
+}
+
 export function OverviewView() {
   const admin = useAdmin();
   const { data, error, receivedAt, reload } = usePolling(getOverview, 30000);
@@ -211,6 +266,7 @@ export function OverviewView() {
       {data && (
         <>
           <Tiles o={data} />
+          <Trends />
           <Todo o={data} now={serverNow} />
         </>
       )}

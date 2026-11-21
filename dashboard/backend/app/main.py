@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .routers import admin_settings, alerts, community, demo_login, farmers, me, orchards, overview, sensors, users
+from .routers import admin_settings, alerts, community, demo_login, farmers, insights, me, orchards, overview, sensors, users
 
 app = FastAPI(title="Looz Admin API")
 
@@ -33,6 +33,7 @@ app.include_router(community.router)
 app.include_router(alerts.router)
 app.include_router(orchards.router)
 app.include_router(admin_settings.router)
+app.include_router(insights.router)
 
 
 @app.get("/api/health", tags=["health"])

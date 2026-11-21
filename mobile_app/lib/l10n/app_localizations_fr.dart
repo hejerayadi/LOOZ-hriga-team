@@ -637,6 +637,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'La photo est envoyée pour l\'examen et gardée dans votre compte seulement.';
 
   @override
+  String get photoPrivacyNoteAi =>
+      'La photo est envoyée à un service d\'IA (Google ou un autre fournisseur) pour l\'examen, et gardée dans votre compte.';
+
+  @override
+  String get photoGoogleFreeTier =>
+      'Google peut aussi l\'utiliser pour améliorer ses services.';
+
+  @override
   String get verdictLikely => 'Probablement';
 
   @override
@@ -1469,4 +1477,275 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get missingKeys =>
       'Clés Supabase manquantes.\n\nRemplissez mobile_app/.env puis lancez :\nflutter run --dart-define-from-file=.env';
+
+  @override
+  String get mlStateOk => 'Tout va bien';
+
+  @override
+  String get mlStateWaterDeficit => 'Manque d\'eau';
+
+  @override
+  String get mlStateWaterlogging => 'Trop d\'eau';
+
+  @override
+  String get mlStateHeat => 'Forte chaleur';
+
+  @override
+  String get mlStateFrostDamage => 'Dégâts du froid';
+
+  @override
+  String get mlStateRootzone => 'Problème de racines';
+
+  @override
+  String get mlStateFrostRisk => 'Risque de gel cette nuit';
+
+  @override
+  String get mlStateNoFrost => 'Pas de gel cette nuit';
+
+  @override
+  String get mlStateSensorProblem => 'Problème de capteur';
+
+  @override
+  String get mlStateNotEnoughData => 'Pas assez de données';
+
+  @override
+  String get mlStateOffline => 'Capteur hors ligne';
+
+  @override
+  String get mlTonight => 'Cette nuit';
+
+  @override
+  String get mlTrees => 'Les arbres';
+
+  @override
+  String get mlWhy => 'Pourquoi ?';
+
+  @override
+  String mlUpdated(String time) {
+    return 'Mise à jour : $time';
+  }
+
+  @override
+  String get mlReadings => 'Dernières mesures';
+
+  @override
+  String get mlSoilWater => 'Eau du sol';
+
+  @override
+  String get mlSoilTemp => 'Sol';
+
+  @override
+  String get mlAirTemp => 'Air';
+
+  @override
+  String get mlHumidity => 'Humidité de l\'air';
+
+  @override
+  String get mlNotEnoughDataText =>
+      'Il faut un jour de mesures avant une prévision. Revenez un peu plus tard.';
+
+  @override
+  String get mlSensorProblemText =>
+      'Le capteur de cette zone donne de mauvaises mesures. Pas de prévision tant qu\'il ne remarche pas.';
+
+  @override
+  String get mlOfflineText =>
+      'Rien n\'est arrivé du capteur de cette zone depuis un moment.';
+
+  @override
+  String get mlWaitingText => 'L\'équipe Looz viendra installer le capteur.';
+
+  @override
+  String mlTemplateText(String zone, String state, String reasons) {
+    return '$zone : $state. Pourquoi : $reasons.';
+  }
+
+  @override
+  String get mlTemplateUnsure =>
+      'Nous ne sommes pas sûrs : regardez les arbres vous-même.';
+
+  @override
+  String get mlAllZonesFine => 'Toutes vos zones vont bien.';
+
+  @override
+  String get mlNoPredictionYet => 'Nous attendons les mesures de vos capteurs.';
+
+  @override
+  String get mlToastOpen => 'Touchez pour voir la zone';
+
+  @override
+  String mlZoneOf(String zone, String state) {
+    return '$zone : $state';
+  }
+
+  @override
+  String get mlActionNone =>
+      'Continuez comme d\'habitude et regardez les arbres chaque jour.';
+
+  @override
+  String get mlActionWaterDeficit =>
+      'Vérifiez la ligne d\'irrigation de la zone et arrosez si le sol est sec.';
+
+  @override
+  String get mlActionWaterlogging =>
+      'Arrêtez d\'arroser cette zone et regardez si l\'eau stagne.';
+
+  @override
+  String get mlActionHeat => 'Arrosez tôt le matin ou le soir, pas à midi.';
+
+  @override
+  String get mlActionFrostDamage =>
+      'Allez voir les fleurs et les petits fruits de cette zone.';
+
+  @override
+  String get mlActionRootzone =>
+      'Demandez à un expert pour les racines et le sel de l\'eau.';
+
+  @override
+  String get mlActionFrostRisk =>
+      'Allez voir la zone ce soir et préparez la protection que vous utilisez d\'habitude.';
+
+  @override
+  String get mlActionNoFrost =>
+      'Rien de spécial, regardez les arbres comme d\'habitude.';
+
+  @override
+  String get mlFactorSoilWaterLow => 'Peu d\'eau dans le sol';
+
+  @override
+  String get mlFactorSoilWaterHigh => 'Beaucoup d\'eau dans le sol';
+
+  @override
+  String get mlFactorSoilDryingLow => 'Le sol sèche lentement';
+
+  @override
+  String get mlFactorSoilDryingHigh => 'Le sol sèche vite';
+
+  @override
+  String get mlFactorSoilTooWetLow => 'Le sol n\'est pas gorgé d\'eau';
+
+  @override
+  String get mlFactorSoilTooWetHigh => 'Le sol est gorgé d\'eau';
+
+  @override
+  String get mlFactorWateringLow =>
+      'Pas d\'eau arrivée au sol depuis un moment';
+
+  @override
+  String get mlFactorWateringHigh =>
+      'De l\'eau est arrivée (arrosage ou pluie)';
+
+  @override
+  String get mlFactorTreeWaterNeedLow =>
+      'Les arbres ont peu besoin d\'eau en ce moment';
+
+  @override
+  String get mlFactorTreeWaterNeedHigh =>
+      'Les arbres ont besoin de beaucoup d\'eau en ce moment';
+
+  @override
+  String get mlFactorAirHeatLow => 'La journée n\'est pas chaude';
+
+  @override
+  String get mlFactorAirHeatHigh => 'Forte chaleur la journée';
+
+  @override
+  String get mlFactorNightColdLow => 'La nuit dernière était froide';
+
+  @override
+  String get mlFactorNightColdHigh => 'La nuit dernière n\'était pas froide';
+
+  @override
+  String get mlFactorEveningTempLow => 'Il fait froid maintenant';
+
+  @override
+  String get mlFactorEveningTempHigh => 'Il ne fait pas froid maintenant';
+
+  @override
+  String get mlFactorCoolingFastLow => 'La température baisse lentement';
+
+  @override
+  String get mlFactorCoolingFastHigh => 'La température baisse vite';
+
+  @override
+  String get mlFactorNightLowExpectedLow => 'La nuit peut devenir très froide';
+
+  @override
+  String get mlFactorNightLowExpectedHigh =>
+      'La nuit ne devrait pas être très froide';
+
+  @override
+  String get mlFactorDewPointLow => 'L\'air est sec (point de rosée bas)';
+
+  @override
+  String get mlFactorDewPointHigh => 'L\'air est humide (point de rosée haut)';
+
+  @override
+  String get mlFactorAirHumidityLow => 'L\'air est peu humide';
+
+  @override
+  String get mlFactorAirHumidityHigh => 'L\'air est très humide';
+
+  @override
+  String get mlFactorAirDrynessLow => 'L\'air n\'est pas sec';
+
+  @override
+  String get mlFactorAirDrynessHigh => 'L\'air est sec et chaud';
+
+  @override
+  String get mlFactorClearSkyLow => 'Le ciel n\'est pas dégagé';
+
+  @override
+  String get mlFactorClearSkyHigh =>
+      'Ciel clair : la chaleur s\'échappe la nuit';
+
+  @override
+  String get mlFactorSunlightLow => 'Peu de soleil';
+
+  @override
+  String get mlFactorSunlightHigh => 'Beaucoup de soleil';
+
+  @override
+  String get mlFactorSoilTempLow => 'Le sol est froid';
+
+  @override
+  String get mlFactorSoilTempHigh => 'Le sol est chaud';
+
+  @override
+  String get mlFactorTreeSoundsLow => 'Le tronc est calme';
+
+  @override
+  String get mlFactorTreeSoundsHigh => 'Le tronc donne des signes de soif';
+
+  @override
+  String get mlFactorZonePlaceLow =>
+      'La zone est dans un creux (le froid s\'y accumule)';
+
+  @override
+  String get mlFactorZonePlaceHigh => 'La zone est en hauteur';
+
+  @override
+  String get mlFactorGroundCoverLow => 'Petits arbres qui couvrent peu le sol';
+
+  @override
+  String get mlFactorGroundCoverHigh => 'Grands arbres qui couvrent le sol';
+
+  @override
+  String get mlFactorSeasonStage => 'La saison et le stade des arbres';
+
+  @override
+  String get mlFactorSoilType => 'Le type de sol';
+
+  @override
+  String get mlFactorIrrigationType =>
+      'Le mode d\'arrosage et le sel de l\'eau';
+
+  @override
+  String get mlFactorOtherZones => 'Comparé à vos autres zones';
+
+  @override
+  String get mlFactorDataQuality => 'Certaines mesures manquent';
+
+  @override
+  String get mlListSeparator => ', ';
 }

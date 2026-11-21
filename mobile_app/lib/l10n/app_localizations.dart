@@ -1172,6 +1172,18 @@ abstract class AppLocalizations {
   /// **'تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.'**
   String get photoPrivacyNote;
 
+  /// APP-ONLY. Photo diagnosis: under the camera button when the model is Gemini (app_settings.diagnosis_model = gemini:...); its backups: another Gemini key, then Groq.
+  ///
+  /// In ar, this message translates to:
+  /// **'تُرسل الصورة إلى خدمة ذكاء اصطناعي (غوغل أو مزوّد آخر) لفحصها، وتُحفظ في حسابك.'**
+  String get photoPrivacyNoteAi;
+
+  /// APP-ONLY. Photo diagnosis: added after photoPrivacyNoteGoogle while app_settings.diagnosis_google_free_tier is true (Google free tier).
+  ///
+  /// In ar, this message translates to:
+  /// **'وقد تستعملها غوغل لتحسين خدماتها.'**
+  String get photoGoogleFreeTier;
+
   /// APP-ONLY. Photo diagnosis.
   ///
   /// In ar, this message translates to:
@@ -2641,6 +2653,498 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'مفاتيح Supabase غير موجودة.\n\nاملأ ملف mobile_app/.env ثم شغّل:\nflutter run --dart-define-from-file=.env'**
   String get missingKeys;
+
+  /// APP-ONLY. 3D / zone panel: the prediction says the trees of the zone are fine.
+  ///
+  /// In ar, this message translates to:
+  /// **'بخير'**
+  String get mlStateOk;
+
+  /// APP-ONLY. Prediction (stress model): water deficit.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقص الماء'**
+  String get mlStateWaterDeficit;
+
+  /// APP-ONLY. Prediction: waterlogged soil.
+  ///
+  /// In ar, this message translates to:
+  /// **'ماء زائد'**
+  String get mlStateWaterlogging;
+
+  /// APP-ONLY. Prediction: heat stress.
+  ///
+  /// In ar, this message translates to:
+  /// **'حرارة شديدة'**
+  String get mlStateHeat;
+
+  /// APP-ONLY. Prediction (stress model): frost damage at bloom / small nuts.
+  ///
+  /// In ar, this message translates to:
+  /// **'ضرر البرد'**
+  String get mlStateFrostDamage;
+
+  /// APP-ONLY. Prediction: root-zone problem (salt, roots).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكل في الجذور'**
+  String get mlStateRootzone;
+
+  /// APP-ONLY. Prediction (frost model): frost tonight.
+  ///
+  /// In ar, this message translates to:
+  /// **'خطر صقيع الليلة'**
+  String get mlStateFrostRisk;
+
+  /// APP-ONLY. Frost model: no frost tonight.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا صقيع الليلة'**
+  String get mlStateNoFrost;
+
+  /// APP-ONLY. The sensor box of the zone gives wrong readings.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكل في الحسّاس'**
+  String get mlStateSensorProblem;
+
+  /// APP-ONLY. Not enough readings yet for a prediction.
+  ///
+  /// In ar, this message translates to:
+  /// **'قراءات غير كافية'**
+  String get mlStateNotEnoughData;
+
+  /// APP-ONLY. Nothing received from the box for a while.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحسّاس غير متصل'**
+  String get mlStateOffline;
+
+  /// APP-ONLY. Zone panel: the line of the frost model.
+  ///
+  /// In ar, this message translates to:
+  /// **'الليلة'**
+  String get mlTonight;
+
+  /// APP-ONLY. Zone panel: the line of the stress model.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأشجار'**
+  String get mlTrees;
+
+  /// APP-ONLY. Zone panel: the main reasons (SHAP) as bars.
+  ///
+  /// In ar, this message translates to:
+  /// **'لماذا؟'**
+  String get mlWhy;
+
+  /// APP-ONLY. Zone panel. {time} = "منذ 5 دقائق".
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر تحديث: {time}'**
+  String mlUpdated(String time);
+
+  /// APP-ONLY. Zone panel: the latest readings of the box.
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر القراءات'**
+  String get mlReadings;
+
+  /// APP-ONLY. A reading (soil moisture).
+  ///
+  /// In ar, this message translates to:
+  /// **'ماء التربة'**
+  String get mlSoilWater;
+
+  /// APP-ONLY. A reading (soil temperature).
+  ///
+  /// In ar, this message translates to:
+  /// **'حرارة التربة'**
+  String get mlSoilTemp;
+
+  /// APP-ONLY. A reading (air temperature).
+  ///
+  /// In ar, this message translates to:
+  /// **'حرارة الهواء'**
+  String get mlAirTemp;
+
+  /// APP-ONLY. A reading (air humidity).
+  ///
+  /// In ar, this message translates to:
+  /// **'رطوبة الهواء'**
+  String get mlHumidity;
+
+  /// APP-ONLY. Zone panel, not enough data.
+  ///
+  /// In ar, this message translates to:
+  /// **'نحتاج يومًا من القراءات قبل أن نتوقّع. ارجع بعد قليل.'**
+  String get mlNotEnoughDataText;
+
+  /// APP-ONLY. Zone panel, sensor problem.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسّاس هذه المنطقة يعطي قراءات غير صحيحة. لا نتوقّع حتى يرجع يخدم.'**
+  String get mlSensorProblemText;
+
+  /// APP-ONLY. Zone panel, box offline.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يصلنا شيء من حسّاس هذه المنطقة منذ مدة.'**
+  String get mlOfflineText;
+
+  /// APP-ONLY. Zone panel, box not installed.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيأتي فريق لوز لتركيب الحسّاس.'**
+  String get mlWaitingText;
+
+  /// APP-ONLY. Explanation made from the codes when Groq gave no text.
+  ///
+  /// In ar, this message translates to:
+  /// **'في {zone}: {state}. السبب: {reasons}.'**
+  String mlTemplateText(String zone, String state, String reasons);
+
+  /// APP-ONLY. Added to the template when the model is unsure.
+  ///
+  /// In ar, this message translates to:
+  /// **'موش متأكدين: شوف الشجر بنفسك.'**
+  String get mlTemplateUnsure;
+
+  /// APP-ONLY. Alerts tab, "بستاني" section, no problem.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل مناطقك بخير.'**
+  String get mlAllZonesFine;
+
+  /// APP-ONLY. Alerts tab, no prediction yet.
+  ///
+  /// In ar, this message translates to:
+  /// **'ننتظر قراءات حسّاساتك.'**
+  String get mlNoPredictionYet;
+
+  /// APP-ONLY. In-app notification: tap to open the zone.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط لترى المنطقة'**
+  String get mlToastOpen;
+
+  /// APP-ONLY. Title of a card / notification.
+  ///
+  /// In ar, this message translates to:
+  /// **'{zone}: {state}'**
+  String mlZoneOf(String zone, String state);
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (stress model, state none).
+  ///
+  /// In ar, this message translates to:
+  /// **'كمّل كيف العادة وشوف الشجر كل نهار.'**
+  String get mlActionNone;
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (stress model, state water_deficit).
+  ///
+  /// In ar, this message translates to:
+  /// **'شوف خط السقي في المنطقة هاذي واسقي كان التربة ناشفة.'**
+  String get mlActionWaterDeficit;
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (stress model, state waterlogging).
+  ///
+  /// In ar, this message translates to:
+  /// **'وقّف السقي في المنطقة هاذي وشوف كان الماء واقف.'**
+  String get mlActionWaterlogging;
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (stress model, state heat).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسقي في الصباح بكري ولا العشية، موش في القايلة.'**
+  String get mlActionHeat;
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (stress model, state frost).
+  ///
+  /// In ar, this message translates to:
+  /// **'امشي شوف النوّار والثمار الصغار في المنطقة هاذي.'**
+  String get mlActionFrostDamage;
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (stress model, state rootzone).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسأل خبير على الجذور وملوحة الماء.'**
+  String get mlActionRootzone;
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (frost model, state frost_risk).
+  ///
+  /// In ar, this message translates to:
+  /// **'امشي للمنطقة هاذي الليلة وحضّر الحماية اللي تستعمل فيها عادة.'**
+  String get mlActionFrostRisk;
+
+  /// APP-ONLY. "ماذا أفعل؟" of the template (frost model, state no_frost).
+  ///
+  /// In ar, this message translates to:
+  /// **'ما تعمل شي خاص، شوف الشجر كيف العادة.'**
+  String get mlActionNoFrost;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_water, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'ماء قليل في التربة'**
+  String get mlFactorSoilWaterLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_water, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'التربة فيها برشا ماء'**
+  String get mlFactorSoilWaterHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_drying, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'التربة تنشف بشوية'**
+  String get mlFactorSoilDryingLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_drying, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'التربة تنشف بسرعة'**
+  String get mlFactorSoilDryingHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_too_wet, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'التربة موش مشبعة بالماء'**
+  String get mlFactorSoilTooWetLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_too_wet, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'التربة مشبعة بالماء'**
+  String get mlFactorSoilTooWetHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor watering, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'ما جاش ماء للتربة من مدة'**
+  String get mlFactorWateringLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor watering, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'جا ماء للتربة (سقي ولا مطر)'**
+  String get mlFactorWateringHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor tree_water_need, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الشجر يحتاج شوية ماء في الوقت هذا'**
+  String get mlFactorTreeWaterNeedLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor tree_water_need, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الشجر يحتاج برشا ماء في الوقت هذا'**
+  String get mlFactorTreeWaterNeedHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor air_heat, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'النهار موش سخون'**
+  String get mlFactorAirHeatLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor air_heat, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'سخانة قوية في النهار'**
+  String get mlFactorAirHeatHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor night_cold, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الليل اللي فات كان بارد'**
+  String get mlFactorNightColdLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor night_cold, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الليل اللي فات ما كانش بارد'**
+  String get mlFactorNightColdHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor evening_temp, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحرارة توّا منخفضة'**
+  String get mlFactorEveningTempLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor evening_temp, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحرارة توّا موش منخفضة'**
+  String get mlFactorEveningTempHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor cooling_fast, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحرارة تهبط بشوية'**
+  String get mlFactorCoolingFastLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor cooling_fast, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحرارة تهبط بسرعة'**
+  String get mlFactorCoolingFastHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor night_low_expected, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الليلة تنجم تبرد برشا'**
+  String get mlFactorNightLowExpectedLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor night_low_expected, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الليلة ما تبردش برشا'**
+  String get mlFactorNightLowExpectedHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor dew_point, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الهواء ناشف (نقطة الندى منخفضة)'**
+  String get mlFactorDewPointLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor dew_point, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الهواء فيه رطوبة (نقطة الندى عالية)'**
+  String get mlFactorDewPointHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor air_humidity, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'رطوبة الهواء منخفضة'**
+  String get mlFactorAirHumidityLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor air_humidity, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'رطوبة الهواء عالية'**
+  String get mlFactorAirHumidityHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor air_dryness, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الهواء موش ناشف'**
+  String get mlFactorAirDrynessLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor air_dryness, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الهواء ناشف وسخون'**
+  String get mlFactorAirDrynessHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor clear_sky, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'السماء موش صافية'**
+  String get mlFactorClearSkyLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor clear_sky, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'السماء صافية: السخانة تهرب في الليل'**
+  String get mlFactorClearSkyHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor sunlight, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'شمس قليلة'**
+  String get mlFactorSunlightLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor sunlight, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'شمس قوية'**
+  String get mlFactorSunlightHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_temp, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'التربة باردة'**
+  String get mlFactorSoilTempLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_temp, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'التربة سخونة'**
+  String get mlFactorSoilTempHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor tree_sounds, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'جذع الشجرة هادئ'**
+  String get mlFactorTreeSoundsLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor tree_sounds, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'جذع الشجرة يعطي إشارات عطش'**
+  String get mlFactorTreeSoundsHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor zone_place, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'المنطقة في بقعة منخفضة (البرد يتجمع فيها)'**
+  String get mlFactorZonePlaceLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor zone_place, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'المنطقة في بقعة عالية'**
+  String get mlFactorZonePlaceHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor ground_cover, low).
+  ///
+  /// In ar, this message translates to:
+  /// **'الشجر صغير وما يغطيش الأرض'**
+  String get mlFactorGroundCoverLow;
+
+  /// APP-ONLY. A main reason of a prediction (factor ground_cover, high).
+  ///
+  /// In ar, this message translates to:
+  /// **'الشجر كبير ويغطي الأرض'**
+  String get mlFactorGroundCoverHigh;
+
+  /// APP-ONLY. A main reason of a prediction (factor season_stage, same).
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت العام ومرحلة الشجر'**
+  String get mlFactorSeasonStage;
+
+  /// APP-ONLY. A main reason of a prediction (factor soil_type, same).
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع التربة'**
+  String get mlFactorSoilType;
+
+  /// APP-ONLY. A main reason of a prediction (factor irrigation_type, same).
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة السقي وملوحة الماء'**
+  String get mlFactorIrrigationType;
+
+  /// APP-ONLY. A main reason of a prediction (factor other_zones, same).
+  ///
+  /// In ar, this message translates to:
+  /// **'مقارنة بالمناطق الأخرى متاعك'**
+  String get mlFactorOtherZones;
+
+  /// APP-ONLY. A main reason of a prediction (factor data_quality, same).
+  ///
+  /// In ar, this message translates to:
+  /// **'بعض القراءات ناقصة'**
+  String get mlFactorDataQuality;
+
+  /// APP-ONLY. Between two reasons of the template text (Arabic comma).
+  ///
+  /// In ar, this message translates to:
+  /// **'، '**
+  String get mlListSeparator;
 }
 
 class _AppLocalizationsDelegate

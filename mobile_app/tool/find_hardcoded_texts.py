@@ -21,6 +21,17 @@ GOVERNORATE_CODES = {
     'kasserine', 'sidi_bouzid', 'gabes', 'medenine', 'tataouine', 'gafsa', 'tozeur', 'kebili',
 }
 
+# The codes of the predictions (migration 019): states, models, statuses and
+# factor codes, each shown with its ARB text (features/orchard_3d/zone_live_texts.dart).
+ML_CODES = {
+    'none', 'ok', 'water_deficit', 'waterlogging', 'heat', 'frost', 'rootzone', 'frost_risk', 'no_frost',
+    'stress', 'not_enough_data', 'sensor_problem', 'waiting', 'installed', 'low', 'high', 'likely', 'unsure',
+    'danger', 'read', 'soil_water', 'soil_drying', 'soil_too_wet', 'watering', 'tree_water_need', 'air_heat',
+    'night_cold', 'evening_temp', 'cooling_fast', 'night_low_expected', 'dew_point', 'air_humidity',
+    'air_dryness', 'clear_sky', 'sunlight', 'soil_temp', 'tree_sounds', 'season_stage', 'zone_place',
+    'soil_type', 'irrigation_type', 'ground_cover', 'other_zones', 'data_quality',
+}
+
 # Technical strings: (name of the category, test on the line and the text).
 TECHNICAL = [
     ('import / export', lambda line, s: re.match(r'\s*(import|export|part)\s', line) or 'dart.library' in line),
@@ -28,7 +39,8 @@ TECHNICAL = [
     ('symbol file name', lambda line, s: re.match(r"\s*\w+\('[^']+', '\w+', \d+\)", line)),
     ('JSON / map key', lambda line, s: re.search(re.escape(f"'{s}'") + r"\s*:", line) or re.search(r"\[\s*'" + re.escape(s) + r"'\s*\]", line)),
     ('language code', lambda line, s: s in ('ar', 'fr')),
-    ('3D page message', lambda line, s: s.startswith(('looz:', 'window.', '{"looz_lang"'))),
+    ('3D page message', lambda line, s: s.startswith(('looz:', 'window.', '{"looz_lang"', '{"looz_live"'))),
+    ('prediction code (migration 019, shown with its ARB text)', lambda line, s: s in ML_CODES),
     ('data id / code', lambda line, s: re.fullmatch(r'(zone|node)-[a-z]|[A-D]|main|pollinizer|online|offline', s) is not None),
     ('font / channel name', lambda line, s: s in ('Cairo', 'LoozFlutter')),
     ('web (iframe) code', lambda line, s: s in ('iframe', 'message', 'none', 'window')),
@@ -60,8 +72,9 @@ SERVER_FILES = {
     'data/voice_tools.dart',  # the tools of "لوز": tables, columns and JSON keys for Gemini
     'data/gemini_live.dart',  # the messages of Google's Gemini Live API (JSON keys, address)
     'data/voice_audio.dart',  # microphone / loudspeaker settings (no text)
+    'data/ml_service.dart',  # tables, columns and codes of the predictions (migration 019)
 }
-SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_*.dart, alerts_service.dart, diagnosis_service.dart, voice_*.dart, gemini_live.dart)'
+SERVER = 'Supabase names / error codes (lib/data/auth_service.dart, user_profile.dart, community_*.dart, payment_service.dart, orchard_*.dart, alerts_service.dart, diagnosis_service.dart, voice_*.dart, gemini_live.dart, ml_service.dart)'
 
 
 def without_comment(line):

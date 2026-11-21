@@ -1,6 +1,6 @@
 # Looz — project status
 
-Last update: 15 November 2026 (voice assistant "لوز" Bêta, Milestone 1 built: migration 017 to run, Edge Function "voice-token" to deploy, section 17).
+Last update: 21 November 2026 (the two **ML models** in the app — frost tonight + stress of the trees, with SHAP reasons, Groq explanations in Derja + French, in-app notifications, live data: migration **019** to run + the ML worker to start, section 18; the **admin dashboard redesigned**, section 19). Before: 19 November (photo diagnosis with Gemini, section 16; voice assistant, section 17).
 
 > **⚠ Before a real launch: turn the DEMO LOGIN off** (section 5). While it is on, anyone who types a
 > phone number can open that account: any 6-digit code works. Turn the **demo payment** off too
@@ -14,6 +14,12 @@ Last update: 15 November 2026 (voice assistant "لوز" Bêta, Milestone 1 built
 > "Paid" on aistudio.google.com/api-keys; set a monthly spend cap (aistudio.google.com/spend, e.g.
 > $20); then Table Editor › `app_settings` › `voice_google_free_tier` = **false** (the first-time
 > message then stops saying "وقد تستعمله غوغل لتحسين خدماتها"). Until then: demo accounts only.
+>
+> **The same for the PHOTO diagnosis (Gemini, section 16)**: its key `GEMINI_VISION_API_KEY` is in
+> ANOTHER Google project ("looz-vision"): set up billing on THAT project too, then
+> `app_settings.diagnosis_google_free_tier` = **false** (the camera screen then stops saying "وقد
+> تستعملها غوغل لتحسين خدماتها") and raise `diagnosis_app_per_day` (15 now: the free tier allows
+> only 20 photos a day and 5 a minute).
 
 > **⚠ Supabase Free pauses a project after 1 week without activity — check it before the jury.**
 > Open the Supabase dashboard a few days before: if the project says "Paused", click "Restore"
@@ -29,17 +35,18 @@ Last update: 15 November 2026 (voice assistant "لوز" Bêta, Milestone 1 built
 | Login with the phone | Done as a **demo login** (any number, any code, no SMS) | **Real** accounts and sessions (Edge Function `demo-auth`) |
 | **Two packs**: Free and Premium (8 DT per zone / 30 days) | Done | **Real** (database rules + app) |
 | Payment of Premium: the bill comes from the database (zones of the orchard) | Done as a **demo** (no real money) | **Real** database, demo card |
-| **My orchard in 3D** (Premium): the farmer's real orchard, zones, trees, sensor boxes | Done | **Real** (Supabase). Sensor readings not yet: "قريبًا" |
+| **My orchard in 3D** (Premium): the farmer's real orchard, zones, trees, sensor boxes; each zone coloured by its **ML state** (colour + icon + words), a tap opens the **zone panel** (prediction, how sure, reasons, explanation, ONE action, readings) | Done (21 Nov 2026) | **Real** (Supabase + Realtime, migration 019) |
+| **ML predictions** (section 18), paid pack: frost tonight + stress of the trees for every box at every 15-minute step, SHAP reasons, Groq texts (Derja + French), in-app banner + "بستاني" in the alerts tab | Built 21 Nov 2026, tested on the laptop end to end; **to do: run 019 + start the ML worker** | Real models (AI_modules_time_series), Node-RED simulated boxes |
 | **Orchard designer** (section 3): draw the orchard on a grid, cut it into zones, the bill, pay, the orchard is built → 3D | Done (grid). Satellite map: "قريبًا" (Phase 5). Editing later: Phase 4 | **Real** (Supabase, migration 011) |
 | Profile: name, phone, my pack, its zones and end date, log out | Done | **Real** (Supabase) |
 | Community: questions, answers, delete, photos | Done | **Real** (Supabase + Storage) |
 | **Alerts** (section 15): the tab "التنبيهات" with the regional alerts of the farmer's governorate, the number on the bell, an alert's screen ("ماذا أفعل؟" in steps, until when, "أنا أيضًا", "تمّ"), the most important alert on Home | Done (Phase 1, 14 Nov 2026). Sensor alerts "بستاني" and voice / push: "قريبًا" | **Real** (Supabase, migration 015) |
 | **"إبلاغ / Signaler"** in the community (section 15): on the question and the answers of others, 4 reasons, "✓ أبلغت" | Done (14 Nov 2026) | **Real** (`report_content()` of 013) → Dashboard › Communauté › Signalements |
-| **Photo diagnosis (Bêta)** (section 16), paid pack: camera or photo → "جاري النظر…" → "على الأرجح" / "غير متأكد" / "لم نجد هذه الأمراض الثلاثة", the photo with the sick spots marked, 2-3 first steps (drafts), "اسأل خبيرًا" = a community question with the photo | Milestone 1 built (14 Nov 2026). History, zone choice: Milestone 2 | **Real**: Roboflow model through the Edge Function `diagnose` (migration 016) |
+| **Photo diagnosis (Bêta)** (section 16), paid pack: camera or photo → "جاري النظر…" → "على الأرجح" / "غير متأكد" / "لم نجد هذه الأمراض الثلاثة", the photo with the sick spots marked, 2-3 first steps (drafts), "اسأل خبيرًا" = a community question with the photo | Milestone 1 built (14 Nov 2026); **Gemini** vision built 19 Nov 2026, to deploy. History, zone choice: Milestone 2 | **Real**: Gemini (`gemini-3.6-flash`, Google project "looz-vision") or Roboflow, chosen by `app_settings.diagnosis_model`, through the Edge Function `diagnose` (migrations 016 + 018) |
 | **Voice assistant "لوز" (Bêta)** (section 17), paid pack: "تكلّم" / the assistant bar → the farmer speaks (Derja or French), "لوز" answers with its voice, the texts on the screen; it reads his orchard (zones + last sensor readings) | Milestone 1 built (15 Nov 2026), to deploy. Alerts, photos, community question: Milestone 2 | **Real**: Gemini Live (`gemini-3.8-live`) with a short-lived locked token from the Edge Function `voice-token` (migration 017) |
 | Home (weather), map, journal, tips; 🔊 buttons ("قريبًا") | Screens done | **Fake** data (`mobile_app/lib/data/fake_data.dart`). A tree on the map says "قريبًا" |
 | **Sensor boxes → Supabase** (section 12): Node-RED of the farm (`iot/node-red/`) sends the readings once a minute to the Edge Function `iot-ingest` | Done (Milestone 1) with the **simulated** boxes NODE-01…04 of the IoT demo farmer | **Real** Supabase (migration 012), simulated boxes |
-| Admin dashboard (`dashboard/`), **in French** (section 14): login + "Connexion démo", Vue d'ensemble, Agriculteurs (live boxes, 3-day charts, accept / remove), Utilisateurs (expert badge, block), Communauté (hide / show again / delete, reports), Alertes (regional alerts in Arabic + French with the preview, sensor alert log), Vergers (plan), Capteurs, Abonnements (bills, payments, price), Réglages (the switches), Journal des actions | **Phases A–D built** (A: 12 Nov, B–D: 13 Nov 2026). Migration 014 (the database keeps the demo admin on demo data) run on 13 Nov | **Real** (Supabase, admin login; every change through a checked function + admin action log, migrations 013 and 014) |
+| Admin dashboard (`dashboard/`), **in French** (section 14; **redesigned** 21 Nov 2026, section 19: app colours + logo, grouped menu, charts, new pages Prédictions IA / Assistant vocal / Diagnostics photo, a farmer's whole activity): login + "Connexion démo", Vue d'ensemble, Agriculteurs (live boxes, 3-day charts, accept / remove), Utilisateurs (expert badge, block), Communauté (hide / show again / delete, reports), Alertes (regional alerts in Arabic + French with the preview, sensor alert log), Vergers (plan), Capteurs, Abonnements (bills, payments, price), Réglages (the switches), Journal des actions | **Phases A–D built** (A: 12 Nov, B–D: 13 Nov 2026). Migration 014 (the database keeps the demo admin on demo data) run on 13 Nov | **Real** (Supabase, admin login; every change through a checked function + admin action log, migrations 013 and 014) |
 
 The list of every screen and how it was checked: `mobile_app/SCREENS_CHECKLIST.md`.
 
@@ -234,6 +241,16 @@ Run the files in **Supabase > SQL Editor**, in this order. Every file can be run
     the photo diagnosis (section 16). If you run 014 again after it, 014's second number is 28 (not 26).
 22. `supabase/migrations/017_voice_assistant.sql` (check line: `true | false | false | 5 | 60 | 180 | gemini-3.8-live`):
     the voice assistant "لوز" (section 17). If you run 014 again after it, 014's second number is 30.
+23. `supabase/migrations/018_photo_diagnosis_gemini.sql` (check line: `true | false | roboflow | true | 10 | 15 | 0.9 | 0.7 | qwen/qwen3.8-27b`):
+    the photo diagnosis can use Gemini (section 16). The model stays Roboflow until you switch it
+    (section 16, "Switch to Gemini"). Safe to run again: your settings are kept (15 a day only over the
+    old 1000); 014 stays at 30.
+24. `supabase/migrations/019_ml_predictions.sql` (check line: `true | qwen/qwen3.8-27b | 3 | true | false | false | 4`;
+    the last number is 0 if the IoT demo farmer 22 777 001 is not there): the ML predictions (section 18).
+    Then make the worker's key: `select public.ml_worker_new_key('ML-01');` → paste the `lml_…` value after
+    `ML_WORKER_KEY=` in `dashboard/backend/.env` (never anywhere else). If you run 014 again after 019, its
+    second number is **34** (not 30). **No Edge Function to deploy**: `iot-ingest` passes the new channels
+    through unchanged.
 
 Then the **Edge Functions** (Edge Functions › Deploy a new function › Via Editor › paste the file ›
 name › Deploy function; then in its settings turn **"Verify JWT" off**; no secret to add):
@@ -247,7 +264,7 @@ And ONE function with **"Verify JWT" ON** (only logged-in users):
 
 | Name | File | Secret (Edge Functions › Secrets) |
 | --- | --- | --- |
-| `diagnose` | `supabase/functions/diagnose/index.ts` | `ROBOFLOW_API_KEY` = the **Private API Key** of the Roboflow workspace (never in the app, never in git). Optional: `ROBOFLOW_MODEL` (default `almond-diseases-detection-l7tfx/2`). Never add `ROBOFLOW_URL` (tests only) |
+| `diagnose` | `supabase/functions/diagnose/index.ts` | `GEMINI_VISION_API_KEY` = the key of the Google project **"looz-vision"** (Gemini, photos only). Optional: `GEMINI_API_KEY2` = a **backup** Gemini key (from ANOTHER Google project: the limits are per project), tried once when the first is refused. Optional: `GROQ_API_KEY` = the key of Groq (console.groq.com), the 3rd step (the model: setting `diagnosis_groq_model`). `ROBOFLOW_API_KEY` = the **Private API Key** of the Roboflow workspace (the fallback). Optional: `ROBOFLOW_MODEL` (default `almond-diseases-detection-l7tfx/2`). Never in the app, never in git. Never add `ROBOFLOW_URL`, `GEMINI_VISION_URL` nor `GROQ_URL` (tests only) |
 | `voice-token` | `supabase/functions/voice-token/index.ts` | `GEMINI_API_KEY` = the Gemini API key (never in the app, never in git). Never add `GEMINI_URL` (tests only) |
 
 All 12 SQL files and the demo orchard are in the real database, and `demo-auth` answers (checked on
@@ -263,7 +280,7 @@ From `mobile_app/`:
 | Command | What it checks | Last result |
 | --- | --- | --- |
 | `flutter analyze` | The code | No issues |
-| `flutter test` | All the screens and flows, with a fake login (also in demo mode), fake payment, fake orchard and fake community; the real login code with a fake web server (no internet). The designer: `test/geometry_test.dart` (area, clean-up of the drawing, crossing sides, automatic split, dividing lines) and `test/designer_test.dart` (every step, finger and mouse, resume, errors, French, a 360 x 640 phone). Tree numbers from the codes ("12", "TREE-012"): `test/orchard_3d_data_test.dart`. The alerts: `test/alerts_test.dart` (order, bell, "جديد", steps, "أنا أيضًا", "تمّ", ended while open, no alert, no internet, pull down, every minute, back to the app, French, Home). "إبلاغ": `test/report_test.dart`. The photo diagnosis: `test/diagnosis_test.dart` (camera, "جاري النظر…", the 3 results, the marks, "اسأل خبيرًا" → the question with the photo, every failure, the limits, Free = locked, French, the plurals, the zone letters أ ب ج د). The voice assistant: `test/voice_test.dart` (section 17) | 270 / 270 pass |
+| `flutter test` | **286 / 286 pass (21 Nov 2026)**, incl. `test/ml_test.dart` (11: the "بستاني" cards and the bell, a card → the zone panel in 3D, Groq text and the template without Groq, "غير متأكد", Realtime → the banner once, free farmers, French, 360 × 640, the states of a zone, the 3D data). All the screens and flows, with a fake login (also in demo mode), fake payment, fake orchard and fake community; the real login code with a fake web server (no internet). The designer: `test/geometry_test.dart` (area, clean-up of the drawing, crossing sides, automatic split, dividing lines) and `test/designer_test.dart` (every step, finger and mouse, resume, errors, French, a 360 x 640 phone). Tree numbers from the codes ("12", "TREE-012"): `test/orchard_3d_data_test.dart`. The alerts: `test/alerts_test.dart` (order, bell, "جديد", steps, "أنا أيضًا", "تمّ", ended while open, no alert, no internet, pull down, every minute, back to the app, French, Home). "إبلاغ": `test/report_test.dart`. The photo diagnosis: `test/diagnosis_test.dart` (camera, "جاري النظر…", the 3 results, the marks, "اسأل خبيرًا" → the question with the photo, every failure, the limits, Free = locked, French, the plurals, the zone letters أ ب ج د, "sent to Google" + the free-tier sentence with Gemini, "not a final diagnosis" on every result). The voice assistant: `test/voice_test.dart` (section 17) | 275 / 275 pass |
 | `python tool/find_hardcoded_texts.py` | No text written in the code (all texts in `lib/l10n/*.arb`) | 0 |
 
 **Live tests**: against the real Supabase. They need internet and `mobile_app/.env`.
@@ -293,10 +310,25 @@ instead. To test them as new users again, delete them in Supabase > Authenticati
 
 | Command | What it checks | Last result |
 | --- | --- | --- |
-| `pytest` | No internet, fake tables and fake database functions (also "ouverte par / fait par" of the alerts, and the page without migration 015): only admins (401 / 403), the farmers list and page, the demo admin sees demo accounts only (and never a real admin's name), "Vue d'ensemble", the 3 days (window on the latest measure, alert log, sensor problems grouped, actions), Capteurs (waiting first, visits, gateways without key, log), every action calls its checked function and every refusal of the database becomes a French message (reason, device code, demo admin...), "Connexion démo" (switch, password only in `.env`, 127.0.0.1 only, other websites refused, not an admin → refused, one login per 3 s), CORS localhost + 127.0.0.1, a value the box flags as wrong is not drawn. **Phase B**: accounts (e-mail of admins only, "New user" never shown), expert badge, block, posts newest first with every answer, private photo link (5 min), hide / show again / delete (the photo removed from Storage), reports. **Phase C**: regional alerts (states, "Moi aussi", create / change / end, every check of the database in French), sensor alert log (filters). **Phase D**: orchards and their plan (drafts too), the bill (same rule as the app), subscriptions, payments, price, settings, the action log 100 lines at a time | 115 / 115 pass |
+| `pytest` (21 Nov 2026: **168 passed, 2 skipped**) | ML: `tests/test_ml_models.py` (the bundles load with the pinned versions, the notebooks' own functions = our service, exact SHAP, every feature has a farmer word), `test_ml_features.py` (formulas vs the 5 notebook rows, hourly grid, 24-h window, frost night, stages), `test_ml_explain_worker.py` (Groq checks: no number, no Latin letter in the Arabic, no pesticide word, cache, budget, 429 → template; the worker with a fake Supabase: sensor problem, not enough data, leak → water deficit, hot zone → heat, frost night → zone D frost risk, problems get Groq first, its own key, never the service_role), `test_insights.py` (the new dashboard pages; the demo admin: demo data only). The 2 skipped = cross-checks with the optional `shap` package (they pass when it is installed). Before: No internet, fake tables and fake database functions (also "ouverte par / fait par" of the alerts, and the page without migration 015): only admins (401 / 403), the farmers list and page, the demo admin sees demo accounts only (and never a real admin's name), "Vue d'ensemble", the 3 days (window on the latest measure, alert log, sensor problems grouped, actions), Capteurs (waiting first, visits, gateways without key, log), every action calls its checked function and every refusal of the database becomes a French message (reason, device code, demo admin...), "Connexion démo" (switch, password only in `.env`, 127.0.0.1 only, other websites refused, not an admin → refused, one login per 3 s), CORS localhost + 127.0.0.1, a value the box flags as wrong is not drawn. **Phase B**: accounts (e-mail of admins only, "New user" never shown), expert badge, block, posts newest first with every answer, private photo link (5 min), hide / show again / delete (the photo removed from Storage), reports. **Phase C**: regional alerts (states, "Moi aussi", create / change / end, every check of the database in French), sensor alert log (filters). **Phase D**: orchards and their plan (drafts too), the bill (same rule as the app), subscriptions, payments, price, settings, the action log 100 lines at a time | 115 / 115 pass |
 | `pytest tests_live -v` | **Real Supabase, Node-RED running**: needs `LIVE_ADMIN_EMAIL` and `LIVE_ADMIN_PASSWORD` in `dashboard/backend/.env` (skipped otherwise). Phase 1 and **Phase A** (Milestone A: NODE-04 "Retirer" → refused → "Accepter" → received again). **Milestone B**: the demo expert 22 123 458 verified → the app shows "◆ خبير موثّق" (and next to an answer she writes, then deletes; she STAYS verified), a demo post hidden → gone from the app → shown again. **Milestone C**: a heat alert for Sfax → 22 777 001 reads it, 22 123 457 (Kairouan) does not → changed → ended. **Milestone D**: the price 8 → 9 DT → the app's bill and the dashboard's bill change, the log says 8 → 9 DT → back to 8 DT. **App module** (`test_live_app_alerts.py`): the jury scenario (section 15) with Connexion démo. `test_live_014.py` (after 014): the demo admin's own token reads demo rows only through the Supabase API, and "Vue d'ensemble" counts what its lists show | 39 / 39 pass (13 Nov 2026, Node-RED running): IoT 8, A 9, B 6, C 5, D 6, 014 5. 14 Nov 2026: app module 3 pass + 1 skipped (22 777 001 has no post of his own), C 5 and 014 5 again; photo diagnosis `test_live_diagnosis.py` 4 / 4 (with `LIVE_LEAF_PHOTO` / `LIVE_OTHER_PHOTO` paths, each photo = 1 of the 10 of the day of 22 777 001) |
 
-**Frontend** (from `dashboard/frontend`): `npx tsc --noEmit`, `npm run lint`, `npm run build`: no error.
+**Frontend** (from `dashboard/frontend`): `npx tsc --noEmit`, `npm run lint`, `npm run build`: no error (21 Nov 2026).
+
+**Node-RED** (from `iot/node-red`): `node test/flow_test.js` runs the flow's code (src/*.js = flows.json)
+outside Node-RED: 17 / 17 (raw channels, DHT11 / DS18B20 / 12-bit light, the 4 scenarios, the frost night,
+the clock only goes forward, an old memory, pause). After changing `src/*.js`: `python tools/build_flows.py`.
+
+**019 on the laptop** (local PostgreSQL 17, the 3 ways of the SQL Editor and again): 81 / 81 checks (settings
+kept, the context and its defaults, the 3 new channels through `iot_ingest`, the worker key (none / wrong →
+PT401), jobs = paid farmers' boxes only, the save refuses wrong codes / old predictions / texts with hidden
+direction marks, who reads what (farmer, another farmer, free, visitor, real admin, demo admin), one
+notification per problem (no repeat; back within 12 h = the same; later = a new one), read / read all,
+the Realtime publication, a Node-RED restart).
+**End to end on the laptop** (21 Nov 2026): Node-RED (a copy, port 1882) → the real `iot-ingest` under Deno →
+local Postgres with 019 → `python -m ml.worker --once` (real Groq): summer → zone B water deficit, zone C heat,
+zone D sensor problem, 2 notifications, Derja + French texts; frost scenario → at 22:30 frost risk in A, B, D
+(D 0.99), C no frost, 3 "danger" notifications, the summer ones resolved.
 
 **The SQL on the laptop** (no Supabase): 013 + `demo_admin.sql` (99 checks) and 014 (64 checks:
 real admins and the app read exactly what they read before, the demo admin only demo rows in every
@@ -306,10 +338,23 @@ list = exactly what the rules of 014 show, for 10 kinds of users; order; new aft
 "Moi aussi" once; every refusal; reports; the jury scenario; 013 + 014 + 015 run again). 016: 73 checks
 (the app writes nothing; paid pack, switch, zone; the verdict from the thresholds; every wrong result
 refused; the limits of the day, two photos at once; 30 photos kept; who reads what; 013-016 again).
-The Edge Function `diagnose`: 33 checks under Deno with a fake Roboflow and a stand-in of Supabase
-(login, bad photos, Free farmer, a sick leaf with its boxes, nothing, a weak guess, no credits (402),
-busy once (503), down, nonsense, the photo not saved, switch off, limits, old photos deleted, 25 s
-timeout, the key never in the logs). The IoT part: the
+018: 48 checks (the 3 ways and again, the model setting kept; allowed / refused model names; where
+the photo goes for the app; Gemini's conservative verdict: box, plant, thresholds, none / not a leaf;
+every wrong answer refused; model_busy; Roboflow unchanged; 15 a day for the whole app).
+The Edge Function `diagnose`: 101 checks under Deno with a fake Roboflow, a fake Gemini, a fake Groq and a stand-in
+of Supabase (login, bad photos, Free farmer, a sick leaf with its boxes, nothing, a weak guess, no
+credits (402), busy once (503), down, nonsense, the photo not saved, switch off, limits, old photos
+deleted, 25 s timeout; Gemini: likely with its boxes turned into ours, olive / no box → only unsure,
+weak / none / not a leaf → nothing, the request (model, key in the header, prompt, JSON, thinking
+LOW), 429 → busy without a second try, 503 twice → busy, 503 once → tried again, a sentence or no
+answer → unavailable, another model name from the setting, back to Roboflow, 40 s timeout → busy;
+the backup key: not set → as before; 429 / 503 / 403 / 401 / invalid key / too slow → backup once →
+the result; both refused → busy or unavailable, never a 3rd try; a wrong answer → no backup try;
+both too slow → busy in 62 s; Groq: only when Gemini gave no answer, its boxes, the same verdict,
+a fence / <think> part read, not JSON → unavailable, 429 / 413 / 503 → busy, the setting (empty =
+no step, another name), without a backup key straight to Groq, all three too slow → busy in 62 s;
+no key, no photo and no sentence of a model in the logs, only "gemini-primary" / "gemini-backup" /
+"groq-qwen"). The IoT part: the
 SQL of 012 and the seeds (91 checks), the Edge Function under Deno with a local stand-in of Supabase (14
 checks), and the real Node-RED flow sending to it (all readings accepted, the clock continues after
 a restart).
@@ -377,11 +422,11 @@ Users can't do any of these themselves: the database rules refuse it (checked by
    secret key in Supabase secrets (never in the app), and replace `DemoPaymentService`.
 4. **Admin dashboard** (section 14): all pages built (Phases A–D). Next: CRDA admins limited to
    their governorates (a separate step); fix what you find when you test it.
-5. **App alerts, Phase 2** (Phase 1 done, section 15): the sensor alerts of a paid farmer in the tab
+5. **Done 21 Nov 2026 (section 18)**: the orchard's problems in "بستاني" and the real readings in the 3D panel — now from the ML predictions. Still to do: the screen "معلومات الأرض" (farm context typed by the farmer), real push notifications, a weather service (rain). Old plan: **App alerts, Phase 2** (Phase 1 done, section 15): the sensor alerts of a paid farmer in the tab
    ("بستاني / Mon verger": zone, level, simple advice, texts from the codes in the ARB files; a tap
-   opens the zone in the 3D) and the real readings in the 3D zone panel. A small migration **018**
-   (the state of the farmer's own boxes with the gateway's offline time; 016 is the diagnosis, 017
-   the voice assistant).
+   opens the zone in the 3D) and the real readings in the 3D zone panel. A small migration **019**
+   (the state of the farmer's own boxes with the gateway's offline time; 016 and 018 are the
+   diagnosis, 017 the voice assistant).
 6. **Photo diagnosis, Milestone 2** (section 16): "صوري السابقة" (history, on the camera screen and in
    Profile), the zone of the photo (optional), the dashboard page "Diagnostics" (Bientôt). Later: our
    own model trained on Roboflow (dataset v11 + Tunisian photos confirmed by experts, healthy and
@@ -448,6 +493,11 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 # 4. Admin frontend (Next.js) → http://127.0.0.1:3000, log in with the admin e-mail (or "Connexion démo")
 cd "D:\IEEE\aotn chalenge\AOTN-TSYP-chalenge\dashboard\frontend"
 npm run dev
+
+# 5. The ML worker (predictions + Groq texts), section 18. First time: pip install -r requirements-ml.txt
+cd "D:\IEEE\aotn chalenge\AOTN-TSYP-chalenge\dashboard\backend"
+.venv\Scripts\Activate.ps1
+python -m ml.worker
 ```
 
 **Don't run the default Node-RED (`C:\Users\hejer\.node-red`, port 1880) at the same time**: it
@@ -567,37 +617,91 @@ of the jury.
 Screenshots (real Supabase, 22 777 001, Arabic and French, and the dashboard):
 `docs/screenshots/app-alerts/`.
 
-## 16. Photo diagnosis (Bêta, paid pack — migration 016 + Edge Function `diagnose`)
+## 16. Photo diagnosis (Bêta, paid pack — migrations 016 + 018, Edge Function `diagnose`)
 
 **What the farmer does** (camera button of the assistant bar, or Ask › "صورة"; Free: the locked screen):
 
 1. "صوّر الورقة" + "تجريبي": the tips (ورقة لوز واحدة · من قريب · في الضوء), "يمكنك إرسال 7 صور اليوم",
-   "تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.". The round button = the camera (web: the photos);
-   "اختر من الصور" under it. The photo is made small (1600 px, JPEG) and its GPS removed.
+   where the photo goes: with Gemini (and its backups) **"تُرسل الصورة إلى خدمة ذكاء اصطناعي (غوغل أو
+   مزوّد آخر) لفحصها، وتُحفظ في حسابك."** + on Google's free tier **"وقد تستعملها غوغل لتحسين
+   خدماتها."** (with Roboflow: "تُرسل الصورة للفحص، وتُحفظ في حسابك فقط."; not known yet or no
+   internet: the AI text in full). The round button = the camera
+   (web: the photos); "اختر من الصور" under it. The photo is made small (1600 px, JPEG) and its GPS removed.
 2. "جاري النظر…" (the photo is sent; a few seconds).
 3. The result: "ثقوب في الأوراق" / "تجعّد الأوراق" / "بقع على الأوراق" with **"على الأرجح"** or **"غير
    متأكد"** (never "متأكد"), the photo with the sick spots framed in red, "ماذا أفعل؟" with 3 steps,
-   "هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير.", 🔊 = "قريبًا".
+   🔊 = "قريبًا".
    Nothing found (or a weak guess, or not an almond leaf): **"لم نجد هذه الأمراض الثلاثة."** + "صوّر
    الورقة من قريب، في الضوء." + "هذا لا يعني أن الشجرة سليمة." (never "your tree is healthy").
+   **Every result** (also "لم نجد"): "هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير." and the big "اسأل خبيرًا".
 4. **"اسأل خبيرًا"**: the question screen opens with the photo and a ready question ("صوّرت ورقة لوز.
    التطبيق يقول: ثقوب في الأوراق (على الأرجح). هل هذا صحيح؟"), the farmer can change it, "انشر" → the
    community; the question is linked to the diagnosis. A verified expert ("◆ خبير موثّق") answers.
 5. Messages: "تحتاج إلى الإنترنت" (+ "حاول مرة أخرى"), "أرسلت اليوم 10 صور. هذا هو الحد. عُد غدًا.", "الفحص
-   مشغول اليوم…" (the app's limit, or no Roboflow credits), "الفحص غير متوفر الآن. اسأل خبيرًا.", "لم
-   نستطع قراءة الصورة. صوّر من جديد.".
+   مشغول اليوم…" (the app's limit of the day; Google busy, its limits or too slow; no Roboflow
+   credits), "الفحص غير متوفر الآن. اسأل خبيرًا.", "لم نستطع قراءة الصورة. صوّر من جديد.".
 
 **How it works**: the app → Edge Function `diagnose` (checks the login) → `diagnosis_begin()` (paid
 pack, switch, limits) → the photo in the private bucket `diagnoses` (folder = the farmer; the 30
-newest are kept) → Roboflow `almond-diseases-detection-l7tfx/2` (the key only in the secret
-`ROBOFLOW_API_KEY`; `disable_active_learning=true`) → `diagnosis_finish()` saves the codes and decides
-the verdict. The app gets codes only and writes the texts (ARB). The screens only know
-`DiagnosisService` (`mobile_app/lib/data/diagnosis_service.dart`): another model later = another class.
+newest are kept) → the model of `app_settings.diagnosis_model` → `diagnosis_finish()` saves the codes
+and decides the verdict. The app gets codes only and writes the texts (ARB). The screens only know
+`DiagnosisService` (`mobile_app/lib/data/diagnosis_service.dart`).
+
+- **Gemini** (`gemini:gemini-3.6-flash`, key only in the secret `GEMINI_VISION_API_KEY`, Google
+  project "looz-vision", separate from the voice assistant's project): one call `generateContent`
+  with the photo and our prompt (the same text as `dashboard/backend/tools/diagnosis_eval.py`),
+  strict JSON: one label of 5 (shot_hole, leaf_curl, leaf_spot, none, not_a_leaf), its confidence,
+  the plant (almond, olive, other, unknown) and up to 5 approximate boxes (drawn on the photo).
+  Gemini's sentence ("reason") is dropped, never saved. 429 (a limit) → "busy" at once; 503 (Google
+  busy) → one more try after 2 s, then "busy"; more than 40 s → "busy"; a wrong answer or key →
+  "unavailable". The app waits up to 70 s.
+- **Backup key** (optional secret `GEMINI_API_KEY2`, a key of ANOTHER Google project): when the
+  first key gets a limit (429), Google busy (5xx), too slow, a network problem or a key error (401,
+  403, invalid key), the backup key is tried ONCE (in the time left: all tries stay under 62 s). Both
+  refused → "busy" (if one was a limit, busy or too slow), else "unavailable". A wrong answer or a
+  wrong model name: no backup try. Not set: as without it. With a backup on the free tier, Google
+  allows 20 + 20 photos a day: you may raise `diagnosis_app_per_day` (e.g. 30).
+- **Groq, the 3rd step** (optional secret `GROQ_API_KEY`; the model in the setting
+  `diagnosis_groq_model`, `qwen/qwen3.8-27b`; empty = no Groq step; a new name = no new deployment):
+  when Gemini gave no answer (also after a wrong answer of Gemini), Groq is tried ONCE with the
+  time left (each step keeps 15 s for the steps after it; all stay under 62 s). Same prompt, 5
+  labels, JSON schema; Qwen's boxes `bbox_2d` [x1, y1, x2, y2] on 0–1000 are turned into ours (a box
+  outside the list "boxes" is not read). Its answers are saved as `groq:<model>` and judged with the
+  same conservative verdict. Not valid JSON → "unavailable"; 429 / 413 / 5xx / too slow → "busy".
+  Groq's free tier for `qwen/qwen3.8-27b` (its own headers and 429 message, 19 Nov 2026): **1,000
+  requests a day, 7,000 input tokens a minute** (a photo ≈ 1,700–2,200 tokens: about 3 photos a
+  minute). Not set: as without it. The logs say only "gemini-primary", "gemini-backup" or
+  "groq-qwen", never a key, a photo or a sentence of a model.
+  ⚠ On the 9 old photos (1 run) it found only **1 of 4** sick photos (0 false alarms; 2 answers
+  not valid JSON; not the same answer when asked again): a weak last step — it mostly says "لم نجد"
+  where Gemini finds the disease. To turn it off: `diagnosis_groq_model` = '' (empty).
+- **Roboflow** (`roboflow` = the secret `ROBOFLOW_MODEL`, or `roboflow:<project>/<version>`): as
+  before (`disable_active_learning=true`): the fallback.
+
+**The verdict with Gemini is CONSERVATIVE** (its confidence is its own opinion, not a measured
+probability, and our test was small): **"على الأرجح"** only when Gemini's confidence ≥
+`diagnosis_gemini_likely` (0.90) **and** it drew at least one box **and** the leaf is almond (or it
+can't tell); **"غير متأكد"** from `diagnosis_gemini_unsure` (0.70) (also: an olive or other leaf, no
+box); below, or "none" / "not a leaf": **"لم نجد"**.
+
+**Switch to Gemini / back to Roboflow** (no new app, no new deployment): SQL Editor ›
+`update app_settings set diagnosis_model = 'gemini:gemini-3.6-flash' where id;` (back:
+`'roboflow'`). Another Gemini model later: `gemini:<its name>`.
 
 **Settings** (Table Editor › `app_settings`, no new app needed): `diagnosis_enabled` (on/off),
-`diagnosis_per_day` 10 (per farmer), `diagnosis_app_per_day` 1000 (whole app: the Roboflow credits),
-`diagnosis_keep_photos` 30, `diagnosis_likely` 0.65 ("على الأرجح" from), `diagnosis_unsure` 0.40
-("غير متأكد" from; below: "لم نجد"). The thresholds must be checked with real photos.
+`diagnosis_model` (above), `diagnosis_per_day` 10 (per farmer), `diagnosis_app_per_day` **15** (whole
+app: Gemini's free tier allows 20 photos a day and 5 a minute for the project, so 15 leaves room for
+the tries again), `diagnosis_keep_photos` 30, Gemini: `diagnosis_gemini_likely` 0.90,
+`diagnosis_gemini_unsure` 0.70, `diagnosis_google_free_tier` true (the camera text); Roboflow:
+`diagnosis_likely` 0.65, `diagnosis_unsure` 0.40.
+
+**⚠ Gemini's free tier** (project "looz-vision", `gemini-3.6-flash`, seen in Google's own answers on
+16 and 19 Nov 2026): **5 requests a minute, 20 a day** (a new day at 09:00 Tunisia time); the photos
+may be used by Google to improve its products; it is often slow or "busy" (503). Enough for the jury,
+not for farmers: before a launch, the paid tier (top of this file). Paid price: $0.75 / 1M tokens in,
+$3.75 / 1M out until 31 Dec 2026 (doubled from 1 Jan 2027): about $0.0017 a photo (≈ $1.75 for 1,000).
+`gemini-3.8-flash` (newer) was too busy on 15–19 Nov 2026 (503 and timeouts): try it again later
+by changing the setting.
 
 **Roboflow (checked 14 Nov 2026 on roboflow.com)**: Free Tier = 10 credits a month, no card: the API
 just stops when they are used (no bill). Object detection costs 0.125 to 0.3125 credits per 1,000
@@ -647,9 +751,29 @@ autumn almond, olive, 2 "not a leaf"), a result counting from 0.40; tool:
 | B — workflow `general-segmentation-api-2` (SAM 3), prompts = the 3 class names | 2 / 4 (both as "leaf_spot") | 0 / 5 | ~1.8 s | 0.5 | FAIL |
 | B — same, plain words ("holes in leaf", "brown spots on leaf", "curled red leaf") | 1 / 4 | 1 / 5 (blossoms) | ~1.7 s | 0.5 | FAIL |
 
-Jury rule: at least 3 of 4 diseases found (as some disease), at most 1 false alarm. **Decision:
-Milestone 3, our own RF-DETR model** — the steps for Roboflow: `docs/milestone3_own_model.md`. Once
-it passes, only the secret `ROBOFLOW_MODEL` changes (no new app, no new deployment).
+Jury rule: at least 3 of 4 diseases found (as some disease), at most 1 false alarm. Then (15 Nov):
+own RF-DETR model planned (`docs/milestone3_own_model.md`); **changed on 15–19 Nov 2026: Gemini vision**.
+
+**Gemini test (16–19 Nov 2026)**, tool `python tools/diagnosis_eval.py gemini gemini-3.6-flash`, a
+test set of 50 photos (`dashboard/backend/tools/test_set.json`: the 9 old ones + 41 from iNaturalist,
+research grade, CC0 / CC BY / CC BY-SA, credits in `tools/test_photos/CREDITS.md`). Only **the 9 old
+photos** could be done (the free tier's 20 calls a day); the 41 others are tested by hand in the app.
+
+| Model | Diseases found (old 9) | False alarms | Stability | Speed | Cost a photo (paid) | Jury rule |
+| --- | --- | --- | --- | --- | --- | --- |
+| Roboflow `l7tfx/2` (all 50) | 0 / 4 (0 / 27 on the 50) | 1 / 5 (1 / 23) | — | ~2 s | credits | FAIL |
+| Groq `qwen/qwen3.8-27b` (19 Nov, 1 run) | 1 / 4 (2 answers not valid JSON, leaf curl said "none") | 0 / 5 | not the same answer when asked again | ~1–2 s | free tier | FAIL (3rd step only) |
+| **Gemini `gemini-3.6-flash`** | **4 / 4** (3 the right disease; a shot-hole close-up said "leaf spot") | **0 / 5** (healthy, autumn, olive, blossoms, green picture) | 6 photos × 3 runs: same answer every time; 3 photos: 1 run, **not tested** | median ~5 s, up to 49 s | ~$0.0017 | **PASS** (small test) |
+
+**Plan only, not built — the "data flywheel"** (our own model later): when a verified expert ("◆
+خبير موثّق") answers a question made with "اسأل خبيرًا", the dashboard lets an admin mark the
+diagnosis "confirmed: shot hole / leaf curl / leaf spot / healthy / other"; only photos of farmers who
+said **yes** to a separate, clear question ("هل نستعمل صورتك لتحسين لوز؟", off by default, can be
+taken back in Profile) are copied to a private training folder (no name, no phone, no GPS); when
+there are a few hundred per class, they train our own model (Roboflow RF-DETR,
+`docs/milestone3_own_model.md`), tested with this same tool and test set before
+`diagnosis_model` changes. Needs: a consent column + Profile switch, a "confirmed label" column
+and a dashboard page; a migration and a privacy text checked before.
 
 ## 17. Voice assistant "لوز" (Bêta, paid pack — migration 017 + Edge Function `voice-token`)
 
@@ -719,3 +843,111 @@ as a WAV file).
 **Milestone 2**: the tools "regional alerts", "my photo diagnoses", "a question for the community"
 (shown on the screen first, published only after "إيه" or the button "انشر"); in Profile "أوقف إرسال
 صوتي" (takes the consent back); the dashboard page "Assistant vocal" (minutes and cost per day).
+
+## 18. ML predictions: frost tonight + stress of the trees (migration 019, the ML worker)
+
+```
+Node-RED (simulated boxes, every 5 s = 15 min)   Supabase (019)                      the app (paid farmers)
+raw channels: soil %, soil °C (DS18B20),   ──►   node_readings (1 point / hour)  ──►  Realtime: the 3D, the zone
+air °C + % (DHT11), light ADC, piezo              node_latest                         panel, "بستاني" in the alerts,
+                                                  ml_latest / ml_history / ml_notifications   the bell, a banner
+ML worker (Python, dashboard/backend/ml) ── its own key ──► ml_worker_jobs / _history / _save
+  features → frost model (logistic) + stress model (LightGBM) → SHAP → Groq (Derja + French, only when it changes)
+```
+
+**What the farmer sees** (paid pack only; free farmers see the locked "★ ابدأ" screen):
+- **3D** (بستاني ★): each zone coloured by its state with a label on it — بخير / نقص الماء / ماء زائد / حرارة شديدة /
+  ضرر البرد / مشكل في الجذور / خطر صقيع الليلة / مشكل في الحسّاس / قراءات غير كافية / الحسّاس غير متصل / في انتظار
+  التركيب. The box light takes the colour. Live: Supabase Realtime (no reload).
+- **A tap on a zone** → the panel: the state, "على الأرجح / غير متأكد", "آخر تحديث: منذ …", Groq's text in Derja (or a
+  simple text made from the codes), "ماذا أفعل؟" with ONE action, "لماذا؟" = the main reasons as bars (farmer words, never
+  a feature name), tonight's frost line, the latest readings.
+- **التنبيهات › بستاني**: one card per problem (newest and most serious first, "جديد" until seen); a tap opens the zone
+  in 3D. The bell counts them too.
+- **In-app notification** (no push, no Firebase: decision of the user): a new problem shows a banner at the top while the
+  app is open, once ("المنطقة أ: خطر صقيع الليلة" — "اضغط لترى المنطقة"). The same problem never comes twice (database
+  rule: one open notification per box and model; the same problem back within 12 h of measured time = the same one).
+- No "تجريبي / Bêta" label on the predictions (decision of the user).
+
+**The models** (`AI_modules_time_series/`, loaded with the pinned versions of `dashboard/backend/requirements-ml.txt`:
+scikit-learn 1.6.1 (both bundles say so), LightGBM 4.6.0, numpy 2.2, pandas 2.2):
+- `frost_model.joblib`: StandardScaler + LogisticRegression, alarm at 0.664 (90 % of frosts on the training seasons;
+  test season: recall 0.85, precision 0.47, PR-AUC 0.69). SHAP = exact linear SHAP.
+- `stress_model.joblib`: **LightGBM (tuned)** (not XGBoost) + IQRCapper + imputer, 6 classes, test macro-F1 0.72.
+  The notebook classes `IQRCapper` / `BalancedXGBClassifier` are defined exactly as in the notebook before loading.
+  SHAP = LightGBM's TreeSHAP (= shap.TreeExplainer).
+- ⚠ **The dataset generators were not given** (`almond_stress_dataset.py` daily_features() and the frost generator):
+  the features were rebuilt from the notebooks and the bundles. Every feature and every approximation:
+  `docs/ml_features.md`. Before real farmers: compare with the generators, and validate on real days and nights.
+- ⚠ **Frost model timing**: it was trained for ONE decision time, **2 hours after sunset**. LOOZ runs it **every 15
+  minutes, all day long** (decision of the user) with the latest reading as the "evening" values. By day the probability
+  stays near 0; in the night it follows the cooling (in the frost scenario the low zone D crosses the threshold about
+  1 h after sunset). Outside the evening the inputs are outside what the model learned: treat a daytime or late-night
+  answer as an indication. It was trained on November–April only (in summer it gives ≈ 0).
+- Stress is a DAILY model: LOOZ uses the last 24 hours at each step (needs ≥ 20 valid hours, else "قراءات غير كافية").
+  A box with a sensor problem (or the level "sensor") gets no prediction ("مشكل في الحسّاس"), never a guess.
+
+**Groq** (key `GROQ_API_KEY` in `dashboard/backend/.env`, model = setting `ml_groq_model`): tested on 21 Nov 2026 —
+`allam-2-7b` (Arabic, but Modern Standard Arabic and broken format), `openai/gpt-oss-20b` (small, one wrong word),
+`openai/gpt-oss-120b` (good), **`qwen/qwen3.8-27b` (chosen: the most natural short Derja, follows the rules, ~0.5 s)**.
+Free tier per model: 1,000 requests a day, 8,000 tokens a minute; one text ≈ 1,000 tokens. The text is made only when
+the prediction changes (zone, state, how sure, the 3 main reasons); problems get the budget first (6 calls a minute
+at most, `ML_GROQ_PER_MINUTE`). Rules checked on every answer: JSON in both languages, short, **no number at all** (the
+app shows the readings), no Latin letter in the Arabic, no pesticide / product / dose word (the action says "اسأل خبير"
+only for a treatment). A refused answer, a 429 or no answer = the app's simple text from the codes (ARB files).
+The prompt: `dashboard/backend/ml/explain.py`. HF_TOKEN is not used.
+
+**Farm context** (019, on each zone; empty = a default, `ml_zone_context()` lists which): soil type and its FC / WP /
+SAT, irrigation system, irrigation water EC, ground cover, position low / mid / high, cover crop, root depth, first day
+of bloom (per governorate), stage set by hand; orchard elevation. The IoT demo orchard (22 777 001) is filled: A sandy
+loam, B sandy loam (EC 1.2), C loamy sand (high), D sand (**low spot**). **How a real farmer gives it**: defaults from the
+designer's zone type (تربة رملية → sand, بعلية → rainfed, مسقية → drip, young / old trees → ground cover) + his governorate;
+a screen "معلومات الأرض" in the app: **قريبًا** (next step); an admin can set it today in Table Editor › zones.
+
+**The ML worker** (`python -m ml.worker`, window 5 of section 13): every 10 s it asks Supabase for the boxes with a new
+reading (`ml_worker_jobs`), reads their orchard's history, predicts both models, explains, saves (`ml_worker_save`). It
+uses the **public key + its own key** `ML_WORKER_KEY` (only a hash in the database, like a gateway): no service_role.
+New key: `select public.ml_worker_new_key('ML-01');` (the old one stops at once). Logs: "round: N jobs", "groq ok" /
+"groq refused: <reason>" — never a key, never a text.
+
+**Settings** (Table Editor › app_settings): `ml_enabled`, `ml_notify_enabled`, `ml_explain_enabled`, `ml_groq_model`
+(`qwen/qwen3.8-27b`; `openai/gpt-oss-120b` also works; empty = no Groq), `ml_likely_min` (0.6: "على الأرجح" from this
+probability for the stress model; frost risk is "likely" from 0.85).
+
+**Volume** (Free plan): `ml_latest` 2 rows per box; `ml_history` a point per change or per hour of measured time,
+kept `iot_history_days` (30) like the readings; resolved notifications deleted after 30 days. Realtime: 3 tables
+(node_latest, ml_latest, ml_notifications); each farmer receives only his rows (RLS).
+
+**Node-RED** (`iot/node-red`, code in `src/*.js`, `python tools/build_flows.py` writes flows.json): the simulator sends
+every raw channel with the datasets' sensor behaviour (DHT11 whole numbers, 0 °C floor, 20–90 %; DS18B20 1/16 °C; 12-bit
+light that saturates; piezo clicks that rise with thirst). Each zone has its soil's FC / WP. **Frost-night scenario**:
+switch "Scénario : nuit de gel (floraison)" on Node-RED's dashboard (or `LOOZ_SCENARIO=frost` in `.env`): the clock
+jumps FORWARD to 18 February 18:00 (bloom), the 36 h before are sent at once, then the night goes on (clear, dry; zone D
+reads 0 °C around 4:00). Switching back: 15 June of the next year. The clock never goes back (no history lost).
+
+**Live test for you** (after 019 + the worker): open the app as 22 777 001 → بستاني ★ → the zone colours change as
+Node-RED sends; switch the frost scenario → within 2–3 minutes a banner "المنطقة د: خطر صقيع الليلة".
+
+## 19. Admin dashboard redesign (21 Nov 2026)
+
+- **Look**: the app's colours (dark green menu, leaf-green highlight, cream background; the Tailwind "emerald" scale is
+  replaced by the app's greens in `app/globals.css`), the app font **Cairo**, the white LOOZ logo, cards with soft
+  shadows, readable tables (light headers, hover line). The menu is grouped (Pilotage · Agriculteurs et vergers ·
+  Services de l'application · Comptes et ventes · Administration) with icons; on a tablet (< 1280 px) it shows icons only
+  (the button opens it). The top bar shows where you are (group › page), the demo tag, the admin and "Se déconnecter".
+- **Vue d'ensemble**: the numbers as before + "Les 30 derniers jours" (6 KPIs with a trend line: sign-ups, demo payments,
+  problems found by the AI, photo diagnoses, voice minutes, questions) + bar charts per day + "Prédictions IA en ce moment".
+- **New pages**: **Prédictions IA** (the worker's last round, KPIs, states as bars, every box: state, how sure, reasons;
+  a click opens what the farmer sees in French AND Derja, the technical SHAP values, the history strip of the box; the
+  in-app notifications with seen / ended), **Assistant vocal** (minutes, conversations, questions, tool calls per day and
+  per farmer — no words exist), **Diagnostics photo** (every analysis, diseases, models; expert confirmation: Bientôt).
+- **A farmer's page** now ends with "Activité dans l'application": KPIs and tabs Chronologie (everything, newest first) ·
+  Prédictions IA (+ notifications) · Diagnostics photo · Assistant vocal · Communauté (questions, answers, reports,
+  « Moi aussi ») · Paiements · Actions admin. Every list links to the farmer's page.
+- Backend: `app/insights.py` + `app/routers/insights.py` (`/api/insights/ml`, `/ml/history/{node}`, `/zones/{id}/context`,
+  `/voice`, `/diagnoses`, `/trends`, `/farmers/{id}/activity`), all read-only with the admin's own token.
+- Everything else unchanged (actions, rules, "Connexion démo", 127.0.0.1 only).
+- ⚠ `npm run build` shows a Next.js message "known security vulnerability" (Next 16.4.2) once, then builds on the second
+  run. Upgrading Next.js was **not** done (it could break the dashboard): ask Claude in a separate step.
+- Screenshots (demo admin, demo data only, preview over the local end-to-end data): `docs/screenshots/admin-dashboard-redesign/`.
+  App screenshots (Arabic + French): `docs/screenshots/ml-predictions-app/`.

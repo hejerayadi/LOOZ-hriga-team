@@ -85,6 +85,7 @@ Future<void> tap(WidgetTester tester, Finder finder) async {
 
 void main() {
   setUpAll(loadAppFonts);
+  setUp(resetAppState);
   tearDown(resetAppState);
 
   testWidgets(
@@ -182,6 +183,12 @@ void main() {
         'أمطار غزيرة غدًا',
         'صقيع الليلة',
       ]);
+      // (The list is scrolled down: back up to the title.)
+      await tester.scrollUntilVisible(
+        find.text('2 تحتاج انتباهك'),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(find.text('2 تحتاج انتباهك'), findsOneWidget);
       expect(bellNumber(tester), '1');
 
@@ -357,11 +364,11 @@ void main() {
     await closeApp(tester);
   });
 
-  testWidgets('Premium: "بستاني" (sensors: قريبًا); Free: not shown', (
+  testWidgets('Premium: "بستاني" (the predictions of the orchard, test/ml_test.dart); Free: not shown', (
     tester,
   ) async {
     await startApp(tester);
-    await scrollTo(tester, find.text('تنبيهات حسّاسات بستانك'));
+    await scrollTo(tester, find.text('ننتظر قراءات حسّاساتك.'));
     expect(find.text('بستاني'), findsOneWidget);
     await tap(tester, find.text('الإشعارات على الهاتف'));
     expect(find.text('قريبًا'), findsWidgets);
@@ -370,7 +377,7 @@ void main() {
 
     await startApp(tester, plan: Plan.free);
     await scrollTo(tester, find.text('الإشعارات على الهاتف'));
-    expect(find.text('تنبيهات حسّاسات بستانك'), findsNothing);
+    expect(find.text('ننتظر قراءات حسّاساتك.'), findsNothing);
     expect(find.text('بستاني'), findsNothing);
     await closeApp(tester);
   });

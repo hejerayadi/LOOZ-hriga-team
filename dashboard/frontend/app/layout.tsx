@@ -1,11 +1,12 @@
 // The root of the website: fonts, global CSS, page title.
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cairo, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// Cairo: the font of the LOOZ app (Arabic + Latin), the same on the dashboard.
+const cairo = Cairo({
+  variable: "--font-cairo",
+  subsets: ["latin", "arabic"],
 });
 
 const geistMono = Geist_Mono({
@@ -16,15 +17,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LOOZ · Administration",
   description: "Tableau de bord des administrateurs de LOOZ",
+  icons: { icon: "/looz_logo.png" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${cairo.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-slate-50 font-sans text-slate-900">{children}</body>
+      <body className="min-h-full bg-looz-cream font-sans text-slate-900">{children}</body>
     </html>
   );
 }

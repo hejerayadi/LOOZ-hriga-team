@@ -10,11 +10,13 @@ import 'package:looz_mobile/core/plans.dart';
 import 'package:looz_mobile/core/session.dart';
 import 'package:looz_mobile/data/alerts_service.dart';
 import 'package:looz_mobile/data/diagnosis_service.dart';
+import 'package:looz_mobile/data/ml_service.dart';
 import 'package:looz_mobile/data/community_photos.dart';
 import 'package:looz_mobile/data/community_service.dart';
 import 'package:looz_mobile/data/payment_service.dart';
 import 'package:looz_mobile/data/orchard_service.dart';
 import 'package:looz_mobile/features/alerts/alerts_store.dart';
+import 'package:looz_mobile/features/orchard_3d/orchard_live_store.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_tab.dart';
 import 'package:looz_mobile/features/premium/demo_card_form.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
@@ -22,6 +24,7 @@ import 'package:looz_mobile/features/premium/payment_screen.dart';
 import 'fake_alerts_service.dart';
 import 'fake_auth_service.dart';
 import 'fake_diagnosis_service.dart';
+import 'fake_ml_service.dart';
 import 'fake_community_service.dart';
 import 'fake_orchard_service.dart';
 import 'fake_payment_service.dart';
@@ -69,6 +72,8 @@ void resetAppState() {
   diagnosisService = FakeDiagnosisService();
   FakeVoice(); // the voice assistant: fake Google, microphone, loudspeaker
   clearAlerts();
+  mlService = FakeMlService(const OrchardLive()); // no prediction yet
+  clearOrchardLive();
   photoPicker = FakePhotoPicker();
   paymentService = FakePaymentService();
   orchardService = FakeOrchardService(demoOrchard());
@@ -82,6 +87,15 @@ FakeAlertsService useAlerts([FakeAlertsService? fake]) {
   alertsService = alerts;
   clearAlerts();
   return alerts;
+}
+
+/// Uses fake live data of the orchard ([fake] = the demo: zone B short of
+/// water): returns it, to push a change ("Realtime") or check what was read.
+FakeMlService useMl([FakeMlService? fake]) {
+  final ml = fake ?? FakeMlService();
+  mlService = ml;
+  clearOrchardLive();
+  return ml;
 }
 
 /// Uses a fake photo diagnosis ([fake] = "shot hole, probably" by default):

@@ -9,6 +9,8 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { FarmerActivity } from "./FarmerActivity";
+
 import { BoxActionButton, GatewayButtons, VisitDialog } from "@/components/actions";
 import { LevelBadge, OrchardPlan, PackText, StatusBadge, StressBar } from "@/components/iot";
 import { Button, Card, DemoTag, ErrorBox, Fact } from "@/components/ui";
@@ -379,6 +381,7 @@ export function FarmerView() {
           {history.data && <FarmerHistorySection history={history.data} gapMinutes={gapMinutes} />}
         </>
       )}
+      {data && <FarmerActivity farmerId={id} />}
     </div>
   );
 }

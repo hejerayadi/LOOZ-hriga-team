@@ -1,6 +1,8 @@
 // Shows assets/orchard_3d/index.html (the 3D scene):
 //  - Android / iOS: inside a WebView,
 //  - Flutter web (Chrome): inside an iframe (WebView does not exist there).
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +25,19 @@ class Orchard3dView extends StatelessWidget {
     required this.data,
     required this.language,
     required this.onMessage,
+    this.live,
+    this.focus,
   });
 
   /// The orchard as JSON text (see orchard_3d_data.dart).
   final String data;
+
+  /// The live state of the zones as JSON (orchardLiveJson), sent again each
+  /// time it changes. null = none yet.
+  final String? live;
+
+  /// The zone to show highlighted (a tap on an alert), null = none.
+  final String? focus;
 
   /// 'ar' or 'fr': the page shows its texts in this language, and switches
   /// as soon as it changes.
@@ -50,11 +61,15 @@ class Orchard3dView extends StatelessWidget {
             data: data,
             language: language,
             onMessage: onMessage,
+            live: live,
+            focus: focus,
           )
         : _Orchard3dWebView(
             data: data,
             language: language,
             onMessage: onMessage,
+            live: live,
+            focus: focus,
           );
   }
 }
@@ -64,11 +79,15 @@ class _Orchard3dWebView extends StatefulWidget {
     required this.data,
     required this.language,
     required this.onMessage,
+    this.live,
+    this.focus,
   });
 
   final String data;
   final String language;
   final ValueChanged<String> onMessage;
+  final String? live;
+  final String? focus;
 
   @override
   State<_Orchard3dWebView> createState() => _Orchard3dWebViewState();
@@ -95,6 +114,7 @@ class _Orchard3dWebViewState extends State<_Orchard3dWebView> {
           if (message.message == orchard3dReady) {
             _controller.runJavaScript('window.loozSetOrchard(${widget.data});');
             _ready = true;
+            _sendLive();
           } else {
             widget.onMessage(message.message);
           }
@@ -110,14 +130,23 @@ class _Orchard3dWebViewState extends State<_Orchard3dWebView> {
       ..loadFlutterAsset(orchard3dAsset);
   }
 
+  void _sendLive() {
+    final live = widget.live;
+    if (live != null) _controller.runJavaScript('window.loozSetLive($live);');
+    final focus = widget.focus;
+    if (focus != null) _controller.runJavaScript('window.loozFocusZone(${jsonEncode(focus)});');
+  }
+
   @override
   void didUpdateWidget(_Orchard3dWebView old) {
     super.didUpdateWidget(old);
-    if (_ready && old.language != widget.language) {
+    if (!_ready) return;
+    if (old.language != widget.language) {
       _controller.runJavaScript(
         "window.loozSetLanguage('${widget.language}');",
       );
     }
+    if (old.live != widget.live || old.focus != widget.focus) _sendLive();
   }
 
   @override

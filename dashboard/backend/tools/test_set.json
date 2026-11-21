@@ -1,0 +1,528 @@
+{
+ "note": "The diagnosis test set (photos not in git: python tools/diagnosis_eval.py download).",
+ "photos": [
+  {
+   "file": "shot_hole_1.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": true,
+   "license": "CC BY 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Wilsonomyces_carpophilus_183546217.jpg"
+  },
+  {
+   "file": "shot_hole_2.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole (close-up)",
+   "old": true,
+   "license": "CC BY 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Wilsonomyces_carpophilus_183546172.jpg"
+  },
+  {
+   "file": "shot_hole_3.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole (close-up)",
+   "old": true,
+   "license": "CC BY 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Wilsonomyces_carpophilus_183546188.jpg"
+  },
+  {
+   "file": "leaf_curl_1.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": true,
+   "license": "CC BY-SA 3.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Taphrina_deformans_1.jpg"
+  },
+  {
+   "file": "almond_healthy_2.jpg",
+   "expected": "none",
+   "kind": "healthy almond",
+   "old": true,
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Prunus_amygdalus_2601.jpg"
+  },
+  {
+   "file": "almond_healthy_1.jpg",
+   "expected": "none",
+   "kind": "autumn almond",
+   "old": true,
+   "license": "CC0",
+   "source": "https://commons.wikimedia.org/wiki/File:20141108Prunus_dulcis4.jpg"
+  },
+  {
+   "file": "olive_1.jpg",
+   "expected": "none",
+   "kind": "olive leaf",
+   "old": true,
+   "license": "CC BY-SA 4.0",
+   "source": "https://commons.wikimedia.org/wiki/File:Olea_europaea_leaves_1.jpg"
+  },
+  {
+   "file": "BLOSSOMS",
+   "expected": "not_a_leaf",
+   "kind": "almond blossoms (the app picture)",
+   "old": true,
+   "license": "LOOZ app asset",
+   "source": "mobile_app/assets/images/almond_blossoms.jpg"
+  },
+  {
+   "file": "GREEN",
+   "expected": "not_a_leaf",
+   "kind": "plain green picture",
+   "old": true,
+   "license": "-",
+   "source": "made by the tool"
+  },
+  {
+   "file": "shot_hole_4.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/258780374",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/464378004/large.jpeg"
+  },
+  {
+   "file": "shot_hole_5.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/259361558",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/465549358/large.jpeg"
+  },
+  {
+   "file": "shot_hole_6.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/260202746",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/467224461/large.jpeg"
+  },
+  {
+   "file": "shot_hole_7.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/271526291",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/488410914/large.jpeg"
+  },
+  {
+   "file": "shot_hole_8.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Léo Souillard, some rights reserved (CC BY)",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/313558906",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/566260436/large.jpg"
+  },
+  {
+   "file": "shot_hole_9.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/328096161",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/594422174/large.jpg"
+  },
+  {
+   "file": "shot_hole_10.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/329996723",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/598281943/large.jpg"
+  },
+  {
+   "file": "shot_hole_11.jpg",
+   "expected": "shot_hole",
+   "kind": "shot hole",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Carlos Muñoz-Amezcua, some rights reserved (CC BY)",
+   "taxon": "Wilsonomyces carpophilus",
+   "source": "https://www.inaturalist.org/observations/357235876",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/651493277/large.jpg"
+  },
+  {
+   "file": "leaf_curl_2.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/78087477",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/127750729/large.jpg"
+  },
+  {
+   "file": "leaf_curl_3.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/84795311",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/139410031/large.jpg"
+  },
+  {
+   "file": "leaf_curl_4.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Peter Chen 2.0, some rights reserved (CC BY)",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/153938910",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/265932551/large.jpg"
+  },
+  {
+   "file": "leaf_curl_5.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/161762731",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/279635700/large.jpg"
+  },
+  {
+   "file": "leaf_curl_6.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Markus Krieger, some rights reserved (CC BY)",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/162304652",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/280631013/large.jpeg"
+  },
+  {
+   "file": "leaf_curl_7.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) gerardbertrand, some rights reserved (CC BY)",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/214619093",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/379366181/large.jpg"
+  },
+  {
+   "file": "leaf_curl_8.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Ben Jobson, some rights reserved (CC BY)",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/270172459",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/485851648/large.jpeg"
+  },
+  {
+   "file": "leaf_curl_9.jpg",
+   "expected": "leaf_curl",
+   "kind": "leaf curl",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Steven Bodzin, some rights reserved (CC BY)",
+   "taxon": "Taphrina deformans",
+   "source": "https://www.inaturalist.org/observations/44920071",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/71211004/large.jpeg"
+  },
+  {
+   "file": "leaf_spot_1.jpg",
+   "expected": "leaf_spot",
+   "kind": "red leaf blotch",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Dávid Horváth, some rights reserved (CC BY)",
+   "taxon": "Polystigma rubrum",
+   "source": "https://www.inaturalist.org/observations/127839039",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/217078223/large.jpeg"
+  },
+  {
+   "file": "leaf_spot_2.jpg",
+   "expected": "leaf_spot",
+   "kind": "red leaf blotch",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Dávid Horváth, some rights reserved (CC BY)",
+   "taxon": "Polystigma rubrum",
+   "source": "https://www.inaturalist.org/observations/128512540",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/218296042/large.jpeg"
+  },
+  {
+   "file": "leaf_spot_3.jpg",
+   "expected": "leaf_spot",
+   "kind": "red leaf blotch",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Polystigma rubrum",
+   "source": "https://www.inaturalist.org/observations/129250235",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/219626125/large.jpeg"
+  },
+  {
+   "file": "leaf_spot_4.jpg",
+   "expected": "leaf_spot",
+   "kind": "red leaf blotch",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Jamie O'Neill, some rights reserved (CC BY)",
+   "taxon": "Polystigma rubrum",
+   "source": "https://www.inaturalist.org/observations/131997815",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/224718726/large.jpg"
+  },
+  {
+   "file": "leaf_spot_5.jpg",
+   "expected": "leaf_spot",
+   "kind": "red leaf blotch",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) David Slawson, some rights reserved (CC BY)",
+   "taxon": "Polystigma fulvum",
+   "source": "https://www.inaturalist.org/observations/293151850",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/527611564/large.jpg"
+  },
+  {
+   "file": "leaf_spot_6.jpg",
+   "expected": "leaf_spot",
+   "kind": "red leaf blotch",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Jamie O'Neill, some rights reserved (CC BY)",
+   "taxon": "Polystigma rubrum",
+   "source": "https://www.inaturalist.org/observations/379632417",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/694421586/large.jpg"
+  },
+  {
+   "file": "leaf_spot_7.jpg",
+   "expected": "leaf_spot",
+   "kind": "red leaf blotch",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Fyodor Pudovikov, some rights reserved (CC BY)",
+   "taxon": "Polystigma rubrum",
+   "source": "https://www.inaturalist.org/observations/390041178",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/714523110/large.jpg"
+  },
+  {
+   "file": "almond_healthy_3.jpg",
+   "expected": "none",
+   "kind": "healthy almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Duarte Frade, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/89477462",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/147762669/large.jpeg"
+  },
+  {
+   "file": "almond_healthy_4.jpg",
+   "expected": "none",
+   "kind": "healthy almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Edmundas Greimas, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/118825482",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/200804975/large.jpeg"
+  },
+  {
+   "file": "almond_healthy_5.jpg",
+   "expected": "none",
+   "kind": "healthy almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Naturalista, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/130477729",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/221902696/large.jpg"
+  },
+  {
+   "file": "almond_healthy_6.jpg",
+   "expected": "none",
+   "kind": "healthy almond",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/30700857",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/47975945/large.jpg"
+  },
+  {
+   "file": "almond_healthy_7.jpg",
+   "expected": "none",
+   "kind": "healthy almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Nico Hernandez, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/191747828",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/336459719/large.png"
+  },
+  {
+   "file": "almond_healthy_8.jpg",
+   "expected": "none",
+   "kind": "healthy almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Andre Hosper, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/15628845",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/23357305/large.jpeg"
+  },
+  {
+   "file": "almond_autumn_1.jpg",
+   "expected": "none",
+   "kind": "autumn almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Patrick McMabell, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/137910361",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/236817401/large.jpeg"
+  },
+  {
+   "file": "almond_autumn_2.jpg",
+   "expected": "none",
+   "kind": "autumn almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) frangp, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/251925284",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/450855344/large.jpg"
+  },
+  {
+   "file": "almond_autumn_3.jpg",
+   "expected": "none",
+   "kind": "autumn almond",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Loïc Chalmandrier, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/325908242",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/590162337/large.jpg"
+  },
+  {
+   "file": "olive_2.jpg",
+   "expected": "none",
+   "kind": "olive leaf",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Olea europaea",
+   "source": "https://www.inaturalist.org/observations/63437846",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/101804819/large.jpeg"
+  },
+  {
+   "file": "olive_3.jpg",
+   "expected": "none",
+   "kind": "olive leaf",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Karim Haddad, some rights reserved (CC BY)",
+   "taxon": "Olea europaea europaea",
+   "source": "https://www.inaturalist.org/observations/72646891",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/118481276/large.jpeg"
+  },
+  {
+   "file": "olive_4.jpg",
+   "expected": "none",
+   "kind": "olive leaf",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Duarte Frade, some rights reserved (CC BY)",
+   "taxon": "Olea europaea",
+   "source": "https://www.inaturalist.org/observations/107789105",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/181357102/large.jpeg"
+  },
+  {
+   "file": "olive_5.jpg",
+   "expected": "none",
+   "kind": "olive leaf",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Duarte Frade, some rights reserved (CC BY)",
+   "taxon": "Olea europaea",
+   "source": "https://www.inaturalist.org/observations/160879501",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/278039152/large.jpeg"
+  },
+  {
+   "file": "not_leaf_flower_1.jpg",
+   "expected": "not_a_leaf",
+   "kind": "almond flowers",
+   "old": false,
+   "license": "CC BY-SA",
+   "author": "(c) Daniel Capilla, some rights reserved (CC BY-SA)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/69017241",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/111897121/large.jpg"
+  },
+  {
+   "file": "not_leaf_flower_2.jpg",
+   "expected": "not_a_leaf",
+   "kind": "almond flowers",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/107093461",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/180050130/large.jpg"
+  },
+  {
+   "file": "not_leaf_flower_3.jpg",
+   "expected": "not_a_leaf",
+   "kind": "almond flowers",
+   "old": false,
+   "license": "CC0",
+   "author": "no rights reserved",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/264628134",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/475198266/large.jpg"
+  },
+  {
+   "file": "not_leaf_nut_1.jpg",
+   "expected": "not_a_leaf",
+   "kind": "almond nuts",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Karim Haddad, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/156027262",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/269763074/large.jpeg"
+  },
+  {
+   "file": "not_leaf_nut_2.jpg",
+   "expected": "not_a_leaf",
+   "kind": "almond nuts",
+   "old": false,
+   "license": "CC BY",
+   "author": "(c) Gonzalo Ganda Álvarez, some rights reserved (CC BY)",
+   "taxon": "Prunus amygdalus",
+   "source": "https://www.inaturalist.org/observations/268260914",
+   "download": "https://inaturalist-open-data.s3.amazonaws.com/photos/482175998/large.jpeg"
+  }
+ ]
+}

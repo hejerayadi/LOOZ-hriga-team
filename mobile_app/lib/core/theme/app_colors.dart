@@ -57,6 +57,10 @@ class AppColors {
   /// (blue, like the dashboard's preview).
   static const info = Color(0xFF6E9FC4);
 
+  /// Not in the design: a zone without a prediction (sensor problem, not
+  /// enough data, offline, waiting): a calm grey green.
+  static const noData = Color(0xFF9AA8A0);
+
   /// The color of a status level.
   static Color forLevel(StatusLevel level) {
     switch (level) {

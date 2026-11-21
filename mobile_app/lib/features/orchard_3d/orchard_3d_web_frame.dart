@@ -1,6 +1,7 @@
 // Flutter web only: shows the 3D page in an <iframe>, and talks with it:
 //  - the page sends 'looz:...' messages with window.parent.postMessage(...),
 //  - we answer 'looz:ready' by posting the orchard data into the iframe.
+import 'dart:convert';
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
@@ -15,7 +16,15 @@ class Orchard3dWebFrame extends StatefulWidget {
     required this.data,
     required this.language,
     required this.onMessage,
+    this.live,
+    this.focus,
   });
+
+  /// The live state of the zones as JSON, sent again when it changes.
+  final String? live;
+
+  /// The zone to show highlighted.
+  final String? focus;
 
   /// Asset path of the page, e.g. 'assets/orchard_3d/index.html'.
   final String asset;
@@ -62,21 +71,31 @@ class _Orchard3dWebFrameState extends State<Orchard3dWebFrame> {
         _window.location.origin,
       );
       _ready = true;
+      _sendLive();
     } else if (text.startsWith('looz:')) {
       // Ignore messages that do not come from the 3D page.
       widget.onMessage(text);
     }
   }
 
+  void _post(String text) =>
+      _frame?.contentWindow?.postMessage(text.toJS, _window.location.origin);
+
+  void _sendLive() {
+    final live = widget.live;
+    if (live != null) _post('{"looz_live":$live}');
+    final focus = widget.focus;
+    if (focus != null) _post(jsonEncode({'looz_focus': focus}));
+  }
+
   @override
   void didUpdateWidget(Orchard3dWebFrame old) {
     super.didUpdateWidget(old);
-    if (_ready && old.language != widget.language) {
-      _frame?.contentWindow?.postMessage(
-        '{"looz_lang":"${widget.language}"}'.toJS,
-        _window.location.origin,
-      );
+    if (!_ready) return;
+    if (old.language != widget.language) {
+      _post('{"looz_lang":"${widget.language}"}');
     }
+    if (old.live != widget.live || old.focus != widget.focus) _sendLive();
   }
 
   @override

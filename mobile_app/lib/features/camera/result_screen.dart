@@ -4,6 +4,7 @@
 // diagnosis", and the big "اسأل خبيرًا": a community question with the
 // photo, so a verified expert confirms.
 // Nothing found: "لم نجد هذه الأمراض الثلاثة." (never "your tree is healthy").
+// Every result: "هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير." and "اسأل خبيرًا".
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
@@ -96,10 +97,9 @@ class ResultScreen extends StatelessWidget {
               _Line(icon: AppIcon.leaf, text: l10n.weLookFor),
             ],
           ),
-        if (found) ...[
-          const SizedBox(height: 12),
-          _Line(icon: AppIcon.warning, text: l10n.notFinalDiagnosis),
-        ],
+        // Always (also "لم نجد"): the model can be wrong.
+        const SizedBox(height: 12),
+        _Line(icon: AppIcon.warning, text: l10n.notFinalDiagnosis),
         const SizedBox(height: 18),
         ActionButton(
           label: l10n.askAnExpert,

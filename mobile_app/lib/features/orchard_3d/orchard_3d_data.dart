@@ -15,8 +15,10 @@ import 'package:flutter/widgets.dart' show Locale;
 
 import '../../core/theme/app_theme.dart';
 import '../../core/zone_letters.dart';
+import '../../data/ml_service.dart';
 import '../../data/orchard_service.dart';
 import '../../l10n/app_localizations.dart';
+import 'zone_live_texts.dart';
 
 String _hex(int argb) =>
     '#${(argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
@@ -137,5 +139,37 @@ String orchard3dJson(MyOrchard orchard, {String language = 'ar'}) {
           'photo_status': tree.photo?.name,
         },
     ],
+  });
+}
+
+
+/// The live state of each zone for the 3D page (window.loozSetLive): its
+/// colour, its short words in both languages, and the readings of its box.
+/// Sent again at each change (Supabase Realtime): the page recolours the
+/// zones without loading again.
+String orchardLiveJson(MyOrchard orchard, OrchardLive live) {
+  final byZone = {for (final n in orchard.nodes) n.zoneId: n};
+  final texts = {
+    for (final code in ['ar', 'fr']) code: lookupAppLocalizations(Locale(code)),
+  };
+  return jsonEncode({
+    'zones': {
+      for (final zone in orchard.zones)
+        zone.id: () {
+          final node = byZone[zone.id];
+          final z = live.zone(node?.id, installed: node?.installed ?? false);
+          return {
+            'state': z.state.name,
+            'color': _hex(zoneStateColor(z.state).toARGB32()),
+            'problem': problemStates.contains(z.state),
+            'labels': {
+              for (final e in texts.entries) e.key: zoneStateName(e.value, z.state),
+            },
+            'soil_moisture': z.node?.soilMoisture,
+            'temperature': z.node?.airTemp,
+            'online': z.node != null && z.node!.status != 'offline' && z.node!.status != 'waiting',
+          };
+        }(),
+    },
   });
 }

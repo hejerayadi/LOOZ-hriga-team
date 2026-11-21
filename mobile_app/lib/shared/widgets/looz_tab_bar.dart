@@ -7,6 +7,7 @@ import '../../core/locale.dart';
 import '../../core/navigation.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/alerts/alerts_store.dart';
+import '../../features/orchard_3d/orchard_live_store.dart';
 import 'app_icon.dart';
 import 'symbol_text.dart';
 
@@ -41,16 +42,23 @@ class LoozTabBar extends StatelessWidget {
             for (final (tab, icon, label) in tabs)
               Expanded(
                 child: tab == AppTab.alerts
-                    // The number of new alerts on the bell.
+                    // The number of new alerts on the bell: the regional
+                    // ones and the problems of the farmer's own orchard.
                     ? ValueListenableBuilder<AlertsState>(
                         valueListenable: regionalAlerts,
-                        builder: (context, state, _) => _TabButton(
-                          icon: icon,
-                          label: label,
-                          selected: tab == selected,
-                          badge: state.unreadCount,
-                          onTap: () => goToTab(context, tab),
-                        ),
+                        builder: (context, state, _) =>
+                            ValueListenableBuilder<OrchardLiveState>(
+                              valueListenable: orchardLive,
+                              builder: (context, live, _) => _TabButton(
+                                icon: icon,
+                                label: label,
+                                selected: tab == selected,
+                                badge:
+                                    state.unreadCount +
+                                    (live.live?.unreadCount ?? 0),
+                                onTap: () => goToTab(context, tab),
+                              ),
+                            ),
                       )
                     : _TabButton(
                         icon: icon,

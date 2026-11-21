@@ -670,13 +670,16 @@
       out.set(VARIETY[t.variety].canopy);
       if (S.view !== 'zones' || !LIVE) return out;
       var zone = zoneById(t.zoneId);
-      if (zone) out.lerp(tint.set(HEALTH[zone.health]), 0.6);
+      if (zone) out.lerp(tint.set(zone.live && zone.live.color ? zone.live.color : HEALTH[zone.health]), zone.live ? 0.45 : 0.6);
       return out;
     }
 
     // Color of a zone: the colour chosen in the designer (else its health),
     // or neutral green if the plan has no live data.
-    function zoneColor(zone) { return LIVE ? (zone.color || HEALTH[zone.health]) : NEUTRAL; }
+    function zoneColor(zone) {
+      if (zone.live && zone.live.color) return zone.live.color;   // the prediction of its box (app)
+      return LIVE ? (zone.color || HEALTH[zone.health]) : NEUTRAL;
+    }
 
     // Does the latest photo diagnosis of this tree show a problem?
     function photoProblem(t) { return t.photo === 'warning' || t.photo === 'danger'; }
@@ -753,20 +756,48 @@
 
     // The name of a zone, on a white pill with the zone's color.
     function zoneLabelMaterial(zone) {
-      return canvasSprite(256, 96, function (ctx) {
-        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      var state = zone.live && zone.live.labels ? zone.live.labels[LANG] : null;
+      if (!state) {
+        return canvasSprite(256, 96, function (ctx) {
+          ctx.fillStyle = 'rgba(255,255,255,0.95)';
+          ctx.beginPath();
+          ctx.roundRect(4, 4, 248, 88, 44);
+          ctx.fill();
+          ctx.lineWidth = 8;
+          ctx.strokeStyle = zoneColor(zone);
+          ctx.stroke();
+          ctx.fillStyle = '#1f2a24';
+          ctx.font = 'bold 44px sans-serif';
+          ctx.direction = LANG === 'ar' ? 'rtl' : 'ltr';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(zone.name, 128, 50);
+        });
+      }
+      // With a live state: the name, then the state on a pill of its colour.
+      return canvasSprite(256, 160, function (ctx) {
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
         ctx.beginPath();
-        ctx.roundRect(4, 4, 248, 88, 44);
+        ctx.roundRect(4, 4, 248, 152, 40);
         ctx.fill();
         ctx.lineWidth = 8;
         ctx.strokeStyle = zoneColor(zone);
         ctx.stroke();
-        ctx.fillStyle = '#1f2a24';
-        ctx.font = 'bold 44px sans-serif';
         ctx.direction = LANG === 'ar' ? 'rtl' : 'ltr';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(zone.name, 128, 50);
+        ctx.fillStyle = '#1f2a24';
+        ctx.font = 'bold 42px sans-serif';
+        ctx.fillText(zone.name, 128, 46);
+        ctx.fillStyle = zoneColor(zone);
+        ctx.beginPath();
+        ctx.roundRect(16, 86, 224, 58, 29);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        var size = 34;
+        ctx.font = 'bold ' + size + 'px sans-serif';
+        while (ctx.measureText(state).width > 208 && size > 18) { size -= 2; ctx.font = 'bold ' + size + 'px sans-serif'; }
+        ctx.fillText(state, 128, 116);
       });
     }
 
@@ -906,7 +937,7 @@
         var cx = 0, cz = 0;
         pts.forEach(function (p) { cx += p.x; cz += p.z; });
         zone.label = new THREE.Sprite(zoneLabelMaterial(zone));
-        zone.label.scale.set(6 * SCALE, 2.25 * SCALE, 1);
+        zone.label.scale.set(6 * SCALE, (zone.live ? 3.75 : 2.25) * SCALE, 1);
         zone.label.position.set(cx / pts.length, 6 + 2 * SCALE, cz / pts.length);   // high enough not to hide tree markers
         zone.label.userData.zoneId = zone.id;
         zonesGroup.add(zone.label);
@@ -959,7 +990,11 @@
       ZONES.forEach(function (zone) {
         var n = zone.node;
         if (!n) return;
-        var mat = NODE_MAT[n.status === 'online' ? 'online' : 'offline'];
+        var online = zone.live ? zone.live.online : n.status === 'online';
+        var mat = NODE_MAT[online ? 'online' : 'offline'];
+        if (zone.live && zone.live.color && online) {
+          mat = Object.assign({}, mat, { light: new THREE.MeshBasicMaterial({ color: zone.live.color }) });
+        }
         var group = new THREE.Group();
         [[postGeo, mat.post], [boxGeo, mat.box], [antennaGeo, mat.antenna], [lightGeo, mat.light]].forEach(function (part) {
           var mesh = new THREE.Mesh(part[0], part[1]);
@@ -1018,8 +1053,39 @@
       S.view = ZONES.length ? 'zones' : 'trees';
       loadRealTrees();
       resetView();
+      if (LAST_LIVE) setLive(LAST_LIVE);   // the live states arrived first
     }
     window.loozSetOrchard = setOrchard;
+
+    // The live state of each zone (predictions, readings), sent by the app at
+    // each change: colours, labels, box lights; trees tinted. No reload.
+    var LIVE_STATES = false;
+    var LAST_LIVE = null;
+    function setLive(data) {
+      if (!data || !data.zones) return;
+      LIVE_STATES = true;
+      LAST_LIVE = data;
+      ZONES.forEach(function (zone) {
+        var l = data.zones[zone.id];
+        zone.live = l || null;
+        if (l && zone.node) {
+          zone.node.soil_moisture = l.soil_moisture;
+          zone.node.temperature = l.temperature;
+        }
+      });
+      buildZones();
+      buildNodes();
+      rebuildTrees();
+      highlightZone();
+    }
+    window.loozSetLive = setLive;
+
+    // Show a zone (a tap on an alert in the app): highlighted.
+    function focusZone(id) {
+      S.zoneId = id || null;
+      highlightZone();
+    }
+    window.loozFocusZone = focusZone;
 
     function zoneName(zone) { return (zone.names && zone.names[LANG]) || zone.name; }
 
@@ -1048,7 +1114,9 @@
       if (e.source !== window.parent || typeof e.data !== 'string') return;
       try {
         var data = JSON.parse(e.data);
-        if (data && data.zones) setOrchard(data);
+        if (data && data.looz_live) setLive(data.looz_live);
+        else if (data && data.looz_focus !== undefined) focusZone(data.looz_focus);
+        else if (data && data.zones) setOrchard(data);
         else if (data && data.looz_lang) setLanguage(data.looz_lang);
       } catch (err) { /* not our message */ }
     });
@@ -1266,6 +1334,12 @@
           var o = hits[i].object;
           if (o.userData.zoneId) zoneId = o.userData.zoneId;
           else if (o.userData.perTree || o.isSprite) zoneId = S.trees[treeIndexOf(hits[i])].zoneId;
+        }
+        if (REAL && LIVE_STATES) {
+          S.zoneId = zoneId || null;
+          highlightZone();
+          if (zoneId) tellFlutter('looz:zone:' + zoneId);
+          return;
         }
         openZone(zoneId || null);
         return;

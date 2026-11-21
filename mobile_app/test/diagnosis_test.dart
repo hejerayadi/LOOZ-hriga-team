@@ -2,8 +2,8 @@
 // camera (no internet, no model): the camera screen, "جاري النظر…", the
 // result (likely, unsure, nothing), the marks, "اسأل خبيرًا" -> a question
 // with the photo in the community, every failure, the limits of the day,
-// Free = locked, French, the plural forms, the voice says "قريبًا", and
-// the abjad letters of the zones.
+// Free = locked, French, the plural forms, the voice assistant, the abjad
+// letters of the zones, and the text "sent to an AI service" (Gemini, free tier).
 // Run it with: flutter test test/diagnosis_test.dart
 import 'dart:async';
 
@@ -197,6 +197,11 @@ void main() {
     expect(
       tester.widget<MarkedPhoto>(find.byType(MarkedPhoto)).marked,
       isEmpty,
+    );
+    // Also here: the model can be wrong.
+    await scrollTo(
+      tester,
+      find.text('هذا ليس تشخيصًا نهائيًا. اطلب رأي خبير.'),
     );
     expect(find.text('اسأل خبيرًا'), findsOneWidget);
     expect(find.text('صوّر ورقة أخرى'), findsOneWidget);
@@ -438,6 +443,101 @@ void main() {
       await closeApp(tester);
     });
 
+    testWidgets('Gemini: "sent to an AI service" + the free-tier sentence', (
+      tester,
+    ) async {
+      final fake = FakeDiagnosisService()
+        ..quota = const DiagnosisQuota(
+          enabled: true,
+          paid: true,
+          perDay: 10,
+          usedToday: 3,
+          google: true,
+          googleFreeTier: true,
+        );
+      await startApp(tester, diagnosis: fake);
+      await openCamera(tester);
+      expect(
+        find.text(
+          'تُرسل الصورة إلى خدمة ذكاء اصطناعي (غوغل أو مزوّد آخر) لفحصها، '
+          'وتُحفظ في حسابك. وقد تستعملها غوغل لتحسين خدماتها.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.'),
+        findsNothing,
+      );
+      expect(find.text('يمكنك إرسال 7 صور اليوم'), findsOneWidget);
+      await closeApp(tester);
+    });
+
+    testWidgets('Gemini on the paid tier: no free-tier sentence', (
+      tester,
+    ) async {
+      final fake = FakeDiagnosisService()
+        ..quota = const DiagnosisQuota(
+          enabled: true,
+          paid: true,
+          perDay: 10,
+          usedToday: 3,
+          google: true,
+        );
+      await startApp(tester, diagnosis: fake);
+      await openCamera(tester);
+      expect(
+        find.text(
+          'تُرسل الصورة إلى خدمة ذكاء اصطناعي (غوغل أو مزوّد آخر) لفحصها، '
+          'وتُحفظ في حسابك.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('لتحسين خدماتها'), findsNothing);
+      await closeApp(tester);
+    });
+
+    testWidgets('not known (no internet): the Google text in full', (
+      tester,
+    ) async {
+      await startApp(tester, diagnosis: FakeDiagnosisService()..offline = true);
+      await openCamera(tester);
+      expect(find.text('تحتاج إلى الإنترنت'), findsOneWidget);
+      expect(
+        find.text(
+          'تُرسل الصورة إلى خدمة ذكاء اصطناعي (غوغل أو مزوّد آخر) لفحصها، '
+          'وتُحفظ في حسابك. وقد تستعملها غوغل لتحسين خدماتها.',
+        ),
+        findsOneWidget,
+      );
+      await closeApp(tester);
+    });
+
+    testWidgets('Gemini in French: "un service d IA" + the free tier', (
+      tester,
+    ) async {
+      final fake = FakeDiagnosisService()
+        ..quota = const DiagnosisQuota(
+          enabled: true,
+          paid: true,
+          perDay: 10,
+          usedToday: 3,
+          google: true,
+          googleFreeTier: true,
+        );
+      await startApp(tester, lang: 'fr', diagnosis: fake);
+      await openCamera(tester);
+      expect(
+        find.text(
+          "La photo est envoyée à un service d'IA (Google ou un autre "
+          "fournisseur) pour l'examen, et gardée dans votre compte. Google "
+          "peut aussi l'utiliser pour améliorer ses services.",
+        ),
+        findsOneWidget,
+      );
+      expect(textsOnScreen().where(arabic.hasMatch), isEmpty);
+      await closeApp(tester);
+    });
+
     testWidgets('× closes the camera', (tester) async {
       await startApp(tester);
       await openCamera(tester);
@@ -531,6 +631,31 @@ void main() {
     expect(failureOfCode('limit_day'), DiagnosisFailure.limitDay);
     expect(failureOfCode('off'), DiagnosisFailure.unavailable);
     expect(failureOfCode('not_paid'), DiagnosisFailure.notPaid);
+    // Google busy, its limits, too slow: the Edge Function says "busy".
+    expect(failureOfCode('busy'), DiagnosisFailure.busy);
+  });
+
+  test('my_diagnosis_quota(): Gemini and its free tier (migration 018)', () {
+    final gemini = DiagnosisQuota.fromRow({
+      'enabled': true,
+      'paid': true,
+      'per_day': 10,
+      'used_today': 2,
+      'google': true,
+      'google_free_tier': true,
+    });
+    expect(
+      (gemini.google, gemini.googleFreeTier, gemini.left),
+      (true, true, 8),
+    );
+    // Before 018 (Roboflow): not Google.
+    final old = DiagnosisQuota.fromRow({
+      'enabled': true,
+      'paid': true,
+      'per_day': 10,
+      'used_today': 0,
+    });
+    expect((old.google, old.googleFreeTier), (false, false));
   });
 
   test('zone letters: the abjad order in Arabic (20), A to T in French', () {

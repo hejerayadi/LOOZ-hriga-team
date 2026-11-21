@@ -22,8 +22,11 @@ import '../../shared/widgets/text_link.dart';
 import '../onboarding/auth_messages.dart';
 import '../orchard_designer/designer_start_screen.dart';
 import '../premium/premium_screen.dart';
+import '../../data/ml_service.dart';
 import 'orchard_3d_data.dart';
 import 'orchard_3d_view.dart';
+import 'orchard_live_store.dart';
+import 'zone_panel.dart';
 
 /// true while a panel of the 3D page covers the bottom of the screen:
 /// the assistant bar is hidden then (see MainShell in app.dart).
@@ -166,8 +169,54 @@ class _Orchard3dState extends State<_Orchard3d> {
     language: Localizations.localeOf(context).languageCode,
   );
 
+  // The live states sent to the page, made again only when they change.
+  OrchardLive? _liveFor;
+  String? _liveJson;
+
+  /// The zone highlighted in the 3D (its panel is open).
+  String? _focused;
+
+  @override
+  void initState() {
+    super.initState();
+    focusZone.addListener(_onFocus);
+    refreshOrchardLive();
+    // A tap on an alert may have asked for a zone before this tab was built.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onFocus());
+  }
+
+  @override
+  void dispose() {
+    focusZone.removeListener(_onFocus);
+    super.dispose();
+  }
+
+  void _onFocus() {
+    final id = focusZone.value;
+    if (id == null || !mounted) return;
+    focusZone.value = null;
+    _openZone(id);
+  }
+
+  /// The panel of a zone (from the 3D, an alert or a notification).
+  void _openZone(String zoneId) {
+    final zone = widget.orchard.zones.where((z) => z.id == zoneId).firstOrNull;
+    if (zone == null) return;
+    final node = widget.orchard.nodes.where((n) => n.zoneId == zoneId).firstOrNull;
+    setState(() => _focused = zoneId);
+    orchardPanelOpen.value = true;
+    showZonePanel(context, zone: zone, node: node).whenComplete(() {
+      orchardPanelOpen.value = false;
+      if (mounted) setState(() => _focused = null);
+    });
+  }
+
   /// Messages sent by the 3D page (assets/orchard_3d/index.html).
   void _onMessage(String message) {
+    if (message.startsWith('looz:zone:')) {
+      _openZone(message.substring('looz:zone:'.length));
+      return;
+    }
     switch (message) {
       case 'looz:upgrade': // "ابدأ بريميوم" tapped in the zone panel
         openScreen(context, const PremiumScreen());
@@ -178,13 +227,27 @@ class _Orchard3dState extends State<_Orchard3d> {
     }
   }
 
+  String? _live(OrchardLive? live) {
+    if (live == null) return null;
+    if (!identical(live, _liveFor)) {
+      _liveFor = live;
+      _liveJson = orchardLiveJson(widget.orchard, live);
+    }
+    return _liveJson;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return _OrchardCard(
-      child: Orchard3dView(
-        data: _orchardJson,
-        language: Localizations.localeOf(context).languageCode,
-        onMessage: _onMessage,
+    return ValueListenableBuilder<OrchardLiveState>(
+      valueListenable: orchardLive,
+      builder: (context, state, _) => _OrchardCard(
+        child: Orchard3dView(
+          data: _orchardJson,
+          language: Localizations.localeOf(context).languageCode,
+          onMessage: _onMessage,
+          live: _live(state.live),
+          focus: _focused,
+        ),
       ),
     );
   }

@@ -16,9 +16,9 @@ export function Card({
   action?: React.ReactNode;
 }) {
   return (
-    <section className={`rounded-xl border border-slate-200 bg-white p-5 ${className}`}>
+    <section className={`rounded-2xl border border-emerald-100 bg-white p-5 shadow-[0_8px_24px_rgba(15,61,43,0.06)] ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{title}</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-700">{title}</h2>
         {action}
       </div>
       <div className="mt-3">{children}</div>
@@ -36,7 +36,7 @@ export function Fact({ name, value }: { name: string; value: React.ReactNode }) 
 }
 
 const BUTTON = {
-  primary: "bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-60",
+  primary: "bg-emerald-800 text-white hover:bg-emerald-700 disabled:opacity-60",
   danger: "bg-rose-700 text-white hover:bg-rose-800 disabled:opacity-60",
   plain: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-60",
 };
@@ -51,7 +51,7 @@ export function Button({
     <button
       type="button"
       {...props}
-      className={`rounded-lg font-medium ${small ? "px-2.5 py-1 text-xs" : "px-4 py-2 text-sm"} ${BUTTON[kind]} ${className}`}
+      className={`rounded-xl font-semibold ${small ? "px-2.5 py-1 text-xs" : "px-4 py-2 text-sm"} ${BUTTON[kind]} ${className}`}
     />
   );
 }

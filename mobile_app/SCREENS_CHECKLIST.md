@@ -159,21 +159,33 @@ phone), `test/languages_test.dart`, `test/navigation_test.dart`, the real app in
 Supabase (22 777 001, Arabic and French: `docs/screenshots/app-alerts/`) and
 `dashboard/backend/tests_live/test_live_app_alerts.py` (the jury scenario).
 
-## Photo diagnosis (Bêta, migration 016 + Edge Function "diagnose")
+## Photo diagnosis (Bêta, migrations 016 + 018 + Edge Function "diagnose", Gemini or Roboflow)
 
 | # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
 |---|---|---|---|---|---|---|
-| 76 | Camera: "تجريبي", the tips (ورقة لوز واحدة · من قريب · في الضوء), "يمكنك إرسال {n} صور اليوم", the privacy line, the round button (web: the photos), "اختر من الصور", "جاري تحضير الصورة…"; messages: no photo left, switched off, "تحتاج إلى الإنترنت", camera / photos refused | `lib/features/camera/camera_screen.dart`, `diagnosis_widgets.dart` | [x] | [x] | [x] | [x] camera button, Ask "صورة", "صوّر ورقة أخرى" |
+| 76 | Camera: "تجريبي", the tips (ورقة لوز واحدة · من قريب · في الضوء), "يمكنك إرسال {n} صور اليوم", the privacy line (Gemini: "تُرسل الصورة إلى خدمة ذكاء اصطناعي (غوغل أو مزوّد آخر) لفحصها، وتُحفظ في حسابك." + on the free tier "وقد تستعملها غوغل لتحسين خدماتها."), the round button (web: the photos), "اختر من الصور", "جاري تحضير الصورة…"; messages: no photo left, switched off, "تحتاج إلى الإنترنت", camera / photos refused | `lib/features/camera/camera_screen.dart`, `diagnosis_widgets.dart` | [x] | [x] | [x] | [x] camera button, Ask "صورة", "صوّر ورقة أخرى" |
 | 77 | "جاري النظر…" with the photo; failures: "تحتاج إلى الإنترنت" + "حاول مرة أخرى", the limit of the day (plural) + "اسأل خبيرًا", busy, unavailable, unreadable photo + "صوّر ورقة أخرى", "رجوع"; pack ended: the locked screen | `lib/features/camera/thinking_screen.dart` | [x] | [x] | [x] | [x] the round button, "اختر من الصور" |
 | 78 | Result: the disease + "على الأرجح" / "غير متأكد", "تجريبي", 🔊 ("قريبًا"), the photo with the spots framed, "ماذا أفعل؟" (3 steps, drafts), "هذا ليس تشخيصًا نهائيًا…", "اسأل خبيرًا", "صوّر ورقة أخرى" | `lib/features/camera/result_screen.dart`, `diagnosis_texts.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
-| 79 | Result "لم نجد هذه الأمراض الثلاثة.": the tip, "هذا لا يعني أن الشجرة سليمة.", "نبحث فقط عن: ثقوب، تجعّد، بقع.", no marks | `lib/features/camera/result_screen.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
+| 79 | Result "لم نجد هذه الأمراض الثلاثة.": the tip, "هذا لا يعني أن الشجرة سليمة.", "نبحث فقط عن: ثقوب، تجعّد، بقع.", "هذا ليس تشخيصًا نهائيًا…", no marks | `lib/features/camera/result_screen.dart` | [x] | [x] | [x] | [x] after "جاري النظر…" |
 | 80 | "اسأل خبيرًا": the question screen with the photo and a ready question → "انشر" → the community + "سؤالك في المجتمع" | `lib/features/community/write_post_screen.dart` (`initialText`, `initialPhoto`, `onPublished`) | [x] | [x] | [x] | [x] the result, the failures |
 | 81 | Zone letters in Arabic: أ ب ج د… (abjad) in the designer and the 3D ("المنطقة أ") | `lib/core/zone_letters.dart` | [x] | [x] | [x] | [x] (every zone) |
 
-Checked with `test/diagnosis_test.dart` (24 tests), `test/languages_test.dart` (no Latin letter on an
+Checked with `test/diagnosis_test.dart` (29 tests), `test/languages_test.dart` (no Latin letter on an
 Arabic screen any more, zone letters included), `test/navigation_test.dart`, the Edge Function's local
-test (33 checks) and, once `diagnose` is deployed, the real app in Chrome and
+test (101 checks, fake Roboflow, fake Gemini, backup key, fake Groq) and, once `diagnose` is deployed, the real app in Chrome and
 `dashboard/backend/tests_live/test_live_diagnosis.py`.
+
+## ML predictions (paid pack, migration 019)
+
+| # | Screen (state) | Flutter file | Built | Arabic checked | French checked | Opened from the right button(s) |
+|---|---|---|---|---|---|---|
+| 82 | 3D: each zone coloured by its state, its label (name + state), the box light | `lib/features/orchard_3d/orchard_tab.dart`, `orchard_3d_data.dart` (`orchardLiveJson`), `assets/orchard_3d/index.html` (`loozSetLive`) | [x] | [x] | [x] | [x] tab "بستاني ★" |
+| 83 | The zone panel: state pill, "على الأرجح / غير متأكد", "آخر تحديث", the explanation (Groq or from the codes), "ماذا أفعل؟", "لماذا؟" bars, tonight / the trees line, the readings; sensor problem, offline, not enough data, waiting | `lib/features/orchard_3d/zone_panel.dart`, `zone_live_texts.dart` | [x] | [x] | [x] | [x] a tap on a zone in 3D, an alert card, a banner |
+| 84 | Alerts tab, "بستاني": one card per problem ("جديد"), "كل مناطقك بخير.", "ننتظر قراءات حسّاساتك."; the bell counts them | `lib/features/alerts/orchard_alerts.dart`, `alerts_page.dart`, `shared/widgets/looz_tab_bar.dart` | [x] | [x] | [x] | [x] tab "التنبيهات" |
+| 85 | In-app notification: the banner at the top (once per problem), tap → the zone | `lib/features/alerts/orchard_alerts.dart` (`MlBannerHost`), `app.dart` | [x] | [x] | [x] | [x] a new problem while the app is open (Realtime) |
+
+Checked with `test/ml_test.dart` (11 tests), the whole suite (286) and screenshots in both languages
+(`docs/screenshots/ml-predictions-app/`, made with the fakes: `tool/screens/ml_screens_main.dart`).
 
 ## How each box was checked
 

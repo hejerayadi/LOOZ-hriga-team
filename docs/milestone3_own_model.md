@@ -1,5 +1,10 @@
 # Milestone 3 — our own leaf model (RF-DETR) in Roboflow
 
+> **Update 19 November 2026**: the app now uses **Gemini vision** (`gemini-3.6-flash`, PROJECT_STATUS.md
+> section 16): 4 / 4 diseases found and 0 / 5 false alarms on the same 9 photos. This plan stays for
+> later: our own model, trained on expert-confirmed photos of farmers who said yes (the "data
+> flywheel" in section 16).
+
 **Why**: on our 9 test photos (15 November 2026), the public model `almond-diseases-detection-l7tfx/2`
 found **0 of 4** diseases and gave 1 false alarm (olive leaf); the SAM 3 workflow found at most 2 of 4.
 Neither passes the jury rule. We train our own model.

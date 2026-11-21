@@ -9,12 +9,16 @@ class Orchard3dWebFrame extends StatelessWidget {
     required this.data,
     required this.language,
     required this.onMessage,
+    this.live,
+    this.focus,
   });
 
   final String asset;
   final String data;
   final String language;
   final ValueChanged<String> onMessage;
+  final String? live;
+  final String? focus;
 
   @override
   Widget build(BuildContext context) => const SizedBox.shrink();

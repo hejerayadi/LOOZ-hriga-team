@@ -1,7 +1,8 @@
 // The PHOTO DIAGNOSIS (Bêta, paid pack): the photo of an almond leaf goes to
 // the Edge Function "diagnose" (supabase/functions/diagnose), which asks the
-// model (Roboflow) and saves the result (migration 016). It answers with
-// CODES only: the screens write the texts in Arabic or French.
+// model (Gemini or Roboflow: app_settings.diagnosis_model) and saves the
+// result (migrations 016 and 018). It answers with CODES only: the screens
+// write the texts in Arabic or French.
 //
 // The screens only know DiagnosisService: another model (on the phone,
 // later) is another class with the same methods, the screens don't change.
@@ -91,19 +92,28 @@ class Diagnosis {
   }
 }
 
-/// How many photos are left today (my_diagnosis_quota()).
+/// How many photos are left today (my_diagnosis_quota()), and where the
+/// photo goes (the camera screen says it).
 class DiagnosisQuota {
   const DiagnosisQuota({
     required this.enabled,
     required this.paid,
     required this.perDay,
     required this.usedToday,
+    this.google = false,
+    this.googleFreeTier = false,
   });
 
   final bool enabled;
   final bool paid;
   final int perDay;
   final int usedToday;
+
+  /// The photo is examined by Google (Gemini): app_settings.diagnosis_model.
+  final bool google;
+
+  /// Google's free tier: Google may use the photo to improve its services.
+  final bool googleFreeTier;
 
   int get left => (perDay - usedToday).clamp(0, perDay);
 
@@ -112,6 +122,9 @@ class DiagnosisQuota {
     paid: row['paid'] as bool? ?? false,
     perDay: (row['per_day'] as num?)?.toInt() ?? 0,
     usedToday: (row['used_today'] as num?)?.toInt() ?? 0,
+    // Before migration 018 the database doesn't say it: Roboflow.
+    google: row['google'] as bool? ?? false,
+    googleFreeTier: row['google_free_tier'] as bool? ?? false,
   );
 }
 
@@ -120,7 +133,7 @@ enum DiagnosisFailure {
   noInternet, // "تحتاج إلى الإنترنت"
   notPaid, // the paid pack ended: the locked screen
   limitDay, // "وصلت إلى 10 صور اليوم"
-  busy, // the app's limit of the day, or no Roboflow credits
+  busy, // the app's limit of the day, Google busy or its limits, no credits
   unavailable, // switched off, the model or the storage failed
   badImage, // not a photo that can be read
   sessionExpired,

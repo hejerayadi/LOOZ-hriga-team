@@ -99,6 +99,20 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  /// Where the photo goes. Gemini (and its backups, another Gemini key and
+  /// Groq): "sent to an AI service (Google or another provider)" (+ "Google
+  /// may use it" on Google's free tier). Not known yet (or no internet): that
+  /// text with the free-tier sentence, so the farmer is never told less than
+  /// the truth.
+  String _privacyNote(AppLocalizations l10n) {
+    final quota = _quota;
+    if (quota != null && !quota.google) return l10n.photoPrivacyNote;
+    final freeTier = quota?.googleFreeTier ?? true;
+    return freeTier
+        ? '${l10n.photoPrivacyNoteAi} ${l10n.photoGoogleFreeTier}'
+        : l10n.photoPrivacyNoteAi;
+  }
+
   /// What to say above the button (null = nothing).
   String? _message(AppLocalizations l10n) {
     final pickFailure = _pickFailure;
@@ -241,7 +255,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     const SizedBox(height: 4),
                   ],
                   Text(
-                    l10n.photoPrivacyNote,
+                    _privacyNote(l10n),
                     textAlign: TextAlign.center,
                     style: AppTextStyles.of(
                       13,

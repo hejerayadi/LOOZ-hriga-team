@@ -7,7 +7,10 @@ import 'core/locale.dart';
 import 'core/navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'features/alerts/alerts_page.dart';
+import 'core/plans.dart';
 import 'features/alerts/alerts_store.dart';
+import 'features/alerts/orchard_alerts.dart';
+import 'features/orchard_3d/orchard_live_store.dart';
 import 'features/community/community_page.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/sign_up_flow.dart';
@@ -97,16 +100,19 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    currentPlan.addListener(_onPlanChanged);
     _watchAlerts();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    currentPlan.removeListener(_onPlanChanged);
     _alertsTimer?.cancel();
     // Logged out: forget them. A moment later: the screens that show them
     // are being closed now and can't be told during this.
     scheduleMicrotask(clearAlerts);
+    scheduleMicrotask(clearOrchardLive);
     super.dispose();
   }
 
@@ -118,14 +124,22 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
         state == AppLifecycleState.hidden) {
       _alertsTimer?.cancel(); // nothing in the background
       _alertsTimer = null;
+      stopOrchardLive();
     }
   }
 
   void _watchAlerts() {
     refreshAlerts();
+    // Paid farmers: the live orchard (Supabase Realtime + every minute).
+    watchOrchardLive();
     _alertsTimer?.cancel();
-    _alertsTimer = Timer.periodic(alertsRefreshEvery, (_) => refreshAlerts());
+    _alertsTimer = Timer.periodic(alertsRefreshEvery, (_) {
+      refreshAlerts();
+      refreshOrchardLive();
+    });
   }
+
+  void _onPlanChanged() => watchOrchardLive();
 
   Widget _page(AppTab tab) {
     switch (tab) {
@@ -170,6 +184,8 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver {
                     ),
                   ),
                 ),
+                // A new problem of the orchard: a banner at the top (in-app).
+                const Positioned(top: 0, left: 0, right: 0, child: MlBannerHost()),
               ],
             ),
           ),

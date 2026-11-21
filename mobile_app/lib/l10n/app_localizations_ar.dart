@@ -646,6 +646,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get photoPrivacyNote => 'تُرسل الصورة للفحص، وتُحفظ في حسابك فقط.';
 
   @override
+  String get photoPrivacyNoteAi =>
+      'تُرسل الصورة إلى خدمة ذكاء اصطناعي (غوغل أو مزوّد آخر) لفحصها، وتُحفظ في حسابك.';
+
+  @override
+  String get photoGoogleFreeTier => 'وقد تستعملها غوغل لتحسين خدماتها.';
+
+  @override
   String get verdictLikely => 'على الأرجح';
 
   @override
@@ -1478,4 +1485,263 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get missingKeys =>
       'مفاتيح Supabase غير موجودة.\n\nاملأ ملف mobile_app/.env ثم شغّل:\nflutter run --dart-define-from-file=.env';
+
+  @override
+  String get mlStateOk => 'بخير';
+
+  @override
+  String get mlStateWaterDeficit => 'نقص الماء';
+
+  @override
+  String get mlStateWaterlogging => 'ماء زائد';
+
+  @override
+  String get mlStateHeat => 'حرارة شديدة';
+
+  @override
+  String get mlStateFrostDamage => 'ضرر البرد';
+
+  @override
+  String get mlStateRootzone => 'مشكل في الجذور';
+
+  @override
+  String get mlStateFrostRisk => 'خطر صقيع الليلة';
+
+  @override
+  String get mlStateNoFrost => 'لا صقيع الليلة';
+
+  @override
+  String get mlStateSensorProblem => 'مشكل في الحسّاس';
+
+  @override
+  String get mlStateNotEnoughData => 'قراءات غير كافية';
+
+  @override
+  String get mlStateOffline => 'الحسّاس غير متصل';
+
+  @override
+  String get mlTonight => 'الليلة';
+
+  @override
+  String get mlTrees => 'الأشجار';
+
+  @override
+  String get mlWhy => 'لماذا؟';
+
+  @override
+  String mlUpdated(String time) {
+    return 'آخر تحديث: $time';
+  }
+
+  @override
+  String get mlReadings => 'آخر القراءات';
+
+  @override
+  String get mlSoilWater => 'ماء التربة';
+
+  @override
+  String get mlSoilTemp => 'حرارة التربة';
+
+  @override
+  String get mlAirTemp => 'حرارة الهواء';
+
+  @override
+  String get mlHumidity => 'رطوبة الهواء';
+
+  @override
+  String get mlNotEnoughDataText =>
+      'نحتاج يومًا من القراءات قبل أن نتوقّع. ارجع بعد قليل.';
+
+  @override
+  String get mlSensorProblemText =>
+      'حسّاس هذه المنطقة يعطي قراءات غير صحيحة. لا نتوقّع حتى يرجع يخدم.';
+
+  @override
+  String get mlOfflineText => 'لم يصلنا شيء من حسّاس هذه المنطقة منذ مدة.';
+
+  @override
+  String get mlWaitingText => 'سيأتي فريق لوز لتركيب الحسّاس.';
+
+  @override
+  String mlTemplateText(String zone, String state, String reasons) {
+    return 'في $zone: $state. السبب: $reasons.';
+  }
+
+  @override
+  String get mlTemplateUnsure => 'موش متأكدين: شوف الشجر بنفسك.';
+
+  @override
+  String get mlAllZonesFine => 'كل مناطقك بخير.';
+
+  @override
+  String get mlNoPredictionYet => 'ننتظر قراءات حسّاساتك.';
+
+  @override
+  String get mlToastOpen => 'اضغط لترى المنطقة';
+
+  @override
+  String mlZoneOf(String zone, String state) {
+    return '$zone: $state';
+  }
+
+  @override
+  String get mlActionNone => 'كمّل كيف العادة وشوف الشجر كل نهار.';
+
+  @override
+  String get mlActionWaterDeficit =>
+      'شوف خط السقي في المنطقة هاذي واسقي كان التربة ناشفة.';
+
+  @override
+  String get mlActionWaterlogging =>
+      'وقّف السقي في المنطقة هاذي وشوف كان الماء واقف.';
+
+  @override
+  String get mlActionHeat => 'اسقي في الصباح بكري ولا العشية، موش في القايلة.';
+
+  @override
+  String get mlActionFrostDamage =>
+      'امشي شوف النوّار والثمار الصغار في المنطقة هاذي.';
+
+  @override
+  String get mlActionRootzone => 'اسأل خبير على الجذور وملوحة الماء.';
+
+  @override
+  String get mlActionFrostRisk =>
+      'امشي للمنطقة هاذي الليلة وحضّر الحماية اللي تستعمل فيها عادة.';
+
+  @override
+  String get mlActionNoFrost => 'ما تعمل شي خاص، شوف الشجر كيف العادة.';
+
+  @override
+  String get mlFactorSoilWaterLow => 'ماء قليل في التربة';
+
+  @override
+  String get mlFactorSoilWaterHigh => 'التربة فيها برشا ماء';
+
+  @override
+  String get mlFactorSoilDryingLow => 'التربة تنشف بشوية';
+
+  @override
+  String get mlFactorSoilDryingHigh => 'التربة تنشف بسرعة';
+
+  @override
+  String get mlFactorSoilTooWetLow => 'التربة موش مشبعة بالماء';
+
+  @override
+  String get mlFactorSoilTooWetHigh => 'التربة مشبعة بالماء';
+
+  @override
+  String get mlFactorWateringLow => 'ما جاش ماء للتربة من مدة';
+
+  @override
+  String get mlFactorWateringHigh => 'جا ماء للتربة (سقي ولا مطر)';
+
+  @override
+  String get mlFactorTreeWaterNeedLow => 'الشجر يحتاج شوية ماء في الوقت هذا';
+
+  @override
+  String get mlFactorTreeWaterNeedHigh => 'الشجر يحتاج برشا ماء في الوقت هذا';
+
+  @override
+  String get mlFactorAirHeatLow => 'النهار موش سخون';
+
+  @override
+  String get mlFactorAirHeatHigh => 'سخانة قوية في النهار';
+
+  @override
+  String get mlFactorNightColdLow => 'الليل اللي فات كان بارد';
+
+  @override
+  String get mlFactorNightColdHigh => 'الليل اللي فات ما كانش بارد';
+
+  @override
+  String get mlFactorEveningTempLow => 'الحرارة توّا منخفضة';
+
+  @override
+  String get mlFactorEveningTempHigh => 'الحرارة توّا موش منخفضة';
+
+  @override
+  String get mlFactorCoolingFastLow => 'الحرارة تهبط بشوية';
+
+  @override
+  String get mlFactorCoolingFastHigh => 'الحرارة تهبط بسرعة';
+
+  @override
+  String get mlFactorNightLowExpectedLow => 'الليلة تنجم تبرد برشا';
+
+  @override
+  String get mlFactorNightLowExpectedHigh => 'الليلة ما تبردش برشا';
+
+  @override
+  String get mlFactorDewPointLow => 'الهواء ناشف (نقطة الندى منخفضة)';
+
+  @override
+  String get mlFactorDewPointHigh => 'الهواء فيه رطوبة (نقطة الندى عالية)';
+
+  @override
+  String get mlFactorAirHumidityLow => 'رطوبة الهواء منخفضة';
+
+  @override
+  String get mlFactorAirHumidityHigh => 'رطوبة الهواء عالية';
+
+  @override
+  String get mlFactorAirDrynessLow => 'الهواء موش ناشف';
+
+  @override
+  String get mlFactorAirDrynessHigh => 'الهواء ناشف وسخون';
+
+  @override
+  String get mlFactorClearSkyLow => 'السماء موش صافية';
+
+  @override
+  String get mlFactorClearSkyHigh => 'السماء صافية: السخانة تهرب في الليل';
+
+  @override
+  String get mlFactorSunlightLow => 'شمس قليلة';
+
+  @override
+  String get mlFactorSunlightHigh => 'شمس قوية';
+
+  @override
+  String get mlFactorSoilTempLow => 'التربة باردة';
+
+  @override
+  String get mlFactorSoilTempHigh => 'التربة سخونة';
+
+  @override
+  String get mlFactorTreeSoundsLow => 'جذع الشجرة هادئ';
+
+  @override
+  String get mlFactorTreeSoundsHigh => 'جذع الشجرة يعطي إشارات عطش';
+
+  @override
+  String get mlFactorZonePlaceLow =>
+      'المنطقة في بقعة منخفضة (البرد يتجمع فيها)';
+
+  @override
+  String get mlFactorZonePlaceHigh => 'المنطقة في بقعة عالية';
+
+  @override
+  String get mlFactorGroundCoverLow => 'الشجر صغير وما يغطيش الأرض';
+
+  @override
+  String get mlFactorGroundCoverHigh => 'الشجر كبير ويغطي الأرض';
+
+  @override
+  String get mlFactorSeasonStage => 'وقت العام ومرحلة الشجر';
+
+  @override
+  String get mlFactorSoilType => 'نوع التربة';
+
+  @override
+  String get mlFactorIrrigationType => 'طريقة السقي وملوحة الماء';
+
+  @override
+  String get mlFactorOtherZones => 'مقارنة بالمناطق الأخرى متاعك';
+
+  @override
+  String get mlFactorDataQuality => 'بعض القراءات ناقصة';
+
+  @override
+  String get mlListSeparator => '، ';
 }

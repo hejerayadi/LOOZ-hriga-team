@@ -3,7 +3,8 @@
 // The most serious first, the done ones at the end; "جديد" on the ones not
 // opened yet. Pull down to refresh (it also refreshes every minute and when
 // the tab is opened, see alerts_store.dart).
-// Premium: the alerts of the orchard's sensors come later ("قريبًا").
+// Premium: "بستاني", the problems found by the predictions of the farmer's
+// own orchard (orchard_alerts.dart).
 import 'package:flutter/material.dart';
 
 import '../../core/governorates.dart';
@@ -19,6 +20,8 @@ import '../../shared/widgets/shell.dart';
 import '../community/community_widgets.dart' show LoadingCard, StateCard;
 import 'alert_widgets.dart';
 import 'alerts_store.dart';
+import 'orchard_alerts.dart';
+import '../orchard_3d/orchard_live_store.dart';
 import 'regional_screen.dart';
 
 class AlertsPage extends StatefulWidget {
@@ -34,7 +37,7 @@ class _AlertsPageState extends State<AlertsPage> {
     super.initState();
     currentTab.addListener(_onTabChanged);
     // The tab is built the first time it is opened: load now.
-    refreshAlerts();
+    _refresh();
   }
 
   @override
@@ -44,8 +47,11 @@ class _AlertsPageState extends State<AlertsPage> {
   }
 
   void _onTabChanged() {
-    if (currentTab.value == AppTab.alerts) refreshAlerts();
+    if (currentTab.value == AppTab.alerts) _refresh();
   }
+
+  /// The regional alerts and the problems of the orchard (paid farmers).
+  Future<void> _refresh() => Future.wait([refreshAlerts(), refreshOrchardLive()]);
 
   void _open(RegionalAlert alert) =>
       openScreen(context, RegionalScreen(alert: alert));
@@ -62,7 +68,7 @@ class _AlertsPageState extends State<AlertsPage> {
         final open = state.openCount;
         return RefreshIndicator(
           color: AppColors.green,
-          onRefresh: refreshAlerts,
+          onRefresh: _refresh,
           child: ShellContent(
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
@@ -109,10 +115,7 @@ class _AlertsPageState extends State<AlertsPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         AlertsSectionTitle(l10n.myOrchard),
-                        SoonRow(
-                          icon: AppIcon.tree,
-                          text: l10n.sensorAlertsSoon,
-                        ),
+                        const OrchardAlertsSection(),
                       ],
                     ),
                   );
