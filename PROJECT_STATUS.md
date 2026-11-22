@@ -951,3 +951,28 @@ Node-RED sends; switch the frost scenario → within 2–3 minutes a banner "ا�
   run. Upgrading Next.js was **not** done (it could break the dashboard): ask Claude in a separate step.
 - Screenshots (demo admin, demo data only, preview over the local end-to-end data): `docs/screenshots/admin-dashboard-redesign/`.
   App screenshots (Arabic + French): `docs/screenshots/ml-predictions-app/`.
+
+## 20. The demo video: story accounts, content and reset (22 Nov 2026)
+
+All files in `supabase/seed/`, tested on the laptop (local PostgreSQL with the leftovers of the real list,
+the 3 scenes and the dashboard click played: 63 checks). Real users are never changed.
+
+**The story.** Scene 1: sign up with **+216 22 999 005** (سلمى الشرفي, Sfax, Free). Scene 2: log in as
+**+216 22 999 001** (the same سلمى, a demo account: community + the Sfax demo alert; a new sign-up is not a demo
+account, so it cannot see a demo alert). Scene 3: log in again as 22 999 005, upgrade to Paid, draw the orchard, pay
+(card 4242). Dashboard ("Connexion démo"): Agriculteurs › **سليم الحمروني** (+216 22 123 456) › zone D, box
+**DEMO-D** › "Accepter l'installation" (the code is filled in). Paid farmer with live sensors: +216 22 777 001
+"عادل البقلوطي". Verified expert: +216 22 123 458 "ريم العلوي". +216 22 123 457 is not used (Kairouan, live tests).
+
+| Order | File | What | Check line |
+| --- | --- | --- | --- |
+| 1 | `demo_recording_list.sql` | READ ONLY: every account, post, answer, report, alert, diagnosis, voice use, orphan payment and Storage file, with its kind (TEST / demo / REAL user, real numbers masked) | a table |
+| 2 | `demo_recording_cleanup.sql` | deletes the test leftovers: designer test accounts (+216 22 98x xxx), payments without account, community content of the test numbers +216 50 000 00x (their accounts stay: live tests), reports by demo accounts, ended demo alerts, test diagnoses and voice of demo accounts; shows again the fake people's hidden posts. Never real users, never the ended "Jalon C" alerts | `0 \| 0 \| 0 \| 0 \| 0 \| 0 \| 0 \| 0 \| 5 \| 8 \| 1 \| 1 \| 3 \| <folders>` |
+| 3 | `demo_recording_setup.sql` | the story accounts, the demo community made recent, 2 posts with a photo (`demo:leaf_curl`, `demo:leaf_shot_hole`, pictures in `mobile_app/assets/images/`, CC0 iNaturalist) answered by the expert, the DEMO alert "موجة سخانة في صفاقس" (demo accounts only), the box DEMO-D waiting for installation | `عادل البقلوطي \| سلمى الشرفي \| sfax \| false \| ريم العلوي \| true \| 2 \| 6 \| true \| 0 \| DEMO-D waiting \| contacted` |
+| before each take | `reset_demo_recording.sql` | the sign-up account and EVERYTHING it made (orchard, zones, boxes, trees, pack, visit, payments, notifications), today's photos and voice of the demo accounts moved to yesterday, demo notifications, rehearsal posts / answers / reports / demo alerts, the Sfax alert new again, DEMO-D waiting again | `0 \| 0 \| 0 \| 0 \| 1 \| true \| 0 \| DEMO-D waiting` |
+| any time | `reset_signup.sql` | only the account of +216 22 999 005 and everything of it | `+216 22 999 005 \| 0 \| 0 \| N` |
+| any time | `demo_recording_limits.sql` | READ ONLY: photos and voice minutes left today | a table |
+
+Not reset by SQL: Node-RED's clock (after the frost scenario: delete `iot/node-red/context` to start again on
+15 June), the ML predictions, the Google / Groq daily limits, the voice consent, the app's language and login,
+the admin action log, photo files in Storage (SQL cannot delete them: the check lines name the folders).

@@ -188,7 +188,7 @@ def test_demo_admin_sees_demo_accounts_only(demo_api, api):
     assert me["role"] == "admin" and me["demo_admin"] is True and me["email"] == "admin-demo@looz-demo.invalid"
     farmers = demo_api.get("/api/farmers").json()["farmers"]
     assert farmers and all(f["phone"] in DEMO_PHONES or f["phone"] is None for f in farmers), [f["phone"] for f in farmers]
-    assert "Demo IoT" in {f["name"] for f in farmers}
+    assert "+21622777001" in {f["phone"] for f in farmers}   # the IoT demo farmer (its name may change)
     real = [f for f in api.get("/api/farmers").json()["farmers"] if f["phone"] not in DEMO_PHONES]
     if real:
         assert demo_api.get(f"/api/farmers/{real[0]['id']}").status_code == 404

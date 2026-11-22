@@ -90,7 +90,8 @@ def test_admin_is_admin(api):
 
 
 def test_demo_farmer_in_the_list(demo):
-    assert demo["name"] == "Demo IoT" and demo["phone"] == DEMO_PHONE and demo["governorate"] == "sfax"
+    # The name may change (demo video: "عادل البقلوطي", supabase/seed/demo_recording_setup.sql).
+    assert demo["name"] and demo["phone"] == DEMO_PHONE and demo["governorate"] == "sfax"
     assert demo["pack"]["plan"] == "paid" and demo["pack"]["active"] and demo["pack"]["nodes"] == 4
     assert demo["orchard_status"] == "complete" and demo["zones"] == 4 and demo["boxes"]["total"] == 4
     assert demo["demo_time"] is True
