@@ -1240,6 +1240,55 @@ class AppLocalizationsFr extends AppLocalizations {
   String get satelliteMode => 'Sur l\'image satellite';
 
   @override
+  String get sketchMode => 'Depuis une photo';
+
+  @override
+  String get sketchModeHint =>
+      'Dessinez votre verger sur papier et prenez-le en photo';
+
+  @override
+  String get sketchTitle => 'Photographiez votre croquis';
+
+  @override
+  String get sketchTipPen => 'Feutre noir épais';
+
+  @override
+  String get sketchTipPaper => 'Papier blanc';
+
+  @override
+  String get sketchTipAbove => 'Photo prise d\'en haut';
+
+  @override
+  String get sketchTipWhole => 'Toute la feuille sur la photo';
+
+  @override
+  String get sketchPrivacy =>
+      'La photo reste sur votre téléphone : elle n\'est pas envoyée.';
+
+  @override
+  String get sketchLooking => 'Recherche du contour du verger…';
+
+  @override
+  String get sketchNotFound => 'Contour du verger non trouvé sur la photo.';
+
+  @override
+  String get sketchNotFoundHelp =>
+      'Tracez un contour net et fermé, ou placez les coins vous-même.';
+
+  @override
+  String get sketchTapCorners => 'Placer les coins sur la photo';
+
+  @override
+  String get sketchOtherPhoto => 'Une autre photo';
+
+  @override
+  String get sketchDrawByHand => 'Dessiner à la main';
+
+  @override
+  String get sketchFoundHint =>
+      'Contour trouvé. Déplacez les points si besoin.';
+
+  @override
   String get a11yOrchardDrawing => 'Dessin du verger';
 
   @override

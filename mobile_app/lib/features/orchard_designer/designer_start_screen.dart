@@ -5,8 +5,9 @@
 //   - in the app: Premium "★ ابدأ بريميوم" and "بستاني ★" without an
 //     orchard yet.
 // A draft saved before: "★ أكمل الرسم" (where he stopped) or "ابدأ من
-// جديد". Drawing on a grid with the finger now; on the satellite image
-// later (Phase 5: "قريبًا").
+// جديد". How to draw: on a grid with the finger (the default), or "من صورة"
+// (a photo of a sketch on paper, sketch_screen.dart); on the satellite
+// image later (Phase 5: "قريبًا").
 import 'package:flutter/material.dart';
 
 import '../../core/locale.dart';
@@ -33,6 +34,7 @@ import '../onboarding/welcome_screen.dart';
 import '../premium/pack_texts.dart';
 import 'design_session.dart';
 import 'designer_widgets.dart';
+import 'sketch_screen.dart';
 
 class DesignerStartScreen extends StatefulWidget {
   const DesignerStartScreen({super.key, this.signUp = false});
@@ -53,6 +55,9 @@ class _DesignerStartScreenState extends State<DesignerStartScreen> {
   late Future<DesignState> _state = _loadState();
   bool _busy = false;
 
+  /// true = "من صورة" chosen (a new drawing starts with the photo).
+  bool _fromPhoto = false;
+
   Future<DesignState> _loadState() => Future.sync(orchardService.loadDesign);
 
   /// Sign-up: the free plan for now (Premium can be started later).
@@ -66,10 +71,14 @@ class _DesignerStartScreenState extends State<DesignerStartScreen> {
     if (mounted) replaceAllWith(context, const WelcomeScreen());
   }
 
-  void _open(OrchardDesign design) => openDesigner(
-    context,
-    DesignSession(design: design, signUp: widget.signUp),
-  );
+  void _open(OrchardDesign design) {
+    final session = DesignSession(design: design, signUp: widget.signUp);
+    if (_fromPhoto && design.outline.length < 3) {
+      openScreen(context, SketchScreen(session: session));
+    } else {
+      openDesigner(context, session);
+    }
+  }
 
   /// "ابدأ من جديد": the draft is thrown away (after a question).
   Future<void> _startAgain() async {
@@ -164,13 +173,23 @@ class _DesignerStartScreenState extends State<DesignerStartScreen> {
         },
       ),
       const SizedBox(height: 16),
-      // How to draw: on a grid now, on the satellite image later.
+      // How to draw: on a grid (the default) or from a photo of a sketch;
+      // on the satellite image later.
       ChoiceCard(
         icon: AppIcon.pen,
         title: l10n.drawWithFinger,
-        selected: true,
-        onTap: () {},
-        trailing: const LoozIcon(AppIcon.check, size: 26),
+        selected: !_fromPhoto,
+        onTap: () => setState(() => _fromPhoto = false),
+        trailing: _fromPhoto ? null : const LoozIcon(AppIcon.check, size: 26),
+      ),
+      const SizedBox(height: 10),
+      ChoiceCard(
+        icon: AppIcon.camera,
+        title: l10n.sketchMode,
+        subtitle: l10n.sketchModeHint,
+        selected: _fromPhoto,
+        onTap: () => setState(() => _fromPhoto = true),
+        trailing: _fromPhoto ? const LoozIcon(AppIcon.check, size: 26) : null,
       ),
       const SizedBox(height: 10),
       ChoiceCard(

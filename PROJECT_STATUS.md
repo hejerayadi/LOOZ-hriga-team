@@ -37,7 +37,7 @@ Last update: 21 November 2026 (the two **ML models** in the app — frost tonigh
 | Payment of Premium: the bill comes from the database (zones of the orchard) | Done as a **demo** (no real money) | **Real** database, demo card |
 | **My orchard in 3D** (Premium): the farmer's real orchard, zones, trees, sensor boxes; each zone coloured by its **ML state** (colour + icon + words), a tap opens the **zone panel** (prediction, how sure, reasons, explanation, ONE action, readings) | Done (21 Nov 2026) | **Real** (Supabase + Realtime, migration 019) |
 | **ML predictions** (section 18), paid pack: frost tonight + stress of the trees for every box at every 15-minute step, SHAP reasons, Groq texts (Derja + French), in-app banner + "بستاني" in the alerts tab | Built 21 Nov 2026, tested on the laptop end to end; **to do: run 019 + start the ML worker** | Real models (AI_modules_time_series), Node-RED simulated boxes |
-| **Orchard designer** (section 3): draw the orchard on a grid, cut it into zones, the bill, pay, the orchard is built → 3D | Done (grid). Satellite map: "قريبًا" (Phase 5). Editing later: Phase 4 | **Real** (Supabase, migration 011) |
+| **Orchard designer** (section 3): draw the orchard on a grid (or **from a photo of a sketch**, section 21), cut it into zones, the bill, pay, the orchard is built → 3D | Done (grid). Satellite map: "قريبًا" (Phase 5). Editing later: Phase 4 | **Real** (Supabase, migration 011) |
 | Profile: name, phone, my pack, its zones and end date, log out | Done | **Real** (Supabase) |
 | Community: questions, answers, delete, photos | Done | **Real** (Supabase + Storage) |
 | **Alerts** (section 15): the tab "التنبيهات" with the regional alerts of the farmer's governorate, the number on the bell, an alert's screen ("ماذا أفعل؟" in steps, until when, "أنا أيضًا", "تمّ"), the most important alert on Home | Done (Phase 1, 14 Nov 2026). Sensor alerts "بستاني" and voice / push: "قريبًا" | **Real** (Supabase, migration 015) |
@@ -976,3 +976,50 @@ account, so it cannot see a demo alert). Scene 3: log in again as 22 999 005, up
 Not reset by SQL: Node-RED's clock (after the frost scenario: delete `iot/node-red/context` to start again on
 15 June), the ML predictions, the Google / Groq daily limits, the voice consent, the app's language and login,
 the admin action log, photo files in Storage (SQL cannot delete them: the check lines name the folders).
+
+## 21. Orchard designer: "من صورة / Depuis une photo" (22 Nov 2026)
+
+**What.** On "ارسم بستانك", a third card under "بإصبعك، على شبكة" (still the default): **"من صورة"**.
+The farmer draws the orchard on paper, takes a photo (on a phone) or chooses one (Chrome), and the app finds
+the outline and makes the SAME corner dots as the hand drawing. Then everything is as before: the size, the
+zones, the payment. No database change, no migration.
+
+**How (no AI, no API, nothing sent).** Classic image processing in plain Dart, on the phone or in the
+browser (`lib/features/orchard_designer/sketch_detect.dart`): the sheet of paper (the big bright areas,
+grown into the grey paper of a shadow; when its 4 corners are in the photo, the photo is straightened as if
+taken from above) → the ink (darker than the paper around it; light blue / pink squares don't count) →
+small gaps of the line closed → the biggest closed shape (numbers, words, trees, lines drawn inside it are
+ignored) → its border → the same clean-up as a finger's line (`cleanUpStroke`). When the sheet's corners are
+not visible, a tilt under 15° shared by the long sides is straightened. The photo is never sent and never
+saved (a draft opened later has the outline, not the photo).
+
+**Screens.** The tips ("قلم أسود غليظ · ورقة بيضاء · صوّر من فوق · الورقة كاملة في الصورة" and "الصورة تبقى في
+هاتفك، لا نرسلها."), "نبحث عن حدود البستان…", then the outline step with the photo faded behind the grid
+("وجدنا حدود بستانك. حرّك النقاط إذا لزم."; typing the size stretches the photo too). Not found: "لم نجد حدود
+البستان في الصورة." + "حدّد الزوايا على الصورة" (the corners tapped on the photo) / "صورة أخرى" / "ارسم بيدك".
+
+**Tests.** `test/sketch_detect_test.dart` (13): 5 test photos made by `tool/make_sketch_photos.py`
+(SYNTHETIC: paper, a felt-tip line that wobbles like a hand, JPEG noise) — clean, shadow, numbers + words +
+trees + a zone line inside, turned 12° AND taken at an angle, squared paper — all found with the right
+number of corners (overlap with the true shape: 99 / 99 / 99 / 99 / 93 %); a drawing turned 9° straightened;
+a photo without a closed shape refused. **Real phone photos: put them in `mobile_app/test/sketches/real/`**:
+the same test checks each one. `test/sketch_designer_test.dart` (10): the screens with fakes. In Chrome
+(the screenshot build `tool/screens/sketch_screens_main.dart`, real picker + real detection): the same
+5 photos found, the photo without a shape refused, about 1.5 s each (headless Chrome). Screenshots (Arabic
++ French): `docs/screenshots/sketch-designer/`. Two sign-up tests now scroll to "متابعة مجانًا" (the start
+screen is longer).
+
+⚠ **Not tested on a real Android phone** (no Android SDK nor emulator on this laptop). The code is the same
+plain Dart as in Chrome and in the tests; the camera is the photo diagnosis' one (`image_picker`). Test it on a
+phone before real farmers use it.
+
+⚠ Fixed on the way: on the web, `-1 << 30` is a big POSITIVE number (Dart's bit operations are unsigned
+32-bit in JavaScript): the detection found nothing in Chrome. No bit shift in `sketch_detect.dart` now (a test
+checks it).
+
+**The demo sketch that works on the first try**: a white A4 sheet without lines, a BLACK felt-tip marker; ONE
+closed outline with 4 to 7 straight sides and sharp corners, about 2/3 of the page, 2–3 cm of white margin
+all around, the end of the line going 1 cm past its start; the top of the page = north; words or numbers
+inside only, not touching the line; no zone lines. Photo straight from above, the WHOLE sheet visible with a
+bit of table around it, daylight, no shadow of the phone or the hand on the line. In Chrome: send the photo to
+the laptop and choose it with "اختر من الصور".

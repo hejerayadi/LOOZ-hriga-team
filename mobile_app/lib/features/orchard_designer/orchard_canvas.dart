@@ -2,8 +2,10 @@
 // the top), the outline, the zones with their letters, the corners, and
 // the line the finger is drawing. Positions are in METRES (x = east,
 // z = south); the canvas turns them into points of the screen and back.
-// Works with a finger and with a mouse (Chrome).
+// Works with a finger and with a mouse (Chrome). "من صورة": the photo of
+// the sketch can be shown faded under the grid.
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -113,7 +115,14 @@ class OrchardCanvas extends StatelessWidget {
     this.onDragStart,
     this.onDrag,
     this.onDragEnd,
+    this.photo,
+    this.photoPlace,
   });
+
+  /// The photo of a sketch, faded under the grid ("من صورة"), at
+  /// [photoPlace] (metres). null = none.
+  final ui.Image? photo;
+  final Bounds? photoPlace;
 
   /// The metres shown.
   final Bounds frame;
@@ -170,6 +179,8 @@ class OrchardCanvas extends StatelessWidget {
             gridLabel: label,
             northLabel: northLabel,
             direction: direction,
+            photo: photo,
+            photoPlace: photoPlace,
           ),
         );
         if (onTap != null || onDragStart != null) {
@@ -208,9 +219,13 @@ class _OrchardPainter extends CustomPainter {
     required this.gridLabel,
     required this.northLabel,
     required this.direction,
+    required this.photo,
+    required this.photoPlace,
   });
 
   final CanvasView view;
+  final ui.Image? photo;
+  final Bounds? photoPlace;
   final double gridMetres;
   final Polygon outline;
   final bool closed;
@@ -256,6 +271,28 @@ class _OrchardPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.clipRect(Offset.zero & size);
 
+    // 0. The photo of the sketch, faded.
+    final picture = photo, place = photoPlace;
+    if (picture != null && place != null) {
+      canvas.drawImageRect(
+        picture,
+        Rect.fromLTWH(
+          0,
+          0,
+          picture.width.toDouble(),
+          picture.height.toDouble(),
+        ),
+        Rect.fromPoints(
+          view.toScreen(OrchardPoint(place.minX, place.minZ)),
+          view.toScreen(OrchardPoint(place.maxX, place.maxZ)),
+        ),
+        Paint()
+          ..color =
+              const Color(0x8C000000) // 55 %
+          ..filterQuality = FilterQuality.medium,
+      );
+    }
+
     // 1. The grid: light lines every gridMetres.
     final grid = Paint()
       ..color = AppColors.mint
@@ -299,7 +336,10 @@ class _OrchardPainter extends CustomPainter {
     } else if (outline.length >= 3 && closed) {
       canvas.drawPath(
         _path(outline),
-        Paint()..color = AppColors.lightGreen.withValues(alpha: 0.55),
+        Paint()
+          ..color = AppColors.lightGreen.withValues(
+            alpha: photo == null ? 0.55 : 0.3,
+          ),
       );
     }
     if (outline.length >= 2) {

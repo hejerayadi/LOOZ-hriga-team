@@ -640,6 +640,8 @@ void main() {
       expect(find.text('Dessinez le contour de votre verger'), findsOneWidget);
       expect(find.text('Divisez-le en zones'), findsOneWidget);
       expect(find.text('Voyez le prix et payez'), findsOneWidget);
+      // Under the 3 ways of drawing ("Depuis une photo" added): scroll to it.
+      await tester.scrollUntilVisible(find.text('Continuer gratuitement'), 200);
       expect(find.text('Continuer gratuitement'), findsOneWidget);
       final page = tester.element(find.byType(DesignerStartScreen));
       expect(Directionality.of(page), TextDirection.ltr);
@@ -716,6 +718,7 @@ void main() {
       auth.loggedIn = '+21650000004'; // the app opens with the session
       await startApp(tester, auth: auth);
       expect(find.byType(DesignerStartScreen), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('متابعة مجانًا'), 200);
       expect(find.text('متابعة مجانًا'), findsOneWidget); // the sign-up one
     });
 

@@ -1326,6 +1326,66 @@
   "@satelliteMode": {
     "description": "APP-ONLY. Orchard designer."
   },
+  "sketchMode": "من صورة",
+  "@sketchMode": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchModeHint": "ارسم بستانك على ورقة وصوّرها",
+  "@sketchModeHint": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchTitle": "صوّر رسمة بستانك",
+  "@sketchTitle": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchTipPen": "قلم أسود غليظ",
+  "@sketchTipPen": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchTipPaper": "ورقة بيضاء",
+  "@sketchTipPaper": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchTipAbove": "صوّر من فوق",
+  "@sketchTipAbove": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchTipWhole": "الورقة كاملة في الصورة",
+  "@sketchTipWhole": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchPrivacy": "الصورة تبقى في هاتفك، لا نرسلها.",
+  "@sketchPrivacy": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchLooking": "نبحث عن حدود البستان…",
+  "@sketchLooking": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchNotFound": "لم نجد حدود البستان في الصورة.",
+  "@sketchNotFound": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchNotFoundHelp": "ارسم الحدود بخط واضح ومغلق، أو حدّد الزوايا بنفسك.",
+  "@sketchNotFoundHelp": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchTapCorners": "حدّد الزوايا على الصورة",
+  "@sketchTapCorners": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchOtherPhoto": "صورة أخرى",
+  "@sketchOtherPhoto": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchDrawByHand": "ارسم بيدك",
+  "@sketchDrawByHand": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
+  "sketchFoundHint": "وجدنا حدود بستانك. حرّك النقاط إذا لزم.",
+  "@sketchFoundHint": {
+    "description": "APP-ONLY. Orchard designer, from a photo of a sketch."
+  },
   "a11yOrchardDrawing": "رسم البستان",
   "@a11yOrchardDrawing": {
     "description": "APP-ONLY. Orchard designer."

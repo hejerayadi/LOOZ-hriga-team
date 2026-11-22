@@ -20,23 +20,31 @@ enum OutlineProblem {
 const minOrchardArea = 100.0;
 
 class OutlineEditor {
-  OutlineEditor([List<OrchardPoint> start = const []])
+  /// [photo] = where the photo of a sketch is on the grid ("من صورة"):
+  /// it is stretched with the shape when the size is typed. null = no photo
+  /// (the hand drawing: nothing changes).
+  OutlineEditor([List<OrchardPoint> start = const [], Bounds? photo])
     : _points = List.of(start),
-      _closed = start.length >= 3;
+      _closed = start.length >= 3,
+      _photo = photo;
 
   List<OrchardPoint> _points;
   bool _closed;
-  final _undo = <(List<OrchardPoint>, bool)>[];
-  final _redo = <(List<OrchardPoint>, bool)>[];
+  Bounds? _photo;
+  final _undo = <(List<OrchardPoint>, bool, Bounds?)>[];
+  final _redo = <(List<OrchardPoint>, bool, Bounds?)>[];
 
   List<OrchardPoint> get points => List.unmodifiable(_points);
+
+  /// The photo's place on the grid (metres), or null.
+  Bounds? get photo => _photo;
   bool get closed => _closed;
   bool get isEmpty => _points.isEmpty;
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
 
   void _remember() {
-    _undo.add((List.of(_points), _closed));
+    _undo.add((List.of(_points), _closed, _photo));
     _redo.clear();
   }
 
@@ -87,6 +95,20 @@ class OutlineEditor {
   void scaleTo(double width, double length) {
     if (_points.length < 3) return;
     _remember();
+    final photo = _photo;
+    if (photo != null) {
+      // The same stretch as the shape (see scaleToSize).
+      final b = boundsOf(_points);
+      final sx = b.width > 0 ? width / b.width : 1.0;
+      final sz = b.length > 0 ? length / b.length : 1.0;
+      final c = b.center;
+      _photo = Bounds(
+        (photo.minX - c.x) * sx,
+        (photo.minZ - c.z) * sz,
+        (photo.maxX - c.x) * sx,
+        (photo.maxZ - c.z) * sz,
+      );
+    }
     _points = scaleToSize(_points, width, length);
   }
 
@@ -100,19 +122,20 @@ class OutlineEditor {
 
   void undo() {
     if (_undo.isEmpty) return;
-    _redo.add((List.of(_points), _closed));
+    _redo.add((List.of(_points), _closed, _photo));
     _restore(_undo.removeLast());
   }
 
   void redo() {
     if (_redo.isEmpty) return;
-    _undo.add((List.of(_points), _closed));
+    _undo.add((List.of(_points), _closed, _photo));
     _restore(_redo.removeLast());
   }
 
-  void _restore((List<OrchardPoint>, bool) state) {
+  void _restore((List<OrchardPoint>, bool, Bounds?) state) {
     _points = state.$1;
     _closed = state.$2;
+    _photo = state.$3;
   }
 
   OutlineProblem? get problem {

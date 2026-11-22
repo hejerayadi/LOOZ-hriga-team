@@ -7,6 +7,9 @@
 // metres (width and length) is typed in a sheet; the area is shown in
 // hectares. Crossing sides are refused with a short message.
 // "التالي" saves the draft (orchard_save_design) and opens the zones.
+// "من صورة" (sketch_screen.dart): the outline found on the photo of a sketch,
+// with the photo faded behind the grid (or, when none was found, the
+// corners tapped on the photo). The photo is never saved.
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -27,14 +30,26 @@ import 'designer_widgets.dart';
 import 'geometry.dart';
 import 'orchard_canvas.dart';
 import 'outline_editor.dart';
+import 'sketch_reader.dart';
 import 'zones_screen.dart';
 
 enum DrawTool { pen, corners }
 
+/// A new drawing: the grid shows about the area said at the sign-up (else
+/// 200 m across). The photo of a sketch gets the same size.
+double designerStartSide() {
+  final ha = currentUser.value?.orchardAreaHa;
+  if (ha == null || ha <= 0) return 200;
+  return (1.6 * math.sqrt(ha * 10000)).clamp(40.0, 3000.0);
+}
+
 class OutlineScreen extends StatefulWidget {
-  const OutlineScreen({super.key, required this.session});
+  const OutlineScreen({super.key, required this.session, this.sketch});
 
   final DesignSession session;
+
+  /// The photo of a sketch ("من صورة"), or null (drawing by hand).
+  final SketchPhoto? sketch;
 
   /// How close (screen points) a finger must be to grab a corner.
   static const grabRadius = 26.0;
@@ -47,27 +62,36 @@ class OutlineScreen extends StatefulWidget {
 }
 
 class _OutlineScreenState extends State<OutlineScreen> {
-  late final OutlineEditor _editor = OutlineEditor(
-    widget.session.design.outline,
-  );
-  DrawTool _tool = DrawTool.pen;
-  late Bounds _frame = _editor.isEmpty
-      ? squareFrame(_startSide())
+  late final OutlineEditor _editor = widget.sketch == null
+      ? OutlineEditor(widget.session.design.outline)
+      : OutlineEditor(widget.sketch!.outline ?? const [], widget.sketch!.place);
+  // No outline found on the photo: the corners are tapped on it.
+  late DrawTool _tool = widget.sketch != null && !widget.sketch!.found
+      ? DrawTool.corners
+      : DrawTool.pen;
+  late Bounds _frame = widget.sketch != null
+      ? frameAround(_cornersOf(widget.sketch!.place), margin: 0.03)
+      : _editor.isEmpty
+      ? squareFrame(designerStartSide())
       : frameAround(_editor.points);
+
+  static List<OrchardPoint> _cornersOf(Bounds b) => [
+    OrchardPoint(b.minX, b.minZ),
+    OrchardPoint(b.maxX, b.maxZ),
+  ];
+
+  @override
+  void dispose() {
+    widget.sketch?.image?.dispose();
+    super.dispose();
+  }
+
   List<OrchardPoint> _stroke = [];
   int? _moving;
   CanvasView? _view;
   bool _tooSmallStroke = false;
   bool _saving = false;
   AuthFailure? _saveError;
-
-  /// A new drawing: the grid shows about the area said at the sign-up
-  /// (else 200 m across).
-  double _startSide() {
-    final ha = currentUser.value?.orchardAreaHa;
-    if (ha == null || ha <= 0) return 200;
-    return (1.6 * math.sqrt(ha * 10000)).clamp(40.0, 3000.0);
-  }
 
   void _dragStart(OrchardPoint p, CanvasView view) {
     _view = view;
@@ -169,6 +193,10 @@ class _OutlineScreenState extends State<OutlineScreen> {
       case OutlineProblem.tooSmall:
         return l10n.problemTooSmall;
       case null:
+        // The outline found on the photo, not changed yet.
+        if ((widget.sketch?.found ?? false) && !_editor.canUndo) {
+          return l10n.sketchFoundHint;
+        }
         return l10n.hintMove;
       case OutlineProblem.open:
         break;
@@ -246,6 +274,8 @@ class _OutlineScreenState extends State<OutlineScreen> {
                 onDragStart: _dragStart,
                 onDrag: _drag,
                 onDragEnd: _dragEnd,
+                photo: widget.sketch?.image,
+                photoPlace: _editor.photo,
               ),
             ),
           ),

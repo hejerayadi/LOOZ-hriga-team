@@ -18,6 +18,7 @@ import 'package:looz_mobile/data/orchard_service.dart';
 import 'package:looz_mobile/features/alerts/alerts_store.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_live_store.dart';
 import 'package:looz_mobile/features/orchard_3d/orchard_tab.dart';
+import 'package:looz_mobile/features/orchard_designer/sketch_reader.dart';
 import 'package:looz_mobile/features/premium/demo_card_form.dart';
 import 'package:looz_mobile/features/premium/payment_screen.dart';
 
@@ -29,6 +30,7 @@ import 'fake_community_service.dart';
 import 'fake_orchard_service.dart';
 import 'fake_payment_service.dart';
 import 'fake_photo_picker.dart';
+import 'fake_sketch_reader.dart';
 import 'fake_voice.dart';
 
 /// Tests use a font where every letter is a square: load Cairo instead,
@@ -75,6 +77,7 @@ void resetAppState() {
   mlService = FakeMlService(const OrchardLive()); // no prediction yet
   clearOrchardLive();
   photoPicker = FakePhotoPicker();
+  sketchReader = FakeSketchReader(); // "من صورة": no real decoding
   paymentService = FakePaymentService();
   orchardService = FakeOrchardService(demoOrchard());
   SharedPreferences.setMockInitialValues({});

@@ -2234,6 +2234,96 @@ abstract class AppLocalizations {
   /// **'على صورة القمر الصناعي'**
   String get satelliteMode;
 
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'من صورة'**
+  String get sketchMode;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارسم بستانك على ورقة وصوّرها'**
+  String get sketchModeHint;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّر رسمة بستانك'**
+  String get sketchTitle;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'قلم أسود غليظ'**
+  String get sketchTipPen;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'ورقة بيضاء'**
+  String get sketchTipPaper;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّر من فوق'**
+  String get sketchTipAbove;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'الورقة كاملة في الصورة'**
+  String get sketchTipWhole;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصورة تبقى في هاتفك، لا نرسلها.'**
+  String get sketchPrivacy;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'نبحث عن حدود البستان…'**
+  String get sketchLooking;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نجد حدود البستان في الصورة.'**
+  String get sketchNotFound;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارسم الحدود بخط واضح ومغلق، أو حدّد الزوايا بنفسك.'**
+  String get sketchNotFoundHelp;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّد الزوايا على الصورة'**
+  String get sketchTapCorners;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة أخرى'**
+  String get sketchOtherPhoto;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'ارسم بيدك'**
+  String get sketchDrawByHand;
+
+  /// APP-ONLY. Orchard designer, from a photo of a sketch.
+  ///
+  /// In ar, this message translates to:
+  /// **'وجدنا حدود بستانك. حرّك النقاط إذا لزم.'**
+  String get sketchFoundHint;
+
   /// APP-ONLY. Orchard designer.
   ///
   /// In ar, this message translates to:

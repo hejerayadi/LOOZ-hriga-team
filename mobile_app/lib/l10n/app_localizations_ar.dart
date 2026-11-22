@@ -1247,6 +1247,52 @@ class AppLocalizationsAr extends AppLocalizations {
   String get satelliteMode => 'على صورة القمر الصناعي';
 
   @override
+  String get sketchMode => 'من صورة';
+
+  @override
+  String get sketchModeHint => 'ارسم بستانك على ورقة وصوّرها';
+
+  @override
+  String get sketchTitle => 'صوّر رسمة بستانك';
+
+  @override
+  String get sketchTipPen => 'قلم أسود غليظ';
+
+  @override
+  String get sketchTipPaper => 'ورقة بيضاء';
+
+  @override
+  String get sketchTipAbove => 'صوّر من فوق';
+
+  @override
+  String get sketchTipWhole => 'الورقة كاملة في الصورة';
+
+  @override
+  String get sketchPrivacy => 'الصورة تبقى في هاتفك، لا نرسلها.';
+
+  @override
+  String get sketchLooking => 'نبحث عن حدود البستان…';
+
+  @override
+  String get sketchNotFound => 'لم نجد حدود البستان في الصورة.';
+
+  @override
+  String get sketchNotFoundHelp =>
+      'ارسم الحدود بخط واضح ومغلق، أو حدّد الزوايا بنفسك.';
+
+  @override
+  String get sketchTapCorners => 'حدّد الزوايا على الصورة';
+
+  @override
+  String get sketchOtherPhoto => 'صورة أخرى';
+
+  @override
+  String get sketchDrawByHand => 'ارسم بيدك';
+
+  @override
+  String get sketchFoundHint => 'وجدنا حدود بستانك. حرّك النقاط إذا لزم.';
+
+  @override
   String get a11yOrchardDrawing => 'رسم البستان';
 
   @override
