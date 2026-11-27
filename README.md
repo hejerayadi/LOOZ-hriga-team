@@ -36,6 +36,17 @@ offers photo diagnosis, a voice assistant and a community with verified experts.
 <sub>Screenshots of the running app and dashboard with demo accounts and demo data only. The leaf in the diagnosis
 screenshot is a CC0 photo from iNaturalist.</sub>
 
+### The sensor node prototype
+
+We also built a first physical sensor node. The app and the demo still use the nodes simulated in Node-RED.
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/readme/09_prototype_case.jpg" height="260"><br><sub>First prototype: the node in its case, with its antenna</sub></td>
+    <td align="center"><img src="docs/readme/10_prototype_orchard.jpg" height="260"><br><sub>The LOOZ node with its solar panel, in an almond orchard</sub></td>
+  </tr>
+</table>
+
 ## Features
 
 Every screen is fully in **Arabic (right to left, the default) or French**.
